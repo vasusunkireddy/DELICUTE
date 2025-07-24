@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Login | Delicute</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: linear-gradient(135deg, #fdfdfd, #fff7f0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: #1e1e1e;
+    }
+    .container {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      max-width: 400px;
+      margin: 1rem;
+    }
+    h2 {
+      text-align: center;
+      color: #ff6200;
+      font-size: 1.8rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.7rem 1rem;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      background: #f9fafb;
+    }
+    input:focus {
+      border-color: #ff6200;
+      box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.1);
+      outline: none;
+    }
+    button {
+      width: 100%;
+      background: #ff6200;
+      color: #fff;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e55a00;
+      transform: translateY(-1px);
+    }
+    .toggle {
+      text-align: center;
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #4b5563;
+    }
+    .toggle a {
+      color: #ff6200;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .error-message {
+      text-align: center;
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .toast {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #fff;
+      padding: 1rem 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      z-index: 2000;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .toast.success { border-left: 4px solid #22c55e; color: #1e1e1e; }
+    .toast.error { border-left: 4px solid #ef4444; color: #1e1e1e; }
+  </style>
+</head>
+<body>
+  <div class="container" id="auth-container">
+    <h2>Admin Login</h2>
+    <div class="error-message" id="error-message"></div>
+    <div class="form-group">
+      <input type="email" id="loginEmail" placeholder="Email" required />
+    </div>
+    <div class="form-group">
+      <input type="password" id="loginPassword" placeholder="Password" required />
+    </div>
+    <button onclick="login()">Login</button>
+    <div class="toggle">Don't have an account? <a href="#" onclick="toggleForm(true)">Sign up</a></div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api';
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      toast.innerHTML = `
+        <span>${type === 'success' ? '✅' : '❌'}</span>
+        <span>${message}</span>
+      `;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 100);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function toggleForm(signup = false) {
+      const container = document.getElementById('auth-container');
+      container.innerHTML = signup
+        ? `
+          <h2>Admin Signup</h2>
+          <div class="error-message" id="error-message"></div>
+          <div class="form-group">
+            <input type="text" id="signupName" placeholder="Name" required />
+          </div>
+          <div class="form-group">
+            <input type="email" id="signupEmail" placeholder="Email" required />
+          </div>
+          <div class="form-group">
+            <input type="password" id="signupPassword" placeholder="Password" required />
+          </div>
+          <button onclick="signup()">Sign Up</button>
+          <div class="toggle">Already have an account? <a href="#" onclick="toggleForm(false)">Login</a></div>
+        `
+        : `
+          <h2>Admin Login</h2>
+          <div class="error-message" id="error-message"></div>
+          <div class="form-group">
+            <input type="email" id="loginEmail" placeholder="Email" required />
+          </div>
+          <div class="form-group">
+            <input type="password" id="loginPassword" placeholder="Password" required />
+          </div>
+          <button onclick="login()">Login</button>
+          <div class="toggle">Don't have an account? <a href="#" onclick="toggleForm(true)">Sign up</a></div>
+        `;
+    }
+
+    async function login() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const errorMessage = document.getElementById('error-message');
+      if (!email || !password) {
+        errorMessage.textContent = 'Please enter email and password';
+        errorMessage.style.display = 'block';
+        showToast('Please enter email and password', 'error');
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Login failed');
+        localStorage.setItem('authToken', data.token);
+        showToast('Login successful! Redirecting...');
+        setTimeout(() => window.location.href = 'admindashboard.html', 1000);
+      } catch (err) {
+        errorMessage.textContent = err.message;
+        errorMessage.style.display = 'block';
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function signup() {
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value.trim();
+      const errorMessage = document.getElementById('error-message');
+      if (!name || !email || !password) {
+        errorMessage.textContent = 'All fields are required';
+        errorMessage.style.display = 'block';
+        showToast('All fields are required', 'error');
+        return;
+      }
+      try {
+        const response = await fetch(`${API_URL}/signup`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Signup failed');
+        localStorage.setItem('authToken', data.token);
+        showToast('Signup successful! Redirecting...');
+        setTimeout(() => window.location.href = 'admindashboard.html', 1000);
+      } catch (err) {
+        errorMessage.textContent = err.message;
+        errorMessage.style.display = 'block';
+        showToast(err.message, 'error');
+      }
+    }
+  </script>
+</body>
+</html>
