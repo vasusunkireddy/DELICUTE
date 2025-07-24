@@ -8,16 +8,16 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ✅ Secure DB connection using SSL (Aiven Cloud)
+// ✅ Secure DB connection using SSL (only on Render)
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
   port: process.env.DB_PORT || 3306,
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'delicute',
-  ssl: {
+  ssl: process.env.DB_SSL === 'true' ? {
     ca: fs.readFileSync(path.join(__dirname, 'ca.pem'))
-  },
+  } : undefined,
   connectTimeout: 10000
 };
 
@@ -32,47 +32,50 @@ db.connect((err) => {
 });
 app.locals.db = db;
 
-// ✅ Middlewares
+// ✅ CORS Setup – allow both localhost and Render frontend
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://delicute-3bf1.onrender.com'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// ✅ Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Static files
+// ✅ Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Routes
-const adminRoutes = require('./routes/admin');           // Auth: login/signup
-const dashboardRoutes = require('./routes/admindashboard'); // Menu + Orders
-const menuRoutes = require('./routes/menu');            // Menu and Orders
+// ✅ API Routes
+const adminRoutes = require('./routes/admin');
+const dashboardRoutes = require('./routes/admindashboard');
+const menuRoutes = require('./routes/menu');
 
 app.use('/api', adminRoutes);
 app.use('/api', dashboardRoutes);
 app.use('/api', menuRoutes);
 
-// ✅ Serve HTML pages
+// ✅ Serve frontend pages directly
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
-
 app.get('/admin.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
-
 app.get('/admindashboard.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admindashboard.html'));
 });
 
-// ✅ 404 fallback
+// ✅ 404 fallback for unknown routes
 app.use((req, res) => {
-  res.status(404).json({ error: '❌ Route not found' });
+  if (req.originalUrl.startsWith('/api')) {
+    return res.status(404).json({ error: '❌ API route not found' });
+  }
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html')); // optional
 });
 
-// ✅ Global Error handler
+// ✅ Global error handler
 app.use((err, req, res, next) => {
   console.error('🔥 Internal Server Error:', err.stack);
   res.status(500).json({ error: '💥 Internal Server Error' });
@@ -80,5 +83,5 @@ app.use((err, req, res, next) => {
 
 // ✅ Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
