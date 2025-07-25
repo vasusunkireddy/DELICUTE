@@ -600,7 +600,9 @@
     let categories = [];
 
     // API configuration
-    const API_URL = 'http://localhost:3000/api';
+    const API_URL = location.hostname === 'localhost'
+      ? 'http://localhost:3000/api'
+      : 'https://delicute-3bf1.onrender.com/api';
 
     function showToast(message, type = 'success') {
       const toast = document.createElement('div');
@@ -610,11 +612,7 @@
         <span>${message}</span>
       `;
       document.body.appendChild(toast);
-
-      setTimeout(() => {
-        toast.classList.add('show');
-      }, 100);
-
+      setTimeout(() => toast.classList.add('show'), 100);
       setTimeout(() => {
         toast.classList.remove('show');
         setTimeout(() => toast.remove(), 300);
@@ -629,7 +627,8 @@
           }
         });
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status} ${response.statusText}`);
+          const errorData = await response.json();
+          throw new Error(`HTTP error! Status: ${response.status} ${errorData.message || response.statusText}`);
         }
         const data = await response.json();
         if (!Array.isArray(data)) {

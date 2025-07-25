@@ -1,130 +1,103 @@
 const express = require('express');
-const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
-const router = express.Router();
-require('dotenv').config();
 
-// ✅ Create MySQL connection pool with SSL
+const router = express.Router();
+
+// === MySQL Connection Pool ===
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
-  port: process.env.DB_PORT,
+  port: Number(process.env.DB_PORT),
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
-  ssl: {
-    ca: fs.readFileSync(path.join(__dirname, '..', 'ca.pem'))
-  },
+  ssl: process.env.NODE_ENV === 'production'
+    ? { ca: fs.readFileSync(path.join(__dirname, '../ca.pem')) }
+    : undefined,
   waitForConnections: true,
   connectionLimit: 10,
-  connectTimeout: 10000
+  queueLimit: 0,
 });
 
-// ✅ Middleware: validate inputs
-const validateInput = (req, res, next) => {
-  const { name, email, password } = req.body;
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  if (req.path === '/signup') {
-    if (!name || name.trim().length < 2) {
-      return res.status(400).json({ message: 'Name must be at least 2 characters' });
-    }
-  }
-
-  if (!email || !emailRegex.test(email)) {
-    return res.status(400).json({ message: 'Invalid email format' });
-  }
-
-  if (!password || password.length < 6) {
-    return res.status(400).json({ message: 'Password must be at least 6 characters' });
-  }
-
-  next();
-};
-
-// ✅ Admin Signup Route
-router.post('/signup', validateInput, async (req, res) => {
-  const { name, email, password } = req.body;
-
+// === Signup ===
+router.post('/signup', async (req, res) => {
   try {
-    const conn = await pool.getConnection();
-    try {
-      const [exists] = await conn.execute('SELECT email FROM admins WHERE email = ?', [email]);
-      if (exists.length > 0) {
-        return res.status(409).json({ message: 'Email already registered' });
-      }
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      await conn.execute(
-        'INSERT INTO admins (name, email, password, created_at) VALUES (?, ?, ?, NOW())',
-        [name.trim(), email.toLowerCase(), hashedPassword]
-      );
-
-      const token = jwt.sign(
-        { email, name },
-        process.env.JWT_SECRET || 'your_jwt_secret',
-        { expiresIn: '2d' }
-      );
-
-      res.status(201).json({ token, message: 'Signup successful' });
-    } finally {
-      conn.release();
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'All fields are required' });
     }
+
+    // Check if email already exists
+    const [existing] = await pool.query('SELECT id FROM admins WHERE email = ?', [email]);
+    if (existing.length > 0) {
+      return res.status(409).json({ message: 'Email already registered' });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await pool.query(
+      'INSERT INTO admins (name, email, password) VALUES (?, ?, ?)',
+      [name, email, hashedPassword]
+    );
+
+    res.status(201).json({ message: 'User registered successfully' });
   } catch (err) {
-    console.error('🔥 Signup error:', err.message);
-    res.status(500).json({ message: 'Signup failed', error: 'Internal server error' });
+    console.error('Signup Error:', err);
+    res.status(500).json({ message: 'Server error during signup', error: err.message });
   }
 });
 
-// ✅ Admin Login Route
-router.post('/login', validateInput, async (req, res) => {
-  const { email, password } = req.body;
-
+// === Login ===
+router.post('/login', async (req, res) => {
   try {
-    const conn = await pool.getConnection();
-    try {
-      const [rows] = await conn.execute('SELECT * FROM admins WHERE email = ?', [email.toLowerCase()]);
-      if (rows.length === 0) {
-        return res.status(401).json({ message: 'Email not found' });
-      }
-
-      const user = rows[0];
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(401).json({ message: 'Incorrect password' });
-      }
-
-      const token = jwt.sign(
-        { email: user.email, name: user.name },
-        process.env.JWT_SECRET || 'your_jwt_secret',
-        { expiresIn: '2d' }
-      );
-
-      res.json({ token, message: 'Login successful' });
-    } finally {
-      conn.release();
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
     }
+
+    const [users] = await pool.query('SELECT * FROM admins WHERE email = ?', [email]);
+    if (users.length === 0) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const user = users[0];
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET not set in environment');
+    }
+
+    const token = jwt.sign({ id: user.id, role: 'admin' }, process.env.JWT_SECRET, {
+      expiresIn: '1h',
+    });
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600000, // 1 hour
+    });
+
+    res.status(200).json({ message: 'Login successful' });
   } catch (err) {
-    console.error('🔥 Login error:', err.message);
-    res.status(500).json({ message: 'Login failed', error: 'Internal server error' });
+    console.error('Login Error:', err);
+    res.status(500).json({ message: 'Server error during login', error: err.message });
   }
 });
 
-// Optional: Export authentication middleware if needed later
-const authenticate = async (req, res, next) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  if (!token) return res.status(401).json({ message: 'No token provided' });
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret');
-    req.user = decoded;
-    next();
-  } catch {
-    return res.status(403).json({ message: 'Invalid or expired token' });
-  }
-};
+// === Logout ===
+router.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+  });
+  res.status(200).json({ message: 'Logout successful' });
+});
 
 module.exports = router;

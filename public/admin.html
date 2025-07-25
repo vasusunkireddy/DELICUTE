@@ -2,214 +2,347 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin Login | Delicute</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delicute | Admin Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      background: linear-gradient(135deg, #fdfdfd, #fff7f0);
+      font-family: 'Montserrat', sans-serif;
+      background: linear-gradient(135deg, #fff7f0 0%, #ffe8e0 100%);
+      color: #2c2c2c;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      color: #1e1e1e;
+      overflow-x: hidden;
+      line-height: 1.6;
     }
+
     .container {
-      background: #fff;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      width: 100%;
       max-width: 400px;
+      width: 100%;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      text-align: center;
       margin: 1rem;
+      position: relative;
     }
-    h2 {
-      text-align: center;
-      color: #ff6200;
-      font-size: 1.8rem;
-      font-weight: 600;
+
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255, 231, 224, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+      z-index: -1;
+      border-radius: 16px;
+    }
+
+    .logo img {
+      width: 120px;
       margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: fadeInScale 1s ease-out forwards;
     }
-    .form-group { margin-bottom: 1rem; }
-    input[type="text"], input[type="email"], input[type="password"] {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      background: #f9fafb;
+
+    h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.2s forwards;
     }
-    input:focus {
-      border-color: #ff6200;
-      box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.1);
-      outline: none;
+
+    p {
+      font-size: 1.1rem;
+      color: #555;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.4s forwards;
     }
-    button {
-      width: 100%;
-      background: #ff6200;
-      color: #fff;
-      padding: 0.8rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #e55a00;
-      transform: translateY(-1px);
-    }
-    .toggle {
-      text-align: center;
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: #4b5563;
-    }
-    .toggle a {
-      color: #ff6200;
-      text-decoration: none;
-      font-weight: 600;
-    }
+
     .error-message {
-      text-align: center;
-      color: #ef4444;
-      font-size: 0.85rem;
+      color: #e53935;
+      font-size: 0.9rem;
       margin-bottom: 1rem;
       display: none;
     }
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #fff;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    .form-toggle {
       display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      z-index: 2000;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: opacity 0.3s ease, transform 0.3s ease;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
     }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.success { border-left: 4px solid #22c55e; color: #1e1e1e; }
-    .toast.error { border-left: 4px solid #ef4444; color: #1e1e1e; }
+
+    .form-toggle button {
+      background: none;
+      border: none;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #555;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      transition: color 0.3s ease;
+    }
+
+    .form-toggle button.active {
+      color: #fc8019;
+      border-bottom: 2px solid #fc8019;
+    }
+
+    .form-toggle button:hover {
+      color: #e56c12;
+    }
+
+    .form-container {
+      display: none;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .form-container.active {
+      display: block;
+    }
+
+    .form-group {
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: #fc8019;
+      box-shadow: 0 0 8px rgba(252, 128, 25, 0.3);
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #fc8019, #ff9a44);
+      color: white;
+      padding: 0.9rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(252, 128, 25, 0.4);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .btn:hover {
+      background: linear-gradient(45deg, #e56c12, #fc8019);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(252, 128, 25, 0.5);
+    }
+
+    .forgot-password, .back-to-login {
+      display: block;
+      font-size: 0.9rem;
+      color: #fc8019;
+      text-decoration: none;
+      margin-top: 1rem;
+      transition: color 0.3s ease;
+    }
+
+    .forgot-password:hover, .back-to-login:hover {
+      color: #e56c12;
+    }
+
+    @keyframes fadeInScale {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 480px) {
+      .container {
+        padding: 1.5rem;
+        margin: 0.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      p {
+        font-size: 1rem;
+      }
+
+      .logo img {
+        width: 100px;
+      }
+
+      .form-group input {
+        padding: 0.7rem;
+      }
+
+      .btn {
+        padding: 0.8rem;
+        font-size: 1rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="container" id="auth-container">
-    <h2>Admin Login</h2>
-    <div class="error-message" id="error-message"></div>
-    <div class="form-group">
-      <input type="email" id="loginEmail" placeholder="Email" required />
+  <div class="container">
+    <div class="logo">
+      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo" />
     </div>
-    <div class="form-group">
-      <input type="password" id="loginPassword" placeholder="Password" required />
+    <h1>Delicute Admin</h1>
+    <p>Manage your cloud kitchen with ease</p>
+    <div id="error-message" class="error-message"></div>
+    <div class="form-toggle">
+      <button class="active" onclick="showForm('login')">Login</button>
+      <button onclick="showForm('signup')">Sign Up</button>
     </div>
-    <button onclick="login()">Login</button>
-    <div class="toggle">Don't have an account? <a href="#" onclick="toggleForm(true)">Sign up</a></div>
+    <div id="login-form" class="form-container active">
+      <form id="login-form-element">
+        <div class="form-group">
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" placeholder="Enter your email" required />
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="btn">Login</button>
+        <a href="#" class="forgot-password">Forgot Password?</a>
+      </form>
+    </div>
+    <div id="signup-form" class="form-container">
+      <form id="signup-form-element">
+        <div class="form-group">
+          <label for="signup-name">Full Name</label>
+          <input type="text" id="signup-name" placeholder="Enter your full name" required />
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" placeholder="Enter your email" required />
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="btn">Sign Up</button>
+        <a href="#" class="back-to-login" onclick="showForm('login')">Back to Login</a>
+      </form>
+    </div>
   </div>
-
   <script>
-    const API_URL = location.hostname === 'localhost'
-      ? 'http://localhost:3000/api'
-      : 'https://delicute-3bf1.onrender.com/api';
+    const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
 
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `<span>${type === 'success' ? '✅' : '❌'}</span><span>${message}</span>`;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.classList.add('show'), 100);
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
-
-    function toggleForm(signup = false) {
-      const container = document.getElementById('auth-container');
-      container.innerHTML = signup
-        ? `
-          <h2>Admin Signup</h2>
-          <div class="error-message" id="error-message"></div>
-          <div class="form-group"><input type="text" id="signupName" placeholder="Name" required /></div>
-          <div class="form-group"><input type="email" id="signupEmail" placeholder="Email" required /></div>
-          <div class="form-group"><input type="password" id="signupPassword" placeholder="Password" required /></div>
-          <button onclick="signup()">Sign Up</button>
-          <div class="toggle">Already have an account? <a href="#" onclick="toggleForm(false)">Login</a></div>
-        `
-        : `
-          <h2>Admin Login</h2>
-          <div class="error-message" id="error-message"></div>
-          <div class="form-group"><input type="email" id="loginEmail" placeholder="Email" required /></div>
-          <div class="form-group"><input type="password" id="loginPassword" placeholder="Password" required /></div>
-          <button onclick="login()">Login</button>
-          <div class="toggle">Don't have an account? <a href="#" onclick="toggleForm(true)">Sign up</a></div>
-        `;
-    }
-
-    async function login() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value.trim();
+    function showForm(formType) {
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+      const loginBtn = document.querySelector('.form-toggle button:first-child');
+      const signupBtn = document.querySelector('.form-toggle button:last-child');
       const errorMessage = document.getElementById('error-message');
-      if (!email || !password) {
-        errorMessage.textContent = 'Please enter email and password';
-        errorMessage.style.display = 'block';
-        showToast('Please enter email and password', 'error');
-        return;
-      }
-      try {
-        const response = await fetch(`${API_URL}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Login failed');
-        localStorage.setItem('authToken', data.token);
-        showToast('Login successful! Redirecting...');
-        setTimeout(() => window.location.href = 'admindashboard.html', 1000);
-      } catch (err) {
-        errorMessage.textContent = err.message;
-        errorMessage.style.display = 'block';
-        showToast(err.message, 'error');
+
+      errorMessage.style.display = 'none';
+      if (formType === 'login') {
+        loginForm.classList.add('active');
+        signupForm.classList.remove('active');
+        loginBtn.classList.add('active');
+        signupBtn.classList.remove('active');
+      } else {
+        signupForm.classList.add('active');
+        loginForm.classList.remove('active');
+        signupBtn.classList.add('active');
+        loginBtn.classList.remove('active');
       }
     }
 
-    async function signup() {
-      const name = document.getElementById('signupName').value.trim();
-      const email = document.getElementById('signupEmail').value.trim();
-      const password = document.getElementById('signupPassword').value.trim();
+    async function handleFormSubmit(event, endpoint) {
+      event.preventDefault();
+      const form = event.target;
       const errorMessage = document.getElementById('error-message');
-      if (!name || !email || !password) {
-        errorMessage.textContent = 'All fields are required';
-        errorMessage.style.display = 'block';
-        showToast('All fields are required', 'error');
-        return;
-      }
+      errorMessage.style.display = 'none';
+
+      const data = {};
+      form.querySelectorAll('input').forEach(input => {
+        data[input.id.split('-')[1]] = input.value.trim();
+      });
+
       try {
-        const response = await fetch(`${API_URL}/signup`, {
+        const response = await fetch(`${API_BASE_URL}/api/auth/${endpoint}`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password })
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+          credentials: 'include',
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Signup failed');
-        localStorage.setItem('authToken', data.token);
-        showToast('Signup successful! Redirecting...');
-        setTimeout(() => window.location.href = 'admindashboard.html', 1000);
-      } catch (err) {
-        errorMessage.textContent = err.message;
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.message || 'An error occurred');
+        }
+
+        alert(result.message || `${endpoint.charAt(0).toUpperCase() + endpoint.slice(1)} successful!`);
+        form.reset();
+        if (endpoint === 'login') {
+          window.location.href = '/admindashboard.html'; // Updated to match your dashboard file
+        } else {
+          showForm('login'); // Switch to login after signup
+        }
+      } catch (error) {
+        errorMessage.textContent = error.message;
         errorMessage.style.display = 'block';
-        showToast(err.message, 'error');
       }
     }
+
+    document.getElementById('login-form-element').addEventListener('submit', (e) => handleFormSubmit(e, 'login'));
+    document.getElementById('signup-form-element').addEventListener('submit', (e) => handleFormSubmit(e, 'signup'));
   </script>
 </body>
 </html>

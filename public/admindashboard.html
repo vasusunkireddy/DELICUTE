@@ -3,404 +3,670 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Admin Dashboard | Delicute</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <title>Delicute | Admin Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
+
     body {
       font-family: 'Montserrat', sans-serif;
-      background: #f9f9f9;
-      color: #333;
+      background: linear-gradient(135deg, #fff7f0 0%, #ffe8e0 100%);
+      color: #2c2c2c;
       min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.6;
     }
-    header {
-      background-color: #fc8019;
-      color: white;
-      padding: 1rem 2rem;
+
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .header {
       text-align: center;
-      font-size: 1.5rem;
-      font-weight: 700;
+      padding: 2rem 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      margin-bottom: 2rem;
     }
-    nav {
-      background: #fff;
+
+    .header img {
+      width: 120px;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: fadeInScale 1s ease-out forwards;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.2s forwards;
+    }
+
+    .nav-tabs {
       display: flex;
       justify-content: center;
       gap: 1rem;
-      padding: 1rem;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    nav button {
-      background: #fc8019;
-      border: none;
-      padding: 0.6rem 1.4rem;
-      color: #fff;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-    nav button:hover {
-      background: #e56f15;
-      transform: translateY(-1px);
-    }
-    nav button.logout {
-      background: #6c757d;
-      margin-left: 1rem;
-    }
-    nav button.logout:hover {
-      background: #5c636a;
-    }
-    section {
-      padding: 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-      display: none;
-    }
-    section.active {
-      display: block;
-    }
-    h2 {
-      font-size: 1.8rem;
-      margin-bottom: 1.5rem;
-      color: #fc8019;
-    }
-    input, textarea, select {
-      width: 100%;
-      padding: 0.8rem;
-      margin: 0.5rem 0 1rem;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      background: #fff;
-    }
-    input:focus, textarea:focus, select:focus {
-      border-color: #fc8019;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(252, 128, 25, 0.1);
-    }
-    .menu-form {
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       margin-bottom: 2rem;
     }
-    .menu-form button {
-      background: #fc8019;
-      color: #fff;
+
+    .nav-tabs button {
+      background: none;
       border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1rem;
       font-weight: 600;
+      color: #555;
       cursor: pointer;
-      transition: background 0.2s;
+      padding: 0.5rem 1rem;
+      transition: all 0.3s ease;
     }
-    .menu-form button:hover {
-      background: #e56f15;
+
+    .nav-tabs button.active {
+      color: #fc8019;
+      border-bottom: 2px solid #fc8019;
     }
-    .order-list, .menu-list, .top-list {
-      margin-top: 1rem;
+
+    .nav-tabs button:hover {
+      color: #e56c12;
     }
-    .order-card, .menu-card {
-      background: #fff;
-      padding: 1.5rem;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+    .tab-content {
+      display: none;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .error-message, .success-message {
+      display: none;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+
+    .error-message {
+      background: rgba(229, 57, 53, 0.1);
+      color: #e53935;
+    }
+
+    .success-message {
+      background: rgba(46, 125, 50, 0.1);
+      color: #2e7d32;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
       margin-bottom: 1rem;
     }
-    .order-card .summary {
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+
+    th, td {
+      padding: 0.8rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
     }
-    .order-card .details {
-      display: none;
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #f8f9fa;
-      border-radius: 6px;
+
+    th {
+      font-weight: 600;
+      color: #333;
     }
-    .order-card .details.show {
+
+    .form-group {
+      margin-bottom: 1.2rem;
+      text-align: left;
+    }
+
+    .form-group label {
       display: block;
-    }
-    .order-card .details ul {
-      list-style: none;
-      margin: 0.5rem 0;
-      padding-left: 1rem;
-    }
-    .order-card .details ul li {
-      font-size: 0.9rem;
-      color: #555;
-      margin-bottom: 0.3rem;
-      padding: 0.2rem 0;
-    }
-    .order-card .details .toppings {
-      font-size: 0.9rem;
-      color: #555;
-      margin-top: 0.5rem;
-    }
-    .order-card .details .toppings strong {
-      color: #333;
-    }
-    .order-card .total {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #333;
-      margin-top: 0.5rem;
-    }
-    .menu-item-actions, .order-actions {
-      margin-top: 1rem;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
-    }
-    .menu-item-actions button, .order-actions button {
-      padding: 0.5rem 1rem;
-      border-radius: 6px;
       font-size: 0.9rem;
       font-weight: 600;
-      cursor: pointer;
+      color: #333;
+      margin-bottom: 0.5rem;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 0.8rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #fc8019;
+      box-shadow: 0 0 8px rgba(252, 128, 25, 0.3);
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #fc8019, #ff9a44);
+      color: white;
+      add: 0.8rem 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
       border: none;
-      transition: background 0.2s;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(252, 128, 25, 0.4);
     }
-    .edit { background-color: #5cb85c; color: white; }
-    .edit:hover { background-color: #4cae4c; }
-    .remove { background-color: #d9534f; color: white; }
-    .remove:hover { background-color: #c9302c; }
-    .top { background-color: #f0ad4e; color: white; }
-    .top:hover { background-color: #ec971f; }
-    .delivered { background-color: #5bc0de; color: white; }
-    .delivered:hover { background-color: #31b0d5; }
-    .menu-img {
-      width: 120px;
-      height: 90px;
+
+    .btn:hover {
+      background: linear-gradient(45deg, #e56c12, #fc8019);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(252, 128, 25, 0.5);
+    }
+
+    .btn-danger {
+      background: linear-gradient(45deg, #e53935, #ef5350);
+      box-shadow: 0 4px 15px rgba(229, 57, 53, 0.4);
+    }
+
+    .btn-danger:hover {
+      background: linear-gradient(45deg, #d32f2f, #e53935);
+      box-shadow: 0 6px 20px rgba(229, 57, 53, 0.5);
+    }
+
+    .menu-item img {
+      width: 50px;
+      height: 50px;
       object-fit: cover;
       border-radius: 8px;
-      margin-top: 0.5rem;
     }
-    .search-container {
-      margin-bottom: 1.5rem;
-    }
-    .search-container input {
-      max-width: 400px;
-    }
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #323232;
-      color: white;
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
+
+    .modal {
       display: none;
-      z-index: 9999;
-      font-size: 0.95rem;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
     }
-    .toast.show {
-      display: block;
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
     }
-    .no-data, .loading {
-      text-align: center;
-      color: #666;
-      font-size: 1rem;
-      margin-top: 1rem;
+
+    .modal-content h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      margin-bottom: 1rem;
     }
-    @media (max-width: 600px) {
-      nav {
-        flex-direction: column;
+
+    .close-btn {
+      float: right;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #555;
+    }
+
+    @keyframes fadeInScale {
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 0 0.5rem;
+      }
+
+      .header h1 {
+        font-size: 2rem;
+      }
+
+      .nav-tabs {
+        flex-wrap: wrap;
         gap: 0.5rem;
       }
-      nav button.logout {
-        margin-left: 0;
+
+      table {
+        font-size: 0.9rem;
       }
-      section {
+
+      th, td {
+        padding: 0.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .header img {
+        width: 100px;
+      }
+
+      .tab-content {
         padding: 1rem;
       }
-      .menu-img {
-        width: 100px;
-        height: 75px;
-      }
-      .order-card .details ul li {
-        font-size: 0.85rem;
+
+      .btn {
+        padding: 0.7rem 1rem;
+        font-size: 0.9rem;
       }
     }
   </style>
 </head>
 <body>
-  <header>Delicute Admin Dashboard</header>
-
-  <nav>
-    <button onclick="showSection('orders')">View Orders</button>
-    <button onclick="showSection('menu')">Manage Menu</button>
-    <button onclick="showSection('top')">Top Items</button>
-    <button class="logout" onclick="logout()">Logout</button>
-  </nav>
-
-  <section id="orders" class="active">
-    <h2>Orders Received</h2>
-    <div class="search-container">
-      <input type="text" id="orderSearch" placeholder="Search by customer name or table number" oninput="searchOrders()" />
+  <div class="container">
+    <div class="header">
+      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo" />
+      <h1>Delicute Admin Dashboard</h1>
     </div>
-    <div class="order-list" id="orderList">
-      <p class="loading">Loading orders...</p>
+    <div class="nav-tabs">
+      <button class="active" onclick="showTab('orders')">Orders</button>
+      <button onclick="showTab('menu')">Menu</button>
+      <button onclick="showTab('coupons')">Coupons</button>
+      <button onclick="showTab('top-picks')">Top Picks</button>
+      <button onclick="logout()">Logout</button>
     </div>
-  </section>
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
 
-  <section id="menu">
-    <h2>Manage Menu Items</h2>
-    <div class="menu-form" id="menuForm">
-      <input type="text" id="itemName" placeholder="Item Name" />
-      <textarea id="itemDescription" placeholder="Item Description" rows="4"></textarea>
-      <input type="file" id="itemImage" accept="image/*" />
-      <input type="number" id="itemPrice" placeholder="Price in ₹" step="0.01" min="0" />
-      <input type="text" id="itemCategory" placeholder="Category (e.g., Pizza, Shake)" />
-      <input type="hidden" id="itemId" />
-      <button onclick="submitMenuItem()">Add Item</button>
+    <!-- Orders Tab -->
+    <div id="orders" class="tab-content active">
+      <h2>Orders</h2>
+      <table id="orders-table">
+        <thead>
+          <tr>
+            <th>Order ID</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th>Special Instructions</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
     </div>
-    <div class="menu-list" id="menuList"></div>
-  </section>
 
-  <section id="top">
-    <h2>Top Menu Items</h2>
-    <div class="top-list" id="topItems"></div>
-  </section>
+    <!-- Menu Tab -->
+    <div id="menu" class="tab-content">
+      <h2>Menu</h2>
+      <button class="btn" onclick="openMenuModal('add')">Add Item</button>
+      <table id="menu-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Price</th>
+            <th>Discount Price</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
 
-  <div id="toast" class="toast"></div>
+    <!-- Coupons Tab -->
+    <div id="coupons" class="tab-content">
+      <h2>Coupons</h2>
+      <button class="btn" onclick="openCouponModal('add')">Add Coupon</button>
+      <table id="coupons-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Description</th>
+            <th>Logic</th>
+            <th>Valid From</th>
+            <th>Valid To</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Top Picks Tab -->
+    <div id="top-picks" class="tab-content">
+      <h2>Top Picks</h2>
+      <button class="btn" onclick="openTopPicksModal()">Add Top Pick</button>
+      <table id="top-picks-table">
+        <thead>
+          <tr>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Menu Modal -->
+    <div id="menu-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('menu-modal')">×</span>
+        <h2 id="menu-modal-title">Add Menu Item</h2>
+        <form id="menu-form" enctype="multipart/form-data">
+          <div class="form-group">
+            <label for="menu-name">Name</label>
+            <input type="text" id="menu-name" required />
+          </div>
+          <div class="form-group">
+            <label for="menu-description">Description</label>
+            <textarea id="menu-description" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="menu-category">Category</label>
+            <select id="menu-category" required>
+              <option value="Shakes">Shakes</option>
+              <option value="Desserts">Desserts</option>
+              <option value="Meals">Meals</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="menu-price">Original Price</label>
+            <input type="number" id="menu-price" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label for="menu-discount-price">Discount Price (Optional)</label>
+            <input type="number" id="menu-discount-price" step="0.01" />
+          </div>
+          <div class="form-group">
+            <label for="menu-image">Image</label>
+            <input type="file" id="menu-image" accept="image/*" required />
+          </div>
+          <button type="submit" class="btn">Save</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Coupon Modal -->
+    <div id="coupon-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('coupon-modal')">×</span>
+        <h2 id="coupon-modal-title">Add Coupon</h2>
+        <form id="coupon-form">
+          <div class="form-group">
+            <label for="coupon-code">Coupon Code</label>
+            <input type="text" id="coupon-code" required />
+          </div>
+          <div class="form-group">
+            <label for="coupon-description">Description</label>
+            <textarea id="coupon-description" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="coupon-logic">Logic (e.g., Buy 3 Shakes)</label>
+            <input type="text" id="coupon-logic" placeholder="e.g., Buy 3 Shakes" required />
+          </div>
+          <div class="form-group">
+            <label for="coupon-valid-from">Valid From</label>
+            <input type="date" id="coupon-valid-from" required />
+          </div>
+          <div class="form-group">
+            <label for="coupon-valid-to">Valid To</label>
+            <input type="date" id="coupon-valid-to" required />
+          </div>
+          <button type="submit" class="btn">Save</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Top Picks Modal -->
+    <div id="top-picks-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('top-picks-modal')">×</span>
+        <h2>Add Top Pick</h2>
+        <form id="top-picks-form">
+          <div class="form-group">
+            <label for="top-pick-item">Menu Item</label>
+            <select id="top-pick-item" required></select>
+          </div>
+          <button type="submit" class="btn">Add</button>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const API_BASE_URL = 'http://localhost:3000';
-    let allOrders = [];
-    let menuItems = [];
+    const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
 
-    function showSection(id) {
-      document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
-      document.getElementById(id).classList.add('active');
-      if (id === 'menu') fetchMenuItems();
-      else if (id === 'top') fetchTopItems();
-      else if (id === 'orders') {
-        fetchOrders();
-        document.getElementById('orderSearch').value = '';
-      }
+    function showTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      document.querySelector(`.nav-tabs button[onclick="showTab('${tabId}')"]`).classList.add('active');
+      clearMessages();
+      if (tabId === 'orders') fetchOrders();
+      else if (tabId === 'menu') fetchMenu();
+      else if (tabId === 'coupons') fetchCoupons();
+      else if (tabId === 'top-picks') fetchTopPicks();
     }
 
-    function showToast(message, type = 'info') {
-      const toast = document.getElementById('toast');
-      toast.textContent = message;
-      toast.className = 'toast show';
-      toast.style.background = type === 'error' ? '#d9534f' : '#323232';
-      setTimeout(() => toast.classList.remove('show'), 3000);
+    function clearMessages() {
+      document.getElementById('error-message').style.display = 'none';
+      document.getElementById('success-message').style.display = 'none';
     }
 
-    function checkAuth() {
-      if (!localStorage.getItem('authToken')) {
-        window.location.href = 'admin.html';
-      }
+    function showError(message) {
+      const errorMessage = document.getElementById('error-message');
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
     }
 
-    async function submitMenuItem() {
-      const itemId = document.getElementById('itemId').value;
-      const name = document.getElementById('itemName').value.trim();
-      const desc = document.getElementById('itemDescription').value.trim();
-      const imageInput = document.getElementById('itemImage');
-      const price = parseFloat(document.getElementById('itemPrice').value.trim());
-      const category = document.getElementById('itemCategory').value.trim();
+    function showSuccess(message) {
+      const successMessage = document.getElementById('success-message');
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+    }
 
-      if (!name || !desc || (!imageInput.files.length && !itemId) || isNaN(price) || price <= 0 || !category) {
-        showToast('Please fill in all fields correctly.', 'error');
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append('name', name);
-      formData.append('description', desc);
-      formData.append('price', price);
-      formData.append('category', category);
-      if (imageInput.files.length) {
-        formData.append('image', imageInput.files[0]);
-      }
-
+    async function fetchOrders() {
       try {
-        const url = itemId ? `${API_BASE_URL}/api/menu/${itemId}` : `${API_BASE_URL}/api/menu`;
-        const method = itemId ? 'PUT' : 'POST';
-        const response = await fetch(url, {
-          method,
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          },
-          body: formData
+        const response = await fetch(`${API_BASE_URL}/api/orders`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch orders');
+        const orders = await response.json();
+        const tbody = document.querySelector('#orders-table tbody');
+        tbody.innerHTML = '';
+        orders.forEach(order => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${order.orderId}</td>
+            <td>${order.customer.name}</td>
+            <td>${order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</td>
+            <td>${order.specialInstructions || 'None'}</td>
+            <td>${order.status}</td>
+            <td><button class="btn" onclick="updateOrderStatus('${order.orderId}', 'Delivered')">Mark Delivered</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function fetchMenu() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/menu`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch menu');
+        const menu = await response.json();
+        const tbody = document.querySelector('#menu-table tbody');
+        tbody.innerHTML = '';
+        menu.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><img src="${item.image}" alt="${item.name}" class="menu-item" /></td>
+            <td>${item.name}</td>
+            <td>${item.category}</td>
+            <td>$${item.price.toFixed(2)}</td>
+            <td>${item.discountPrice ? `$${item.discountPrice.toFixed(2)}` : 'N/A'}</td>
+            <td>
+              <button class="btn" onclick="openMenuModal('edit', '${item._id}')">Edit</button>
+              <button class="btn btn-danger" onclick="deleteMenuItem('${item._id}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function fetchCoupons() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coupons`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch coupons');
+        const coupons = await response.json();
+        const tbody = document.querySelector('#coupons-table tbody');
+        tbody.innerHTML = '';
+        coupons.forEach(coupon => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${coupon.code}</td>
+            <td>${coupon.description}</td>
+            <td>${coupon.logic}</td>
+            <td>${new Date(coupon.validFrom).toLocaleDateString()}</td>
+            <td>${new Date(coupon.validTo).toLocaleDateString()}</td>
+            <td>
+              <button class="btn" onclick="openCouponModal('edit', '${coupon._id}')">Edit</button>
+              <button class="btn btn-danger" onclick="deleteCoupon('${coupon._id}')">Delete</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function fetchTopPicks() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/top-picks`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Failed to fetch top picks');
+        const topPicks = await response.json();
+        const tbody = document.querySelector('#top-picks-table tbody');
+        tbody.innerHTML = '';
+        topPicks.forEach(item => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><img src="${item.image}" alt="${item.name}" class="menu-item" /></td>
+            <td>${item.name}</td>
+            <td>${item.category}</td>
+            <td><button class="btn btn-danger" onclick="deleteTopPick('${item._id}')">Remove</button></td>
+          `;
+          tbody.appendChild(tr);
         });
 
-        const result = await response.json();
-        if (response.ok) {
-          showToast(itemId ? 'Menu item updated successfully.' : 'Menu item added successfully.');
-          resetForm();
-          fetchMenuItems();
-        } else {
-          showToast(result.message || 'Failed to save item.', 'error');
-        }
-      } catch (err) {
-        console.error('Error saving item:', err);
-        showToast('Error saving item.', 'error');
-      }
-    }
-
-    function resetForm() {
-      document.getElementById('menuForm').reset();
-      document.getElementById('itemId').value = '';
-      document.getElementById('menuForm').querySelector('button').textContent = 'Add Item';
-    }
-
-    async function fetchMenuItems() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/menu`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          }
+        // Populate top picks modal
+        const responseMenu = await fetch(`${API_BASE_URL}/api/menu`, { credentials: 'include' });
+        if (!responseMenu.ok) throw new Error('Failed to fetch menu for top picks');
+        const menuItems = await responseMenu.json();
+        const select = document.getElementById('top-pick-item');
+        select.innerHTML = '<option value="">Select Item</option>';
+        menuItems.forEach(item => {
+          select.innerHTML += `<option value="${item._id}">${item.name}</option>`;
         });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        menuItems = await response.json();
-        const menuList = document.getElementById('menuList');
-        if (!Array.isArray(menuItems) || menuItems.length === 0) {
-          menuList.innerHTML = '<p class="no-data">No menu items available.</p>';
-          return;
-        }
-        menuList.innerHTML = menuItems.map(item => `
-          <div class="menu-card">
-            <h3>${item.name}</h3>
-            <p>${item.description}</p>
-            <p>Price: ₹${parseFloat(item.price).toFixed(2)}</p>
-            <p>Category: ${item.category}</p>
-            <img src="${API_BASE_URL}${item.image}" class="menu-img" alt="${item.name}">
-            <div class="menu-item-actions">
-              <button class="edit" onclick="editMenuItem(${item.id}, '${item.name.replace(/'/g, "\\'")}', '${item.description.replace(/'/g, "\\'")}', ${item.price}, '${item.category.replace(/'/g, "\\'")}')">Edit</button>
-              <button class="remove" onclick="deleteMenuItem(${item.id})">Remove</button>
-              <button class="top" onclick="toggleTopItem(${item.id})">${item.is_top ? 'Remove Top' : 'Set Top'}</button>
-            </div>
-          </div>
-        `).join('');
-      } catch (err) {
-        console.error('Error fetching menu items:', err);
-        showToast('Error fetching menu items.', 'error');
+      } catch (error) {
+        showError(error.message);
       }
     }
 
-    function editMenuItem(id, name, description, price, category) {
-      document.getElementById('itemId').value = id;
-      document.getElementById('itemName').value = name;
-      document.getElementById('itemDescription').value = description;
-      document.getElementById('itemPrice').value = price;
-      document.getElementById('itemCategory').value = category;
-      document.getElementById('menuForm').querySelector('button').textContent = 'Update Item';
-      showSection('menu');
+    function openMenuModal(mode, id = '') {
+      const modal = document.getElementById('menu-modal');
+      const form = document.getElementById('menu-form');
+      const title = document.getElementById('menu-modal-title');
+      title.textContent = mode === 'add' ? 'Add Menu Item' : 'Edit Menu Item';
+      form.dataset.mode = mode;
+      form.dataset.id = id;
+
+      if (mode === 'edit') {
+        fetch(`${API_BASE_URL}/api/menu/${id}`, { credentials: 'include' })
+          .then(response => response.json())
+          .then(item => {
+            document.getElementById('menu-name').value = item.name;
+            document.getElementById('menu-description').value = item.description;
+            document.getElementById('menu-category').value = item.category;
+            document.getElementById('menu-price').value = item.price;
+            document.getElementById('menu-discount-price').value = item.discountPrice || '';
+            // Image input cannot be pre-filled with a file for security reasons
+            modal.style.display = 'flex';
+          })
+          .catch(() => showError('Failed to load menu item'));
+      } else {
+        form.reset();
+        modal.style.display = 'flex';
+      }
+    }
+
+    function openCouponModal(mode, id = '') {
+      const modal = document.getElementById('coupon-modal');
+      const form = document.getElementById('coupon-form');
+      const title = document.getElementById('coupon-modal-title');
+      title.textContent = mode === 'add' ? 'Add Coupon' : 'Edit Coupon';
+      form.dataset.mode = mode;
+      form.dataset.id = id;
+
+      if (mode === 'edit') {
+        fetch(`${API_BASE_URL}/api/coupons/${id}`, { credentials: 'include' })
+          .then(response => response.json())
+          .then(coupon => {
+            document.getElementById('coupon-code').value = coupon.code;
+            document.getElementById('coupon-description').value = coupon.description;
+            document.getElementById('coupon-logic').value = coupon.logic;
+            document.getElementById('coupon-valid-from').value = coupon.validFrom.split('T')[0];
+            document.getElementById('coupon-valid-to').value = coupon.validTo.split('T')[0];
+            modal.style.display = 'flex';
+          })
+          .catch(() => showError('Failed to load coupon'));
+      } else {
+        form.reset();
+        modal.style.display = 'flex';
+      }
+    }
+
+    function openTopPicksModal() {
+      document.getElementById('top-picks-modal').style.display = 'flex';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+      clearMessages();
     }
 
     async function deleteMenuItem(id) {
@@ -408,215 +674,150 @@
       try {
         const response = await fetch(`${API_BASE_URL}/api/menu/${id}`, {
           method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          }
+          credentials: 'include',
         });
-        const result = await response.json();
-        if (response.ok) {
-          showToast('Menu item deleted successfully.');
-          fetchMenuItems();
-        } else {
-          showToast(result.message || 'Failed to delete item.', 'error');
-        }
-      } catch (err) {
-        console.error('Error deleting item:', err);
-        showToast('Error deleting item.', 'error');
+        if (!response.ok) throw new Error('Failed to delete menu item');
+        showSuccess('Menu item deleted successfully');
+        fetchMenu();
+      } catch (error) {
+        showError(error.message);
       }
     }
 
-    async function toggleTopItem(id) {
+    async function deleteCoupon(id) {
+      if (!confirm('Are you sure you want to delete this coupon?')) return;
       try {
-        const response = await fetch(`${API_BASE_URL}/api/menu/top/${id}`, {
+        const response = await fetch(`${API_BASE_URL}/api/coupons/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to delete coupon');
+        showSuccess('Coupon deleted successfully');
+        fetchCoupons();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function deleteTopPick(id) {
+      if (!confirm('Are you sure you want to remove this top pick?')) return;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/top-picks/${id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to remove top pick');
+        showSuccess('Top pick removed successfully');
+        fetchTopPicks();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function updateOrderStatus(orderId, status) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error('Failed to update order status');
+        showSuccess('Order status updated');
+        fetchOrders();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function handleMenuSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+      const mode = form.dataset.mode;
+      const id = form.dataset.id;
+      const formData = new FormData();
+      formData.append('name', document.getElementById('menu-name').value);
+      formData.append('description', document.getElementById('menu-description').value);
+      formData.append('category', document.getElementById('menu-category').value);
+      formData.append('price', parseFloat(document.getElementById('menu-price').value));
+      const discountPrice = document.getElementById('menu-discount-price').value;
+      if (discountPrice) formData.append('discountPrice', parseFloat(discountPrice));
+      const imageFile = document.getElementById('menu-image').files[0];
+      if (imageFile) formData.append('image', imageFile);
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/menu${mode === 'edit' ? `/${id}` : ''}`, {
+          method: mode === 'add' ? 'POST' : 'PUT',
+          body: formData,
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error(`Failed to ${mode} menu item`);
+        showSuccess(`Menu item ${mode === 'add' ? 'added' : 'updated'} successfully`);
+        closeModal('menu-modal');
+        fetchMenu();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function handleCouponSubmit(event) {
+      event.preventDefault();
+      const form = event.target;
+      const mode = form.dataset.mode;
+      const id = form.dataset.id;
+      const data = {
+        code: document.getElementById('coupon-code').value.toUpperCase(),
+        description: document.getElementById('coupon-description').value,
+        logic: document.getElementById('coupon-logic').value,
+        validFrom: document.getElementById('coupon-valid-from').value,
+        validTo: document.getElementById('coupon-valid-to').value,
+      };
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coupons${mode === 'edit' ? `/${id}` : ''}`, {
+          method: mode === 'add' ? 'POST' : 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+          credentials: 'include',
+        });
+        if (!response.ok) throw new Error(`Failed to ${mode} coupon`);
+        showSuccess(`Coupon ${mode === 'add' ? 'added' : 'updated'} successfully`);
+        closeModal('coupon-modal');
+        fetchCoupons();
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function handleTopPicksSubmit(event) {
+      event.preventDefault();
+      const itemId = document.getElementById('top-pick-item').value;
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/top-picks`, {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          }
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ itemId }),
+          credentials: 'include',
         });
-        const result = await response.json();
-        if (response.ok) {
-          showToast('Top item status toggled.');
-          fetchMenuItems();
-          fetchTopItems();
-        } else {
-          showToast(result.message || 'Failed to toggle top item.', 'error');
-        }
-      } catch (err) {
-        console.error('Error toggling top item:', err);
-        showToast('Error toggling top item.', 'error');
+        if (!response.ok) throw new Error('Failed to add top pick');
+        showSuccess('Top pick added successfully');
+        closeModal('top-picks-modal');
+        fetchTopPicks();
+      } catch (error) {
+        showError(error.message);
       }
-    }
-
-    async function fetchTopItems() {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/menu`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const items = await response.json();
-        const topItems = document.getElementById('topItems');
-        const topList = items.filter(item => item.is_top);
-        if (!Array.isArray(topList) || topList.length === 0) {
-          topItems.innerHTML = '<p class="no-data">No top items available.</p>';
-          return;
-        }
-        topItems.innerHTML = topList.map(item => `
-          <div class="menu-card">
-            <h3>${item.name}</h3>
-            <p>${item.description}</p>
-            <p>Price: ₹${parseFloat(item.price).toFixed(2)}</p>
-            <p>Category: ${item.category}</p>
-            <img src="${API_BASE_URL}${item.image}" class="menu-img" alt="${item.name}">
-          </div>
-        `).join('');
-      } catch (err) {
-        console.error('Error fetching top items:', err);
-        showToast('Error fetching top items.', 'error');
-      }
-    }
-
-    async function fetchOrders() {
-      const orderList = document.getElementById('orderList');
-      orderList.innerHTML = '<p class="loading">Loading orders...</p>';
-      try {
-        let response = await fetch(`${API_BASE_URL}/api/orders`, {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-          }
-        });
-        if (response.status === 401 && (await response.json()).message === 'Token has expired') {
-          const refreshResponse = await fetch(`${API_BASE_URL}/api/refresh-token`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token: localStorage.getItem('authToken') })
-          });
-          if (refreshResponse.ok) {
-            const { token } = await refreshResponse.json();
-            localStorage.setItem('authToken', token);
-            response = await fetch(`${API_BASE_URL}/api/orders`, {
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-              }
-            });
-          } else {
-            showToast('Session expired. Please log in again.', 'error');
-            logout();
-            return;
-          }
-        }
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        allOrders = await response.json();
-        console.log('Fetched orders:', allOrders); // Debug log
-        // Sort orders to prioritize those with top items
-        const topItemIds = menuItems.filter(item => item.is_top).map(item => item.name);
-        allOrders.sort((a, b) => {
-          const aHasTop = a.items?.some(item => topItemIds.includes(item.item)) || false;
-          const bHasTop = b.items?.some(item => topItemIds.includes(item.item)) || false;
-          return bHasTop - aHasTop || b.created_at.localeCompare(a.created_at);
-        });
-        renderOrders(allOrders);
-      } catch (err) {
-        console.error('Error fetching orders:', err);
-        orderList.innerHTML = '<p class="no-data">Failed to load orders.</p>';
-        showToast('Error fetching orders.', 'error');
-      }
-    }
-
-    function toggleOrderDetails(id) {
-      const details = document.getElementById(`order-details-${id}`);
-      details.classList.toggle('show');
-    }
-
-    function renderOrders(orders) {
-      const orderList = document.getElementById('orderList');
-      if (!Array.isArray(orders) || orders.length === 0) {
-        orderList.innerHTML = '<p class="no-data">No orders available.</p>';
-        return;
-      }
-      orderList.innerHTML = orders.map(order => {
-        let items = Array.isArray(order.items) ? order.items : [];
-        console.log(`Rendering order ${order.id} items:`, items); // Debug log
-        const total = parseFloat(order.total || 0).toFixed(2);
-        return `
-          <div class="order-card">
-            <div class="summary" onclick="toggleOrderDetails(${order.id})">
-              <div>
-                <h3>Order #${order.id}</h3>
-                <p>Customer: ${order.customer_name || 'N/A'}</p>
-                <p>Table: ${order.table_number || 'N/A'}</p>
-                <p>Status: ${order.is_delivered ? 'Delivered' : 'Pending'}</p>
-              </div>
-              <span>${items.length} item${items.length !== 1 ? 's' : ''}</span>
-            </div>
-            <div class="details" id="order-details-${order.id}">
-              ${items.length > 0 ? `
-                <ul>
-                  ${items.map(item => `
-                    <li>${item.item || 'Unknown Item'} - ₹${parseFloat(item.price || 0).toFixed(2)} x ${item.quantity || 0}</li>
-                  `).join('')}
-                </ul>
-              ` : '<p>No items available for this order.</p>'}
-              ${order.extra_toppings ? `<p class="toppings"><strong>Extra Toppings/Instructions:</strong> ${order.extra_toppings}</p>` : '<p class="toppings">No extra toppings.</p>'}
-              <p class="total">Total: ₹${total}</p>
-            </div>
-            <div class="order-actions">
-              ${!order.is_delivered ? `<button class="delivered" onclick="markOrderDelivered(${order.id})">Mark as Delivered</button>` : ''}
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    async function markOrderDelivered(id) {
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/orders/${id}/deliver`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ is_delivered: true })
-        });
-        const result = await response.json();
-        if (response.ok) {
-          showToast('Order marked as delivered.');
-          fetchOrders();
-        } else {
-          showToast(result.message || 'Failed to update order status.', 'error');
-        }
-      } catch (err) {
-        console.error('Error marking order as delivered:', err);
-        showToast('Error marking order as delivered.', 'error');
-      }
-    }
-
-    function searchOrders() {
-      const searchTerm = document.getElementById('orderSearch').value.toLowerCase();
-      const filteredOrders = allOrders.filter(order => {
-        return (order.customer_name?.toLowerCase() || '').includes(searchTerm) ||
-               (order.table_number?.toString() || '').includes(searchTerm);
-      });
-      renderOrders(filteredOrders);
     }
 
     function logout() {
-      localStorage.removeItem('authToken');
-      window.location.href = 'admin.html';
+      window.location.href = '/admin.html';
     }
 
-    // Initialize
-    document.addEventListener('DOMContentLoaded', async () => {
-      checkAuth();
-      await fetchMenuItems();
-      await fetchOrders();
-      fetchTopItems();
-    });
+    document.getElementById('menu-form').addEventListener('submit', handleMenuSubmit);
+    document.getElementById('coupon-form').addEventListener('submit', handleCouponSubmit);
+    document.getElementById('top-picks-form').addEventListener('submit', handleTopPicksSubmit);
+
+    // Initial load
+    fetchOrders();
   </script>
 </body>
 </html>

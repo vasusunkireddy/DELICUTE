@@ -1,84 +1,82 @@
 const express = require('express');
+const mysql = require('mysql2/promise');
 const cors = require('cors');
+const dotenv = require('dotenv');
+const cookieParser = require('cookie-parser');
 const path = require('path');
-const mysql = require('mysql2');
 const fs = require('fs');
-require('dotenv').config();
+
+dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
-// ✅ Secure DB connection using SSL (Aiven Cloud)
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'delicute',
-  ssl: {
-    ca: fs.readFileSync(path.join(__dirname, 'ca.pem'))
-  },
-  connectTimeout: 10000
-};
-
-// ✅ MySQL connection
-const db = mysql.createConnection(dbConfig);
-db.connect((err) => {
-  if (err) {
-    console.error('❌ DB connection failed:', err.message);
-  } else {
-    console.log('✅ Connected to MySQL database');
-  }
-});
-app.locals.db = db;
-
-// ✅ Middlewares
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: ['http://localhost:3000', 'https://delicute-3bf1.onrender.com'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// ✅ Static files
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// ✅ Routes
-const adminRoutes = require('./routes/admin');           // Auth: login/signup
-const dashboardRoutes = require('./routes/admindashboard'); // Menu + Orders
-const menuRoutes = require('./routes/menu');            // Menu and Orders
+const isProduction = process.env.NODE_ENV === 'production';
+let sslOptions;
 
-app.use('/api', adminRoutes);
-app.use('/api', dashboardRoutes);
-app.use('/api', menuRoutes);
+if (isProduction) {
+  try {
+    sslOptions = {
+      ca: fs.readFileSync(path.join(__dirname, 'ca.pem')),
+    };
+  } catch (err) {
+    console.error('SSL Error:', err.message);
+    process.exit(1);
+  }
+}
 
-// ✅ Serve HTML pages
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  ssl: sslOptions,
+  connectionLimit: 10,
+  waitForConnections: true,
+  queueLimit: 0,
 });
 
-app.get('/admin.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
-});
+app.locals.db = pool;
 
-app.get('/admindashboard.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'admindashboard.html'));
-});
+pool.getConnection()
+  .then(conn => {
+    console.log('✅ Connected to MySQL');
+    conn.release();
+  })
+  .catch(err => {
+    console.error('❌ MySQL Connection Error:', err.message);
+    process.exit(1);
+  });
 
-// ✅ 404 fallback
-app.use((req, res) => {
-  res.status(404).json({ error: '❌ Route not found' });
-});
+try {
+  const adminRoutes = require('./routes/admin');
+  const dashboardRoutes = require('./routes/admindashboard');
 
-// ✅ Global Error handler
+  app.use('/api/auth', adminRoutes);
+  app.use('/api', dashboardRoutes);
+
+  console.log('🚀 Routes loaded successfully');
+} catch (err) {
+  console.error('❌ Failed to load routes:', err.message);
+  process.exit(1);
+}
+
 app.use((err, req, res, next) => {
-  console.error('🔥 Internal Server Error:', err.stack);
-  res.status(500).json({ error: '💥 Internal Server Error' });
+  console.error('Server Error:', err.message);
+  res.status(500).json({ message: 'Internal server error', error: err.message });
 });
 
-// ✅ Start server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
