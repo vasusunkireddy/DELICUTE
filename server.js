@@ -1,3 +1,4 @@
+// server.js
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
@@ -12,24 +13,23 @@ const app = express();
 
 // CORS configuration
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://delicute-3bf1.onrender.com'],
+  origin: ['http://localhost:3000', 'https://delicute-3bf1.onrender.com', 'https://your-frontend-url.com'], // Add your front-end URL
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
-// Serve static files from 'public' and 'Uploads' folders
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/Uploads', express.static(path.join(__dirname, 'Uploads'), {
-  // Fallback for non-existent files
   fallthrough: false,
-  // Set headers for cache control
   setHeaders: (res) => {
-    res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+    res.set('Cache-Control', 'public, max-age=31536000');
   }
 }));
 
@@ -45,13 +45,14 @@ if (!fs.existsSync(uploadPath)) {
   }
 }
 
+// MySQL connection pool
 const isProduction = process.env.NODE_ENV === 'production';
 let sslOptions;
 
 if (isProduction) {
   try {
     sslOptions = {
-      ca: fs.readFileSync(path.join(__dirname, 'ca.pem')),
+      ca: fs.readFileSync(path.join(__dirname, 'ca.pem'))
     };
   } catch (err) {
     console.error('❌ SSL Error:', err.message);
@@ -59,17 +60,17 @@ if (isProduction) {
   }
 }
 
-// MySQL connection pool
 const pool = mysql.createPool({
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: sslOptions,
+  host: process.env.DB_HOST || 'localhost',
+  port: Number(process.env.DB_PORT) || 3306,
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'restaurant_db',
+  ssl: isProduction ? sslOptions : undefined,
   connectionLimit: 10,
   waitForConnections: true,
   queueLimit: 0,
+  connectTimeout: 30000 // Increased for Render
 });
 
 app.locals.db = pool;
@@ -89,9 +90,14 @@ pool.getConnection()
 try {
   const adminRoutes = require('./routes/admin');
   const dashboardRoutes = require('./routes/admindashboard');
+  const apiRoutes = require('./routes/menu'); // Public menu routes
 
+  // Public routes (no authentication)
+  app.use('/api', apiRoutes); // Mount public routes first
+
+  // Authenticated routes
   app.use('/api/auth', adminRoutes);
-  app.use('/api', dashboardRoutes);
+  app.use('/api', dashboardRoutes); // Other /api routes (may include auth)
 
   console.log('🚀 Routes loaded successfully');
 } catch (err) {
@@ -99,14 +105,25 @@ try {
   process.exit(1);
 }
 
+// Health check endpoint
+app.get('/health', async (req, res) => {
+  try {
+    await pool.query('SELECT 1');
+    res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  } catch (error) {
+    console.error('Health check failed:', error.message);
+    res.status(500).json({ status: 'ERROR', message: 'Database unavailable' });
+  }
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server Error:', err.stack);
+  console.error('Server Error:', err.message);
   res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
 });
 
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http${isProduction ? 's' : ''}://localhost:${PORT}`);
 });
