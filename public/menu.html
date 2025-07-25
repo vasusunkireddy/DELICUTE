@@ -1,661 +1,568 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Delicute Menu</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delicute | Customer Menu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
-      font-family: 'Inter', sans-serif;
       margin: 0;
       padding: 0;
     }
 
     body {
-      background-color: #fdfdfd;
-      color: #1e1e1e;
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #fef7f2 0%, #ffece5 100%);
+      color: #1a1a1a;
+      min-height: 100vh;
       line-height: 1.5;
+      overflow-x: hidden;
     }
 
-    header {
-      background: linear-gradient(135deg, #ff6200, #ff8c00);
-      color: #fff;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 0.5px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-
-    .controls {
-      max-width: 1200px;
+    .container {
+      max-width: 100%;
+      padding: 0 1rem;
       margin: 1rem auto;
-      padding: 0 1rem;
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      justify-content: center;
-      flex-wrap: wrap;
     }
 
-    .controls input,
-    .controls select {
-      flex: 1;
-      min-width: 150px;
-      max-width: 300px;
-      padding: 0.6rem 1rem;
-      font-size: 0.95rem;
-      border: 1px solid #e0e0e0;
-      border-radius: 10px;
-      background: #fff;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .controls input:focus,
-    .controls select:focus {
-      border-color: #ff6200;
-      box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.1);
-      outline: none;
-    }
-
-    .menu-section {
-      max-width: 1200px;
-      margin: 1.5rem auto;
-      padding: 0 1rem;
-    }
-
-    .menu-section h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1e1e1e;
-      margin-bottom: 1rem;
-      text-align: left;
-    }
-
-    .menu-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-      padding: 0.5rem;
-    }
-
-    .menu-grid.single-top-pick {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-
-    .menu-grid.single-top-pick .menu-item {
-      max-width: 320px;
-      border: 2px solid #ff6200;
-      box-shadow: 0 8px 24px rgba(255, 98, 0, 0.2);
-      transform: scale(1.05);
-      background: linear-gradient(145deg, #fff, #f9f9f9);
-    }
-
-    .menu-grid.single-top-pick .menu-item img {
-      height: 180px;
-      border: 3px solid #fff;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      transform: rotate(2deg);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .menu-grid.single-top-pick .menu-item:hover img {
-      transform: rotate(0deg) scale(1.1);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .menu-item {
-      background: #fff;
+    .header {
+      text-align: center;
+      padding: 1.5rem 0;
+      background: rgba(255, 255, 255, 0.2);
       border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .menu-item:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-    }
-
-    .menu-item img {
-      width: 100%;
-      height: 120px;
-      object-fit: contain;
-      border-radius: 8px 8px 0 0;
-      border-bottom: 2px solid #f3f4f6;
-      background: #f9f9f9;
-      transition: transform 0.3s ease;
-    }
-
-    .menu-item:hover img {
-      transform: scale(1.05);
-    }
-
-    .menu-details {
-      padding: 0.75rem;
-      text-align: left;
-    }
-
-    .menu-item h3 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #1e1e1e;
-      margin-bottom: 0.5rem;
-    }
-
-    .menu-item p.description {
-      font-size: 0.8rem;
-      color: #4b5563;
-      margin-bottom: 0.5rem;
-      line-height: 1.4;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(12px);
+      margin-bottom: 1rem;
+      position: relative;
       overflow: hidden;
     }
 
-    .menu-item p.price {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #ff6200;
-      margin-bottom: 0.5rem;
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,231,224,0.3) 100%);
+      z-index: 0;
     }
 
-    .menu-item button {
-      width: 100%;
-      background: #ff6200;
-      color: #fff;
-      border: none;
-      padding: 0.6rem;
-      font-size: 0.9rem;
+    .header img {
+      width: 80px;
+      opacity: 0;
+      transform: scale(0.8);
+      animation: fadeInScale 1s ease-out forwards;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 0.5rem;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.2s forwards;
+      position: relative;
+      z-index: 1;
+    }
+
+    .category-filter {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      justify-content: center;
+    }
+
+    .category-filter button {
+      background: none;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      font-family: 'Roboto', sans-serif;
+      font-size: 0.85rem;
       font-weight: 500;
+      color: #4a4a4a;
+      cursor: pointer;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .category-filter button.active {
+      background: #ff6200;
+      color: #ffffff;
+      font-weight: 600;
+      border-color: #ff6200;
+    }
+
+    .category-filter button:hover {
+      background: rgba(255, 98, 0, 0.1);
+      color: #d45200;
+    }
+
+    .menu-grid, .top-picks-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    .menu-item, .top-pick-item {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      padding: 0.8rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      backdrop-filter: blur(10px);
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+    }
+
+    .menu-item img, .top-pick-item img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      flex-shrink: 0;
+    }
+
+    .menu-item-content, .top-pick-content {
+      flex: 1;
+    }
+
+    .menu-item h3, .top-pick-item h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: #1a1a1a;
+      margin-bottom: 0.2rem;
+    }
+
+    .menu-item p, .top-pick-item p {
+      font-size: 0.8rem;
+      color: #4a4a4a;
+      margin-bottom: 0.3rem;
+      line-height: 1.3;
+    }
+
+    .price {
+      font-weight: 600;
+      color: #2c2c2c;
+      font-size: 0.9rem;
+    }
+
+    .saved-amount {
+      display: inline-flex;
+      align-items: center;
+      background: linear-gradient(45deg, #2e7d32, #4caf50);
+      color: #ffffff;
+      padding: 0.2rem 0.5rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-left: 0.5rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .saved-amount::before {
+      content: '★ ';
+      font-size: 0.7rem;
+    }
+
+    .btn {
+      background: linear-gradient(45deg, #ff6200, #ff8c00);
+      color: #ffffff;
+      padding: 0.6rem 1rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border: none;
       border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 8px rgba(255, 98, 0, 0.3);
+      text-align: center;
     }
 
-    .menu-item button:hover {
-      background: #e55a00;
+    .btn:hover {
+      background: linear-gradient(45deg, #d45200, #ff6200);
       transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(255, 98, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(255, 98, 0, 0.4);
     }
 
-    .cart {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      background: #ff6200;
-      color: #fff;
-      padding: 0.75rem 1.5rem;
-      border-radius: 30px;
-      font-size: 0.95rem;
+    .add-to-cart-btn {
+      background: linear-gradient(45deg, #ff8c00, #ffab40);
+      box-shadow: 0 3px 10px rgba(255, 140, 0, 0.4);
       font-weight: 600;
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      z-index: 1000;
+      position: relative;
+      overflow: hidden;
     }
 
-    .cart:hover {
-      background: #e55a00;
-      transform: scale(1.05);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    .add-to-cart-btn::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease;
     }
 
-    .cart-panel {
+    .add-to-cart-btn:hover::after {
+      width: 200px;
+      height: 200px;
+    }
+
+    .cart-btn {
+      background: rgba(0, 0, 0, 0.05);
+      color: #2c2c2c;
+      box-shadow: none;
+    }
+
+    .cart-btn:hover {
+      background: rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .error-message, .success-message {
+      display: none;
+      padding: 0.8rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .error-message {
+      background: rgba(239, 83, 80, 0.1);
+      color: #d32f2f;
+    }
+
+    .success-message {
+      background: rgba(46, 125, 50, 0.1);
+      color: #2e7d32;
+    }
+
+    .modal {
       display: none;
       position: fixed;
       top: 0;
-      right: 0;
+      left: 0;
       width: 100%;
-      max-width: 360px;
       height: 100%;
-      background: #fff;
-      box-shadow: -4px 0 12px rgba(0, 0, 0, 0.1);
-      padding: 1.5rem;
-      overflow-y: auto;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
       z-index: 1000;
     }
 
-    .cart-panel.show {
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
+      padding: 1rem;
+      max-width: 95%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(12px);
+    }
+
+    .modal-content h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      color: #1a1a1a;
+    }
+
+    .close-btn {
+      float: right;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #4a4a4a;
+      transition: color 0.3s ease;
+    }
+
+    .close-btn:hover {
+      color: #1a1a1a;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
       display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #2c2c2c;
+      margin-bottom: 0.4rem;
     }
 
-    .cart-panel h2 {
-      font-size: 1.5rem;
-      font-weight: 600;
-      color: #1e1e1e;
-      margin-bottom: 1.25rem;
-      text-align: center;
-    }
-
-    .cart-panel input,
-    .cart-panel textarea {
+    .form-group input, .form-group select, .form-group textarea {
       width: 100%;
       padding: 0.6rem;
-      margin: 0.5rem 0;
-      border: 1px solid #e0e0e0;
+      border: 1px solid rgba(0, 0, 0, 0.08);
       border-radius: 8px;
-      font-size: 0.9rem;
-      background: #f9f9f9;
-      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.6);
+      transition: all 0.3s ease;
+      font-family: 'Roboto', sans-serif;
     }
 
-    .cart-panel textarea {
-      resize: vertical;
-      min-height: 80px;
-      max-height: 200px;
-    }
-
-    .cart-panel input:focus,
-    .cart-panel textarea:focus {
-      border-color: #ff6200;
-      box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.1);
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
       outline: none;
+      border-color: #ff6200;
+      box-shadow: 0 0 0 2px rgba(255, 98, 0, 0.2);
     }
 
     .cart-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.75rem 0;
-      border-bottom: 1px solid #e5e7eb;
-      font-size: 0.9rem;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      font-size: 0.85rem;
     }
 
     .cart-item-details {
       flex: 1;
     }
 
-    .cart-item-details span:first-child {
-      font-weight: 600;
-      color: #1e1e1e;
-    }
-
-    .cart-item-details span:last-child {
-      color: #4b5563;
-    }
-
-    .cart-item-controls {
+    .quantity-controls {
       display: flex;
+      gap: 0.5rem;
       align-items: center;
+    }
+
+    .quantity-controls button {
+      width: 28px;
+      height: 28px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      background: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .remove-btn {
+      background: #ef5350;
+      color: #ffffff;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.8rem;
+      margin-left: 0.5rem;
+    }
+
+    .remove-btn:hover {
+      background: #d32f2f;
+      box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
+    }
+
+    .total {
+      font-weight: 600;
+      margin: 0.8rem 0;
+      font-size: 1rem;
+      color: #2c2c2c;
+    }
+
+    .cart-footer {
+      display: flex;
+      flex-direction: column;
       gap: 0.5rem;
     }
 
-    .cart-item button {
+    .coupon-applied {
       font-size: 0.85rem;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    }
-
-    .cart-item button.quantity-btn {
-      background: #f3f4f6;
-      border: 1px solid #e0e0e0;
-      color: #1e1e1e;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .cart-item button.quantity-btn:hover {
-      background: #e5e7eb;
-      transform: scale(1.1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .cart-item button.remove-btn {
-      background: #ef4444;
-      border: none;
-      color: #fff;
-      padding: 0.4rem 0.8rem;
-    }
-
-    .cart-item button.remove-btn:hover {
-      background: #dc2626;
-      transform: scale(1.1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    }
-
-    .cart-item-controls span {
-      min-width: 28px;
-      text-align: center;
-      font-weight: 600;
-      color: #1e1e1e;
-    }
-
-    .cart-total {
-      margin: 1.25rem 0;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #1e1e1e;
-      text-align: center;
-    }
-
-    .cart-panel button.place-order {
-      width: 100%;
-      background: #ff6200;
-      color: #fff;
-      border: none;
-      padding: 0.75rem;
-      font-size: 0.95rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    }
-
-    .cart-panel button.place-order:hover {
-      background: #e55a00;
-      transform: translateY(-1px);
-      box-shadow: 0 3px 10px rgba(255, 98, 0, 0.2);
-    }
-
-    .close-panel {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: #f3f4f6;
-      border: none;
-      padding: 0.4rem 0.9rem;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      color: #1e1e1e;
-      transition: background 0.3s ease, transform 0.2s ease;
-    }
-
-    .close-panel:hover {
-      background: #e5e7eb;
-      transform: scale(1.05);
-    }
-
-    .error-message {
-      text-align: center;
-      color: #ef4444;
-      font-size: 0.9rem;
-      margin: 1rem 0;
-      display: none;
-    }
-
-    .toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #fff;
-      padding: 1rem 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      font-size: 0.9rem;
+      color: #2e7d32;
       font-weight: 500;
-      z-index: 2000;
-      opacity: 0;
-      transform: translateY(-20px);
-      transition: opacity 0.3s ease, transform 0.3s ease;
     }
 
-    .toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .toast.success {
-      border-left: 4px solid #22c55e;
-      color: #1e1e1e;
-    }
-
-    .toast.error {
-      border-left: 4px solid #ef4444;
-      color: #1e1e1e;
-    }
-
-    .toast .icon {
-      font-size: 1.2rem;
-    }
-
-    @media (max-width: 768px) {
-      .menu-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .controls {
-        flex-direction: column;
-        gap: 0.5rem;
-      }
-
-      .controls input,
-      .controls select {
-        max-width: 100%;
-      }
-
-      .menu-grid.single-top-pick .menu-item {
-        max-width: 280px;
+    @keyframes fadeInScale {
+      to {
+        opacity: 1;
+        transform: scale(1);
       }
     }
 
-    @media (max-width: 600px) {
-      header {
-        font-size: 1.5rem;
-        padding: 0.8rem;
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (min-width: 768px) {
+      .menu-grid, .top-picks-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
 
-      .controls input,
-      .controls select {
-        font-size: 0.9rem;
-        padding: 0.5rem;
+      .header h1 {
+        font-size: 2.8rem;
       }
 
-      .menu-section h2 {
-        font-size: 1.3rem;
+      .modal-content {
+        max-width: 600px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .menu-grid, .top-picks-grid {
+        grid-template-columns: repeat(3, 1fr);
       }
 
-      .menu-item img {
+      .menu-item img, .top-pick-item img {
+        width: 100px;
         height: 100px;
       }
+    }
 
-      .menu-item h3 {
+    @media (max-width: 480px) {
+      .header img {
+        width: 70px;
+      }
+
+      .header h1 {
+        font-size: 1.8rem;
+      }
+
+      .container {
+        padding: 0 0.5rem;
+      }
+
+      .menu-item img, .top-pick-item img {
+        width: 60px;
+        height: 60px;
+      }
+
+      .menu-item h3, .top-pick-item h3 {
         font-size: 1rem;
       }
 
-      .menu-item p.description {
+      .menu-item p, .top-pick-item p {
         font-size: 0.75rem;
       }
 
-      .menu-item p.price {
-        font-size: 0.9rem;
-      }
-
-      .menu-item button {
-        padding: 0.5rem;
-        font-size: 0.85rem;
-      }
-
-      .cart {
-        bottom: 15px;
-        right: 15px;
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
-      }
-
-      .cart-panel {
-        max-width: 100%;
-        padding: 1rem;
-      }
-
-      .cart-panel h2 {
-        font-size: 1.3rem;
-      }
-
-      .cart-item {
-        font-size: 0.85rem;
-      }
-
-      .cart-item button.quantity-btn {
-        width: 28px;
-        height: 28px;
-      }
-
-      .cart-item button.remove-btn {
-        padding: 0.3rem 0.7rem;
-      }
-
-      .cart-total {
-        font-size: 1rem;
-      }
-
-      .cart-panel button.place-order {
-        padding: 0.6rem;
-        font-size: 0.9rem;
-      }
-
-      .close-panel {
-        padding: 0.3rem 0.8rem;
+      .btn, .cart-btn, .remove-btn {
+        padding: 0.5rem 0.8rem;
         font-size: 0.8rem;
       }
 
-      .toast {
-        top: 15px;
-        right: 15px;
-        padding: 0.75rem 1rem;
-        font-size: 0.85rem;
+      .category-filter button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
       }
 
-      .toast .icon {
-        font-size: 1rem;
+      .modal-content h2 {
+        font-size: 1.2rem;
       }
 
-      .menu-grid.single-top-pick .menu-item {
-        max-width: 240px;
+      .cart-item {
+        font-size: 0.8rem;
       }
 
-      .menu-grid.single-top-pick .menu-item img {
-        height: 140px;
+      .quantity-controls button {
+        width: 24px;
+        height: 24px;
+        font-size: 0.8rem;
       }
     }
   </style>
 </head>
 <body>
-  <header>Delicute Menu</header>
-
-  <div class="controls">
-    <input type="text" id="search" placeholder="Search menu...">
-    <select id="category">
-      <option value="all">All Categories</option>
-    </select>
-  </div>
-
-  <div class="menu-section">
-    <h2>Our Top Picks</h2>
-    <div class="menu-grid" id="top-items"></div>
-    <div class="error-message" id="top-error">Failed to load top picks.</div>
-  </div>
-
-  <div class="menu-section">
-    <h2>All Menu Items</h2>
-    <div class="menu-grid" id="menu"></div>
-    <div class="error-message" id="menu-error">Failed to load menu items.</div>
-  </div>
-
-  <div class="cart" onclick="toggleCart()">
-    <span id="cart-count">Cart: 0</span>
-  </div>
-
-  <div class="cart-panel" id="cart-panel">
-    <button class="close-panel" onclick="toggleCart()">Close</button>
-    <h2>Your Cart</h2>
-    <div class="error-message" id="cart-error"></div>
-    <div class="form-group">
-      <input type="text" id="customer-name" placeholder="Enter Your Name">
+  <div class="container">
+    <div class="header">
+      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo" />
+      <h1>Delicute Menu</h1>
     </div>
-    <div class="form-group">
-      <input type="text" id="table-number" placeholder="Enter Table Number">
+    <div id="error-message" class="error-message"></div>
+    <div id="success-message" class="success-message"></div>
+
+    <div class="top-picks-grid">
+      <h2>Top Picks</h2>
+      <div id="top-picks"></div>
     </div>
-    <div class="form-group">
-      <textarea id="extra-toppings" placeholder="Extra toppings or special instructions"></textarea>
+
+    <div class="category-filter">
+      <button class="active" onclick="filterMenu('all')">All</button>
+      <!-- Categories will be dynamically added here -->
     </div>
-    <div id="cart-items"></div>
-    <div class="cart-total" id="cart-total">Total: ₹0</div>
-    <button class="place-order" onclick="placeOrder()">Place Order</button>
+
+    <div id="menu" class="menu-grid"></div>
+
+    <button class="btn cart-btn" onclick="openCartModal()">View Cart (<span id="cart-count">0</span>)</button>
+
+    <div id="cart-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('cart-modal')">×</span>
+        <h2>Your Cart</h2>
+        <div id="cart-items"></div>
+        <div class="total">Total: ₹<span id="cart-total">0.00</span></div>
+        <div class="form-group">
+          <label for="coupon-code">Apply Coupon</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" id="coupon-code" placeholder="Enter coupon code" />
+            <button class="btn" onclick="applyCoupon()">Apply</button>
+          </div>
+          <p id="coupon-applied" class="coupon-applied" style="display: none;"></p>
+        </div>
+        <div class="cart-footer">
+          <button class="btn" onclick="openOrderModal()">Proceed to Order</button>
+          <button class="btn cart-btn" onclick="closeModal('cart-modal')">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="order-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('order-modal')">×</span>
+        <h2>Place Your Order</h2>
+        <form id="order-form">
+          <div class="form-group">
+            <label for="customer-name">Full Name</label>
+            <input type="text" id="customer-name" required />
+          </div>
+          <div class="form-group">
+            <label for="table-number">Table Number (Optional)</label>
+            <input type="text" id="table-number" />
+          </div>
+          <div class="form-group">
+            <label for="special-instructions">Special Instructions</label>
+            <textarea id="special-instructions" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <button type="submit" class="btn">Submit Order</button>
+            <button type="button" class="btn cart-btn" onclick="closeModal('order-modal')">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <script>
+    const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
+    const PLACEHOLDER_IMAGE = '/public/images/placeholder.jpg';
     let cart = [];
-    let menuItems = [];
-    let categories = [];
+    let appliedCoupon = null;
 
-    // API configuration
-    const API_URL = location.hostname === 'localhost'
-      ? 'http://localhost:3000/api'
-      : 'https://delicute-3bf1.onrender.com/api';
-
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.className = `toast ${type}`;
-      toast.innerHTML = `
-        <span class="icon">${type === 'success' ? '✅' : '❌'}</span>
-        <span>${message}</span>
-      `;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.classList.add('show'), 100);
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
+    function showError(message) {
+      const errorMessage = document.getElementById('error-message');
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      setTimeout(() => errorMessage.style.display = 'none', 5000);
     }
 
-    async function fetchMenuItems() {
-      try {
-        const response = await fetch(`${API_URL}/menu`, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`HTTP error! Status: ${response.status} ${errorData.message || response.statusText}`);
-        }
-        const data = await response.json();
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid response format: Expected an array');
-        }
-        menuItems = data;
-        categories = [...new Set(data.map(item => item.category))];
-        renderMenu();
-        document.getElementById('menu-error').style.display = 'none';
-        document.getElementById('top-error').style.display = 'none';
-      } catch (error) {
-        console.error('Error fetching menu items:', error.message, error.stack);
-        document.getElementById('menu-error').style.display = 'block';
-        document.getElementById('top-error').style.display = 'block';
-        showToast(`Failed to load menu: ${error.message}`, 'error');
-      }
-    }
-
-    function addToCart(item, price) {
-      const existingItem = cart.find(cartItem => cartItem.item === item);
-      if (existingItem) {
-        existingItem.quantity += 1;
-      } else {
-        cart.push({ item, price, quantity: 1 });
-      }
-      updateCart();
-      showToast(`${item} added to cart`, 'success');
+    function showSuccess(message) {
+      const successMessage = document.getElementById('success-message');
+      successMessage.textContent = message;
+      successMessage.style.display = 'block';
+      setTimeout(() => successMessage.style.display = 'none', 5000);
     }
 
     function updateCart() {
@@ -663,174 +570,271 @@
       const cartTotal = document.getElementById('cart-total');
       const cartCount = document.getElementById('cart-count');
       cartItems.innerHTML = '';
-      let total = 0;
 
-      cart.forEach((cartItem, index) => {
-        total += cartItem.price * cartItem.quantity;
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'cart-item';
-        itemDiv.innerHTML = `
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<p class="empty-message">Your cart is empty</p>';
+      }
+
+      cart.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'cart-item';
+        div.innerHTML = `
           <div class="cart-item-details">
-            <span>${cartItem.item}</span>
-            <span>₹${cartItem.price} x ${cartItem.quantity}</span>
+            <p>${item.name}</p>
+            <p>₹${Number(item.price).toFixed(2)} x ${item.quantity}</p>
           </div>
-          <div class="cart-item-controls">
-            <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
-            <span>${cartItem.quantity}</span>
-            <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
-            <button class="remove-btn" onclick="removeFromCart(${index})">Remove</button>
+          <div class="quantity-controls">
+            <button onclick="updateQuantity(${index}, -1)">-</button>
+            <span>${item.quantity}</span>
+            <button onclick="updateQuantity(${index}, 1)">+</button>
+            <button class="btn remove-btn" onclick="removeFromCart(${index})">Remove</button>
           </div>
         `;
-        cartItems.appendChild(itemDiv);
+        cartItems.appendChild(div);
       });
 
-      cartCount.textContent = `Cart: ${cart.reduce((sum, item) => sum + item.quantity, 0)}`;
-      cartTotal.textContent = `Total: ₹${total}`;
+      const subtotal = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+      let total = subtotal;
+      if (appliedCoupon) {
+        const eligibleItems = cart.filter(item => item.category === appliedCoupon.category);
+        const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+        const discountItems = Math.floor(eligibleQuantity / appliedCoupon.buy_x);
+        const discount = discountItems * eligibleItems.reduce((min, item) => Math.min(min, Number(item.price)), Infinity);
+        total = subtotal - discount;
+      }
+      cartTotal.textContent = total.toFixed(2);
+      cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
     }
 
-    function changeQuantity(index, delta) {
-      cart[index].quantity += delta;
+    function addToCart(item) {
+      const existingItem = cart.find(cartItem => cartItem._id === item._id);
+      if (existingItem) {
+        existingItem.quantity += 1;
+      } else {
+        cart.push({ ...item, quantity: 1 });
+      }
+      updateCart();
+      showSuccess(`${item.name} added to cart`);
+    }
+
+    function updateQuantity(index, change) {
+      cart[index].quantity += change;
       if (cart[index].quantity <= 0) {
         cart.splice(index, 1);
-        showToast('Item removed from cart', 'success');
-      } else {
-        showToast(`Quantity updated for ${cart[index].item}`, 'success');
       }
       updateCart();
     }
 
     function removeFromCart(index) {
-      const itemName = cart[index].item;
       cart.splice(index, 1);
-      showToast(`${itemName} removed from cart`, 'success');
       updateCart();
     }
 
-    function toggleCart() {
-      const cartPanel = document.getElementById('cart-panel');
-      cartPanel.classList.toggle('show');
+    async function applyCoupon() {
+      const couponCode = document.getElementById('coupon-code').value.toUpperCase();
+      if (!couponCode) {
+        showError('Please enter a coupon code');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coupons?code=${encodeURIComponent(couponCode)}`);
+        const result = await response.json();
+        if (!response.ok || !result.success || !result.data) {
+          throw new Error(result.message || 'Invalid or expired coupon');
+        }
+
+        const coupon = result.data;
+        const now = new Date();
+        if (new Date(coupon.validFrom) > now || new Date(coupon.validTo) < now) {
+          throw new Error('Coupon is not valid at this time');
+        }
+
+        appliedCoupon = coupon;
+        document.getElementById('coupon-applied').textContent = `Coupon "${coupon.code}" applied! Buy ${coupon.buy_x} items in ${coupon.category} to get one free.`;
+        document.getElementById('coupon-applied').style.display = 'block';
+        document.getElementById('coupon-code').value = '';
+        updateCart();
+        showSuccess('Coupon applied successfully');
+      } catch (error) {
+        showError(error.message);
+      }
     }
 
-    async function placeOrder() {
-      const customerName = document.getElementById('customer-name').value.trim();
-      const tableNumber = document.getElementById('table-number').value.trim();
-      const extraToppings = document.getElementById('extra-toppings').value.trim();
-      const cartError = document.getElementById('cart-error');
+    function openCartModal() {
+      document.getElementById('cart-modal').style.display = 'flex';
+      updateCart();
+    }
 
-      if (!customerName || !tableNumber) {
-        cartError.textContent = 'Please enter your name and table number';
-        cartError.style.display = 'block';
-        showToast('Please enter your name and table number', 'error');
-        return;
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+      document.getElementById('order-form')?.reset();
+    }
+
+    async function fetchTopPicks() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/top-picks`);
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to fetch top picks');
+        }
+
+        const topPicks = result.data;
+        const topPicksGrid = document.getElementById('top-picks');
+        topPicksGrid.innerHTML = '';
+        if (!Array.isArray(topPicks) || topPicks.length === 0) {
+          topPicksGrid.innerHTML = '<p class="empty-message">No top picks available</p>';
+          return;
+        }
+
+        topPicks.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'top-pick-item';
+          const price = Number(item.price);
+          const savedAmount = item.savedAmount !== null ? Number(item.savedAmount) : null;
+          div.innerHTML = `
+            <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
+            <div class="top-pick-content">
+              <h3>${item.name}</h3>
+              <p>${item.description}</p>
+              <p class="price">₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
+                ${savedAmount !== null && !isNaN(savedAmount) ? `<span class="saved-amount">Save ₹${savedAmount.toFixed(2)}</span>` : ''}
+              </p>
+              <button class="btn add-to-cart-btn" onclick='addToCart(${JSON.stringify(item)})'>Add to Cart</button>
+            </div>
+          `;
+          topPicksGrid.appendChild(div);
+        });
+      } catch (error) {
+        showError(error.message);
       }
+    }
 
+    async function fetchCategories() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/categories`);
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to fetch categories');
+        }
+
+        const categories = result.data;
+        const categoryFilter = document.querySelector('.category-filter');
+        categories.forEach(category => {
+          const button = document.createElement('button');
+          button.textContent = category.name;
+          button.onclick = () => filterMenu(category.name);
+          categoryFilter.appendChild(button);
+        });
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    async function fetchMenu(category = 'all') {
+      try {
+        const url = category === 'all' ? `${API_BASE_URL}/api/menu` : `${API_BASE_URL}/api/menu?category=${encodeURIComponent(category)}`;
+        const response = await fetch(url);
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to fetch menu');
+        }
+
+        const menu = result.data;
+        const menuGrid = document.getElementById('menu');
+        menuGrid.innerHTML = '';
+        if (!Array.isArray(menu) || menu.length === 0) {
+          menuGrid.innerHTML = '<p class="empty-message">No menu items available</p>';
+          return;
+        }
+
+        menu.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'menu-item';
+          const price = Number(item.price);
+          const savedAmount = item.savedAmount !== null ? Number(item.savedAmount) : null;
+          div.innerHTML = `
+            <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
+            <div class="menu-item-content">
+              <h3>${item.name}</h3>
+              <p>${item.description}</p>
+              <p class="price">₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
+                ${savedAmount !== null && !isNaN(savedAmount) ? `<span class="saved-amount">Save ₹${savedAmount.toFixed(2)}</span>` : ''}
+              </p>
+              <button class="btn add-to-cart-btn" onclick='addToCart(${JSON.stringify(item)})'>Add to Cart</button>
+            </div>
+          `;
+          menuGrid.appendChild(div);
+        });
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    function filterMenu(category) {
+      document.querySelectorAll('.category-filter button').forEach(btn => btn.classList.remove('active'));
+      document.querySelector(`.category-filter button[onclick="filterMenu('${category}')"]`)?.classList.add('active');
+      if (category === 'all') {
+        document.querySelector('.category-filter button[onclick="filterMenu(\'all\')"]').classList.add('active');
+      }
+      fetchMenu(category);
+    }
+
+    function openOrderModal() {
       if (cart.length === 0) {
-        cartError.textContent = 'Your cart is empty';
-        cartError.style.display = 'block';
-        showToast('Your cart is empty', 'error');
+        showError('Your cart is empty');
         return;
       }
+      closeModal('cart-modal');
+      document.getElementById('order-modal').style.display = 'flex';
+    }
+
+    async function handleOrderSubmit(event) {
+      event.preventDefault();
+      const customerName = document.getElementById('customer-name').value;
+      const tableNumber = document.getElementById('table-number').value;
+      const specialInstructions = document.getElementById('special-instructions').value;
 
       const order = {
-        customerName,
-        tableNumber,
-        items: cart.map(({ item, price, quantity }) => ({ item, price, quantity })),
-        extraToppings,
-        total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+        customer: { name: customerName },
+        tableNumber: tableNumber || null,
+        specialInstructions: specialInstructions || null,
+        items: cart.map(item => ({
+          _id: item._id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        })),
+        coupon: appliedCoupon ? appliedCoupon.code : null
       };
 
       try {
-        const response = await fetch(`${API_URL}/orders`, {
+        const response = await fetch(`${API_BASE_URL}/api/orders`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(order)
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order),
         });
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! Status: ${response.status}`);
-        }
-
         const result = await response.json();
-        showToast(`Thank you, ${customerName}! Your order has been placed successfully! 😊 We're preparing your delicious meal now!`, 'success');
-        cart = [];
-        document.getElementById('customer-name').value = '';
-        document.getElementById('table-number').value = '';
-        document.getElementById('extra-toppings').value = '';
-        cartError.style.display = 'none';
-        updateCart();
-        toggleCart();
-      } catch (error) {
-        console.error('Error placing order:', error.message, error.stack);
-        cartError.textContent = error.message || 'An error occurred while placing the order';
-        cartError.style.display = 'block';
-        showToast(error.message || 'An error occurred while placing the order', 'error');
-      }
-    }
-
-    function filterMenu() {
-      const search = document.getElementById('search').value.toLowerCase();
-      const category = document.getElementById('category').value;
-      const items = document.querySelectorAll('.menu-item');
-
-      items.forEach(item => {
-        const name = item.querySelector('h3').textContent.toLowerCase();
-        const itemCategory = item.getAttribute('data-category');
-        const matchesSearch = name.includes(search);
-        const matchesCategory = category === 'all' || itemCategory === category;
-
-        item.style.display = matchesSearch && matchesCategory ? 'block' : 'none';
-      });
-    }
-
-    function renderMenu() {
-      const menuContainer = document.getElementById('menu');
-      const topItemsContainer = document.getElementById('top-items');
-      const categorySelect = document.getElementById('category');
-
-      menuContainer.innerHTML = '';
-      topItemsContainer.innerHTML = '';
-      categorySelect.innerHTML = '<option value="all">All Categories</option>';
-
-      const topPicks = menuItems.filter(item => item.is_top);
-      if (topPicks.length === 1) {
-        topItemsContainer.classList.add('single-top-pick');
-      } else {
-        topItemsContainer.classList.remove('single-top-pick');
-      }
-
-      categories.forEach(category => {
-        categorySelect.innerHTML += `<option value="${category}">${category}</option>`;
-      });
-
-      menuItems.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.className = 'menu-item';
-        itemDiv.setAttribute('data-category', item.category);
-        itemDiv.innerHTML = `
-          <img src="${item.image}" alt="${item.name}">
-          <div class="menu-details">
-            <h3>${item.name}</h3>
-            <p class="description">${item.description}</p>
-            <p class="price">₹${item.price}</p>
-            <button onclick="addToCart('${item.name}', ${item.price})">Add to Cart</button>
-          </div>
-        `;
-        menuContainer.appendChild(itemDiv);
-
-        if (item.is_top) {
-          const topItemDiv = itemDiv.cloneNode(true);
-          topItemsContainer.appendChild(topItemDiv);
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to place order');
         }
-      });
+        showSuccess('Order placed successfully!');
+        cart = [];
+        appliedCoupon = null;
+        document.getElementById('coupon-applied').style.display = 'none';
+        updateCart();
+        closeModal('order-modal');
+      } catch (error) {
+        showError(error.message);
+      }
     }
 
-    fetchMenuItems();
+    document.getElementById('order-form').addEventListener('submit', handleOrderSubmit);
 
-    document.getElementById('search').addEventListener('input', filterMenu);
-    document.getElementById('category').addEventListener('change', filterMenu);
+    // Initial load
+    fetchTopPicks();
+    fetchCategories();
+    fetchMenu();
   </script>
 </body>
 </html>
