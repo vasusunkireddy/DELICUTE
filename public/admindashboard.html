@@ -360,7 +360,6 @@
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     }
 
-    /* Table column widths */
     #menu-table th:nth-child(1), #menu-table td:nth-child(1) { width: 80px; }
     #menu-table th:nth-child(2), #menu-table td:nth-child(2) { width: 20%; }
     #menu-table th:nth-child(3), #menu-table td:nth-child(3) { width: 25%; }
@@ -860,7 +859,6 @@
           });
         }
 
-        // Populate category dropdowns
         const menuCategorySelect = document.getElementById('menu-category');
         const couponCategorySelect = document.getElementById('coupon-category');
         menuCategorySelect.innerHTML = '<option value="">Select Category</option>';
@@ -893,13 +891,14 @@
         }
 
         coupons.forEach(coupon => {
+          const discount = coupon.discount !== null && !isNaN(coupon.discount) ? `${coupon.discount}%` : 'N/A';
           const tr = document.createElement('tr');
           tr.innerHTML = `
             <td><img src="${coupon.image || PLACEHOLDER_IMAGE}" alt="${coupon.code}" class="coupon-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
             <td>${coupon.code}</td>
             <td class="description-cell">${coupon.description}</td>
             <td>Buy ${coupon.buy_x}</td>
-            <td>${coupon.discount}%</td>
+            <td>${discount}</td>
             <td>${coupon.category}</td>
             <td>${new Date(coupon.validFrom).toLocaleDateString()}</td>
             <td>${new Date(coupon.validTo).toLocaleDateString()}</td>
@@ -1014,7 +1013,7 @@
           document.getElementById('coupon-code').value = coupon.code || '';
           document.getElementById('coupon-description').value = coupon.description || '';
           document.getElementById('coupon-buy-x').value = coupon.buy_x || 1;
-          document.getElementById('coupon-discount').value = coupon.discount || '';
+          document.getElementById('coupon-discount').value = coupon.discount !== null && !isNaN(coupon.discount) ? coupon.discount : '';
           document.getElementById('coupon-category').value = coupon.category || '';
           document.getElementById('coupon-valid-from').value = coupon.validFrom ? coupon.validFrom.split('T')[0] : '';
           document.getElementById('coupon-valid-to').value = coupon.validTo ? coupon.validTo.split('T')[0] : '';
@@ -1197,11 +1196,18 @@
       const form = event.target;
       const mode = form.dataset.mode;
       const id = form.dataset.id;
+      const discount = parseInt(document.getElementById('coupon-discount').value);
+      
+      if (isNaN(discount) || discount < 1 || discount > 100) {
+        showError('Discount must be a number between 1 and 100');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('code', document.getElementById('coupon-code').value.toUpperCase());
       formData.append('description', document.getElementById('coupon-description').value);
       formData.append('buy_x', parseInt(document.getElementById('coupon-buy-x').value));
-      formData.append('discount', parseInt(document.getElementById('coupon-discount').value));
+      formData.append('discount', discount);
       formData.append('category', document.getElementById('coupon-category').value);
       formData.append('validFrom', document.getElementById('coupon-valid-from').value);
       formData.append('validTo', document.getElementById('coupon-valid-to').value);

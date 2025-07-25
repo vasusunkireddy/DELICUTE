@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { body, param, validationResult } = require('express-validator');
-const cloudinary = require('cloudinary').v2; // Add Cloudinary
+const cloudinary = require('cloudinary').v2;
 
 const router = express.Router();
 
@@ -256,12 +256,10 @@ router.post(
         return res.status(400).json({ success: false, message: 'Image is required for new menu items' });
       }
 
-      // Upload to Cloudinary
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'delicutee/menu',
       });
 
-      // Delete temporary file
       fs.unlinkSync(req.file.path);
 
       const imageUrl = result.secure_url;
@@ -309,16 +307,12 @@ router.put(
       let image = existingImage;
 
       if (req.file) {
-        // Upload new image to Cloudinary
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'delicutee/menu',
         });
         image = result.secure_url;
-
-        // Delete temporary file
         fs.unlinkSync(req.file.path);
 
-        // Delete old image from Cloudinary if it exists
         if (existingImage && existingImage.includes('cloudinary.com')) {
           const publicId = existingImage.split('/').pop().split('.')[0];
           await cloudinary.uploader.destroy(`delicutee/menu/${publicId}`);
@@ -347,7 +341,7 @@ router.put(
         },
       });
     } catch (err) {
-      console.error('Menu Update Error:', err.message);
+     _starts: console.error('Menu Update Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to update menu item' });
     }
   }
@@ -364,7 +358,6 @@ router.delete(
         return res.status(404).json({ success: false, message: 'Menu item not found' });
       }
 
-      // Delete image from Cloudinary if it exists
       if (item[0].image && item[0].image.includes('cloudinary.com')) {
         const publicId = item[0].image.split('/').pop().split('.')[0];
         await cloudinary.uploader.destroy(`delicutee/menu/${publicId}`);
@@ -483,12 +476,18 @@ router.delete(
 router.get('/coupons', authenticate, async (req, res) => {
   try {
     const [coupons] = await pool.query(`
-      SELECT id AS _id, code, description, buy_x, category, 
+      SELECT id AS _id, code, description, buy_x, discount, category, 
              valid_from AS validFrom, valid_to AS validTo, image 
       FROM coupons 
       WHERE valid_to >= CURDATE()
     `);
-    res.json({ success: true, data: coupons });
+    res.json({ 
+      success: true, 
+      data: coupons.map(coupon => ({
+        ...coupon,
+        discount: coupon.discount ? parseInt(coupon.discount) : null
+      }))
+    });
   } catch (err) {
     console.error('Coupons Fetch Error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch coupons' });
@@ -502,7 +501,7 @@ router.get(
   async (req, res) => {
     try {
       const [coupons] = await pool.query(`
-        SELECT id AS _id, code, description, buy_x, category, 
+        SELECT id AS _id, code, description, buy_x, discount, category, 
                valid_from AS validFrom, valid_to AS validTo, image 
         FROM coupons 
         WHERE id = ?
@@ -511,7 +510,13 @@ router.get(
         return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
 
-      res.json({ success: true, data: coupons[0] });
+      res.json({ 
+        success: true, 
+        data: {
+          ...coupons[0],
+          discount: coupons[0].discount ? parseInt(coupons[0].discount) : null
+        }
+      });
     } catch (err) {
       console.error('Coupon Fetch Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to fetch coupon' });
@@ -527,13 +532,14 @@ router.post(
     body('code').trim().notEmpty().withMessage('Coupon code is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
     body('buy_x').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
+    body('discount').isInt({ min: 1, max: 100 }).withMessage('Discount must be an integer between 1 and 100'),
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('validFrom').isISO8601().withMessage('Valid from date is invalid'),
     body('validTo').isISO8601().withMessage('Valid to date is invalid'),
   ]),
   async (req, res) => {
     try {
-      const { code, description, buy_x, category, validFrom, validTo } = req.body;
+      const { code, description, buy_x, discount, category, validFrom, validTo } = req.body;
 
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'Image is required for new coupons' });
@@ -543,24 +549,32 @@ router.post(
         return res.status(400).json({ success: false, message: 'Valid from date cannot be after valid to date' });
       }
 
-      // Upload to Cloudinary
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'delicutee/coupons',
       });
 
-      // Delete temporary file
       fs.unlinkSync(req.file.path);
 
       const imageUrl = result.secure_url;
 
       const [resultDb] = await pool.query(
-        'INSERT INTO coupons (code, description, buy_x, category, valid_from, valid_to, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [code.toUpperCase(), description, parseInt(buy_x), category, validFrom, validTo, imageUrl]
+        'INSERT INTO coupons (code, description, buy_x, discount, category, valid_from, valid_to, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [code.toUpperCase(), description, parseInt(buy_x), parseInt(discount), category, validFrom, validTo, imageUrl]
       );
 
       res.status(201).json({
         success: true,
-        data: { _id: resultDb.insertId, code: code.toUpperCase(), description, buy_x: parseInt(buy_x), category, validFrom, validTo, image: imageUrl },
+        data: { 
+          _id: resultDb.insertId, 
+          code: code.toUpperCase(), 
+          description, 
+          buy_x: parseInt(buy_x), 
+          discount: parseInt(discount),
+          category, 
+          validFrom, 
+          validTo, 
+          image: imageUrl 
+        },
       });
     } catch (err) {
       console.error('Coupon Add Error:', err.message);
@@ -581,6 +595,7 @@ router.put(
     body('code').trim().notEmpty().withMessage('Coupon code is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
     body('buy_x').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
+    body('discount').isInt({ min: 1, max: 100 }).withMessage('Discount must be an integer between 1 and 100'),
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('validFrom').isISO8601().withMessage('Valid from date is invalid'),
     body('validTo').isISO8601().withMessage('Valid to date is invalid'),
@@ -588,7 +603,7 @@ router.put(
   ]),
   async (req, res) => {
     try {
-      const { code, description, buy_x, category, validFrom, validTo, existingImage } = req.body;
+      const { code, description, buy_x, discount, category, validFrom, validTo, existingImage } = req.body;
       let image = existingImage;
 
       if (new Date(validFrom) > new Date(validTo)) {
@@ -596,16 +611,12 @@ router.put(
       }
 
       if (req.file) {
-        // Upload new image to Cloudinary
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'delicutee/coupons',
         });
         image = result.secure_url;
-
-        // Delete temporary file
         fs.unlinkSync(req.file.path);
 
-        // Delete old image from Cloudinary if it exists
         if (existingImage && existingImage.includes('cloudinary.com')) {
           const publicId = existingImage.split('/').pop().split('.')[0];
           await cloudinary.uploader.destroy(`delicutee/coupons/${publicId}`);
@@ -613,8 +624,8 @@ router.put(
       }
 
       const [result] = await pool.query(
-        'UPDATE coupons SET code = ?, description = ?, buy_x = ?, category = ?, valid_from = ?, valid_to = ?, image = ? WHERE id = ?',
-        [code.toUpperCase(), description, parseInt(buy_x), category, validFrom, validTo, image, req.params.id]
+        'UPDATE coupons SET code = ?, description = ?, buy_x = ?, discount = ?, category = ?, valid_from = ?, valid_to = ?, image = ? WHERE id = ?',
+        [code.toUpperCase(), description, parseInt(buy_x), parseInt(discount), category, validFrom, validTo, image, req.params.id]
       );
 
       if (result.affectedRows === 0) {
@@ -628,6 +639,7 @@ router.put(
           code: code.toUpperCase(),
           description,
           buy_x: parseInt(buy_x),
+          discount: parseInt(discount),
           category,
           validFrom,
           validTo,
@@ -655,7 +667,6 @@ router.delete(
         return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
 
-      // Delete image from Cloudinary if it exists
       if (coupon[0].image && coupon[0].image.includes('cloudinary.com')) {
         const publicId = coupon[0].image.split('/').pop().split('.')[0];
         await cloudinary.uploader.destroy(`delicutee/coupons/${publicId}`);
@@ -678,7 +689,10 @@ router.delete(
 router.get('/top-picks', authenticate, async (req, res) => {
   try {
     const [topPicks] = await pool.query(`
-      SELECT t.id AS _id, m.name, m.category, m.image
+      SELECT t.id AS _id, m.id AS item_id, m.name, m.description, m.category, 
+             CAST(m.price AS DECIMAL(10,2)) AS price, 
+             CAST(m.saved_amount AS DECIMAL(10,2)) AS savedAmount, 
+             m.image
       FROM top_picks t
       JOIN menu m ON t.item_id = m.id
     `);

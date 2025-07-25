@@ -939,6 +939,7 @@
   </div>
 
   <script>
+    // Configuration
     const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
     const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x300.png?text=Image+Not+Found';
     let cart = [];
@@ -946,6 +947,7 @@
     let allMenuItems = [];
     let availableCoupons = [];
 
+    // Utility function to show toast notifications
     function showToast(message, type = 'success') {
       const toastContainer = document.getElementById('toast-container');
       const toast = document.createElement('div');
@@ -959,6 +961,7 @@
       }, 5000);
     }
 
+    // Check coupon eligibility
     function checkCouponEligibility() {
       if (!appliedCoupon) return;
       const eligibleItems = cart.filter(item => item.category === appliedCoupon.category);
@@ -973,6 +976,7 @@
       }
     }
 
+    // Update cart UI
     function updateCart() {
       const cartItems = document.getElementById('cart-items');
       const cartTotal = document.getElementById('cart-total');
@@ -1010,7 +1014,7 @@
         const discountItems = Math.floor(eligibleQuantity / appliedCoupon.buy_x);
         if (discountItems > 0) {
           const minPrice = eligibleItems.reduce((min, item) => Math.min(min, Number(item.price)), Infinity);
-          discount = discountItems * (minPrice * (appliedCoupon.discountPercent / 100));
+          discount = discountItems * (minPrice * (appliedCoupon.discount / 100));
           total = Math.max(subtotal - discount, 0);
         }
       }
@@ -1018,6 +1022,7 @@
       cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
     }
 
+    // Render coupons
     function renderCoupons() {
       const couponList = document.getElementById('coupon-list');
       couponList.innerHTML = '';
@@ -1034,7 +1039,7 @@
           <img src="${coupon.image || PLACEHOLDER_IMAGE}" alt="${coupon.code}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
           <div class="coupon-item-details">
             <h4>${coupon.code}</h4>
-            <p>${coupon.description || 'No description'} (Buy ${coupon.buy_x} items in ${coupon.category}, get ${coupon.discountPercent}% off)</p>
+            <p>${coupon.description || 'No description'} (Buy ${coupon.buy_x} items in ${coupon.category}, get ${coupon.discount}% off)</p>
             <p>Valid: ${new Date(coupon.validFrom).toLocaleDateString()} - ${new Date(coupon.validTo).toLocaleDateString()}</p>
           </div>
           <button class="btn add-to-cart-btn" onclick="applyCoupon('${coupon.code}')">${appliedCoupon && appliedCoupon.code === coupon.code ? 'Applied' : 'Apply'}</button>
@@ -1043,6 +1048,7 @@
       });
     }
 
+    // Add item to cart
     function addToCart(item) {
       const existingItem = cart.find(cartItem => cartItem._id === item._id);
       if (existingItem) {
@@ -1056,6 +1062,7 @@
       showToast(`${item.name} added to cart`, 'success');
     }
 
+    // Update item quantity in cart
     function updateQuantity(index, change) {
       cart[index].quantity += change;
       if (cart[index].quantity <= 0) {
@@ -1068,6 +1075,7 @@
       checkCouponEligibility();
     }
 
+    // Remove item from cart
     function removeFromCart(index) {
       const itemName = cart[index].name;
       cart.splice(index, 1);
@@ -1077,6 +1085,7 @@
       showToast(`${itemName} removed from cart`, 'success');
     }
 
+    // Apply coupon
     async function applyCoupon(couponCode) {
       try {
         const coupon = availableCoupons.find(c => c.code === couponCode);
@@ -1096,7 +1105,7 @@
         }
 
         appliedCoupon = coupon;
-        document.getElementById('coupon-applied').innerHTML = `Coupon "${coupon.code}" applied! Buy ${coupon.buy_x} items in ${coupon.category} for ${coupon.discountPercent}% off. <span class="remove-coupon" onclick="removeCoupon()">Remove</span>`;
+        document.getElementById('coupon-applied').innerHTML = `Coupon "${coupon.code}" applied! Buy ${coupon.buy_x} items in ${coupon.category} for ${coupon.discount}% off. <span class="remove-coupon" onclick="removeCoupon()">Remove</span>`;
         document.getElementById('coupon-applied').style.display = 'flex';
         updateCart();
         renderCoupons();
@@ -1106,6 +1115,7 @@
       }
     }
 
+    // Remove applied coupon
     function removeCoupon() {
       appliedCoupon = null;
       document.getElementById('coupon-applied').style.display = 'none';
@@ -1114,12 +1124,14 @@
       showToast('Coupon removed', 'success');
     }
 
+    // Open cart modal
     function openCartModal() {
       document.getElementById('cart-modal').style.display = 'flex';
       updateCart();
       renderCoupons();
     }
 
+    // Close modal
     function closeModal(modalId) {
       document.getElementById(modalId).style.display = 'none';
       if (modalId === 'order-modal') {
@@ -1127,6 +1139,7 @@
       }
     }
 
+    // Render menu items
     function renderMenu(items) {
       const menuGrid = document.getElementById('menu');
       menuGrid.innerHTML = '';
@@ -1163,13 +1176,20 @@
       });
     }
 
+    // Fetch top picks
     async function fetchTopPicks() {
       const topPicksScroll = document.getElementById('top-picks');
       try {
-        const response = await fetch(`${API_BASE_URL}/api/top-picks`);
+        const response = await fetch(`${API_BASE_URL}/api/top-picks`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch top picks: ${response.statusText}`);
+        }
         const result = await response.json();
-        console.log('Top Picks Response:', result); // Debugging
-        if (!response.ok || !result.success) {
+        console.log('Top Picks Response:', result);
+        if (!result.success) {
           throw new Error(result.message || 'Failed to fetch top picks');
         }
 
@@ -1207,21 +1227,29 @@
       } catch (error) {
         console.error('Top Picks Error:', error);
         topPicksScroll.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">Unable to load top picks</p>';
-        showToast(error.message, 'error');
+        showToast('Unable to load top picks. Please try again later.', 'error');
       }
     }
 
+    // Fetch categories
     async function fetchCategories() {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/categories`);
+        const response = await fetch(`${API_BASE_URL}/api/categories`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch categories: ${response.statusText}`);
+        }
         const result = await response.json();
-        console.log('Categories Response:', result); // Debugging
-        if (!response.ok || !result.success) {
+        console.log('Categories Response:', result);
+        if (!result.success) {
           throw new Error(result.message || 'Failed to fetch categories');
         }
 
         const categories = result.data;
         const categoryFilter = document.querySelector('.category-filter');
+        categoryFilter.innerHTML = '<button class="active" data-category="all">All</button>'; // Reset with "All" button
         categories.forEach(category => {
           const button = document.createElement('button');
           button.textContent = category.name;
@@ -1245,17 +1273,24 @@
         });
       } catch (error) {
         console.error('Categories Error:', error);
-        showToast(error.message, 'error');
+        showToast('Unable to load categories. Please try again later.', 'error');
       }
     }
 
+    // Fetch menu
     async function fetchMenu() {
       const menuGrid = document.getElementById('menu');
       try {
-        const response = await fetch(`${API_BASE_URL}/api/menu`);
+        const response = await fetch(`${API_BASE_URL}/api/menu`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch menu: ${response.statusText}`);
+        }
         const result = await response.json();
-        console.log('Menu Response:', result); // Debugging
-        if (!response.ok || !result.success) {
+        console.log('Menu Response:', result);
+        if (!result.success) {
           throw new Error(result.message || 'Failed to fetch menu');
         }
 
@@ -1264,17 +1299,24 @@
       } catch (error) {
         console.error('Menu Error:', error);
         menuGrid.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">Unable to load menu</p>';
-        showToast(error.message, 'error');
+        showToast('Unable to load menu. Please try again later.', 'error');
       }
     }
 
+    // Fetch coupons
     async function fetchCoupons() {
       const couponList = document.getElementById('coupon-list');
       try {
-        const response = await fetch(`${API_BASE_URL}/api/coupons`);
+        const response = await fetch(`${API_BASE_URL}/api/coupons`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        if (!response.ok) {
+          throw new Error(`Failed to fetch coupons: ${response.statusText}`);
+        }
         const result = await response.json();
-        console.log('Coupons Response:', result); // Debugging
-        if (!response.ok || !result.success) {
+        console.log('Coupons Response:', result);
+        if (!result.success) {
           throw new Error(result.message || 'Failed to fetch coupons');
         }
 
@@ -1286,10 +1328,11 @@
       } catch (error) {
         console.error('Coupons Error:', error);
         couponList.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">Unable to load coupons</p>';
-        showToast(error.message, 'error');
+        showToast('Unable to load coupons. Please try again later.', 'error');
       }
     }
 
+    // Search menu
     function searchMenu() {
       const query = document.getElementById('search-input').value.trim().toLowerCase();
       const activeCategory = document.querySelector('.category-filter button.active').dataset.category;
@@ -1300,12 +1343,16 @@
       }
 
       if (query) {
-        filteredItems = filteredItems.filter(item => item.name.toLowerCase().includes(query) || item.description.toLowerCase().includes(query));
+        filteredItems = filteredItems.filter(item => 
+          item.name.toLowerCase().includes(query) || 
+          (item.description && item.description.toLowerCase().includes(query))
+        );
       }
 
       renderMenu(filteredItems);
     }
 
+    // Open order modal
     function openOrderModal() {
       if (cart.length === 0) {
         showToast('Your cart is empty', 'error');
@@ -1315,6 +1362,7 @@
       document.getElementById('order-modal').style.display = 'flex';
     }
 
+    // Handle order submission
     async function handleOrderSubmit(event) {
       event.preventDefault();
       const customerName = document.getElementById('customer-name').value.trim();
@@ -1337,7 +1385,7 @@
         items: cart.map(item => ({
           _id: item._id,
           name: item.name,
-          price: item.price,
+          price: Number(item.price),
           quantity: item.quantity
         })),
         coupon: appliedCoupon ? appliedCoupon.code : null
@@ -1347,11 +1395,14 @@
         const response = await fetch(`${API_BASE_URL}/api/orders`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(order),
+          body: JSON.stringify(order)
         });
+        if (!response.ok) {
+          throw new Error(`Failed to place order: ${response.statusText}`);
+        }
         const result = await response.json();
-        console.log('Order Response:', result); // Debugging
-        if (!response.ok || !result.success) {
+        console.log('Order Response:', result);
+        if (!result.success) {
           throw new Error(result.message || 'Failed to place order');
         }
         showToast('Order placed successfully!', 'success');
@@ -1363,18 +1414,20 @@
         closeModal('order-modal');
       } catch (error) {
         console.error('Order Error:', error);
-        showToast(error.message, 'error');
+        showToast('Unable to place order. Please try again later.', 'error');
       }
     }
 
+    // Event listeners
     document.getElementById('order-form').addEventListener('submit', handleOrderSubmit);
     document.getElementById('search-input').addEventListener('input', searchMenu);
 
     // Initial load
-    fetchTopPicks();
-    fetchCategories();
-    fetchMenu();
-    fetchCoupons();
+    Promise.all([fetchTopPicks(), fetchCategories(), fetchMenu(), fetchCoupons()])
+      .catch(error => {
+        console.error('Initial Load Error:', error);
+        showToast('Failed to load some content. Please refresh the page.', 'error');
+      });
   </script>
 </body>
 </html>
