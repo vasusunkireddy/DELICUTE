@@ -5,8 +5,16 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const { body, param, validationResult } = require('express-validator');
+const cloudinary = require('cloudinary').v2; // Add Cloudinary
 
 const router = express.Router();
+
+// === Configure Cloudinary ===
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // === MySQL Pool ===
 const pool = mysql.createPool({
@@ -243,27 +251,36 @@ router.post(
   async (req, res) => {
     try {
       const { name, description, category, price, savedAmount } = req.body;
-      const image = req.file ? `/Uploads/${req.file.filename}` : null;
 
-      if (!image) {
+      if (!req.file) {
         return res.status(400).json({ success: false, message: 'Image is required for new menu items' });
       }
 
-      const [result] = await pool.query(
+      // Upload to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'delicutee/menu',
+      });
+
+      // Delete temporary file
+      fs.unlinkSync(req.file.path);
+
+      const imageUrl = result.secure_url;
+
+      const [resultDb] = await pool.query(
         'INSERT INTO menu (name, description, category, price, saved_amount, image) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, image]
+        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, imageUrl]
       );
 
       res.status(201).json({
         success: true,
         data: {
-          _id: result.insertId,
+          _id: resultDb.insertId,
           name,
           description,
           category,
           price: parseFloat(price),
           savedAmount: savedAmount ? parseFloat(savedAmount) : null,
-          image
+          image: imageUrl
         },
       });
     } catch (err) {
@@ -289,13 +306,22 @@ router.put(
   async (req, res) => {
     try {
       const { name, description, category, price, savedAmount, existingImage } = req.body;
-      const image = req.file ? `/Uploads/${req.file.filename}` : existingImage;
+      let image = existingImage;
 
-      // Delete old image if a new one is uploaded
-      if (req.file && existingImage) {
-        const oldImagePath = path.join(__dirname, '..', existingImage);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
+      if (req.file) {
+        // Upload new image to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'delicutee/menu',
+        });
+        image = result.secure_url;
+
+        // Delete temporary file
+        fs.unlinkSync(req.file.path);
+
+        // Delete old image from Cloudinary if it exists
+        if (existingImage && existingImage.includes('cloudinary.com')) {
+          const publicId = existingImage.split('/').pop().split('.')[0];
+          await cloudinary.uploader.destroy(`delicutee/menu/${publicId}`);
         }
       }
 
@@ -338,11 +364,10 @@ router.delete(
         return res.status(404).json({ success: false, message: 'Menu item not found' });
       }
 
-      if (item[0].image) {
-        const imagePath = path.join(__dirname, '..', item[0].image);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-        }
+      // Delete image from Cloudinary if it exists
+      if (item[0].image && item[0].image.includes('cloudinary.com')) {
+        const publicId = item[0].image.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`delicutee/menu/${publicId}`);
       }
 
       const [result] = await pool.query('DELETE FROM menu WHERE id = ?', [req.params.id]);
@@ -509,9 +534,8 @@ router.post(
   async (req, res) => {
     try {
       const { code, description, buy_x, category, validFrom, validTo } = req.body;
-      const image = req.file ? `/Uploads/${req.file.filename}` : null;
 
-      if (!image) {
+      if (!req.file) {
         return res.status(400).json({ success: false, message: 'Image is required for new coupons' });
       }
 
@@ -519,14 +543,24 @@ router.post(
         return res.status(400).json({ success: false, message: 'Valid from date cannot be after valid to date' });
       }
 
-      const [result] = await pool.query(
+      // Upload to Cloudinary
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'delicutee/coupons',
+      });
+
+      // Delete temporary file
+      fs.unlinkSync(req.file.path);
+
+      const imageUrl = result.secure_url;
+
+      const [resultDb] = await pool.query(
         'INSERT INTO coupons (code, description, buy_x, category, valid_from, valid_to, image) VALUES (?, ?, ?, ?, ?, ?, ?)',
-        [code.toUpperCase(), description, parseInt(buy_x), category, validFrom, validTo, image]
+        [code.toUpperCase(), description, parseInt(buy_x), category, validFrom, validTo, imageUrl]
       );
 
       res.status(201).json({
         success: true,
-        data: { _id: result.insertId, code: code.toUpperCase(), description, buy_x: parseInt(buy_x), category, validFrom, validTo, image },
+        data: { _id: resultDb.insertId, code: code.toUpperCase(), description, buy_x: parseInt(buy_x), category, validFrom, validTo, image: imageUrl },
       });
     } catch (err) {
       console.error('Coupon Add Error:', err.message);
@@ -555,16 +589,26 @@ router.put(
   async (req, res) => {
     try {
       const { code, description, buy_x, category, validFrom, validTo, existingImage } = req.body;
-      const image = req.file ? `/Uploads/${req.file.filename}` : existingImage;
+      let image = existingImage;
 
       if (new Date(validFrom) > new Date(validTo)) {
         return res.status(400).json({ success: false, message: 'Valid from date cannot be after valid to date' });
       }
 
-      if (req.file && existingImage) {
-        const oldImagePath = path.join(__dirname, '..', existingImage);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
+      if (req.file) {
+        // Upload new image to Cloudinary
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'delicutee/coupons',
+        });
+        image = result.secure_url;
+
+        // Delete temporary file
+        fs.unlinkSync(req.file.path);
+
+        // Delete old image from Cloudinary if it exists
+        if (existingImage && existingImage.includes('cloudinary.com')) {
+          const publicId = existingImage.split('/').pop().split('.')[0];
+          await cloudinary.uploader.destroy(`delicutee/coupons/${publicId}`);
         }
       }
 
@@ -611,11 +655,10 @@ router.delete(
         return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
 
-      if (coupon[0].image) {
-        const imagePath = path.join(__dirname, '..', coupon[0].image);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-        }
+      // Delete image from Cloudinary if it exists
+      if (coupon[0].image && coupon[0].image.includes('cloudinary.com')) {
+        const publicId = coupon[0].image.split('/').pop().split('.')[0];
+        await cloudinary.uploader.destroy(`delicutee/coupons/${publicId}`);
       }
 
       const [result] = await pool.query('DELETE FROM coupons WHERE id = ?', [req.params.id]);
