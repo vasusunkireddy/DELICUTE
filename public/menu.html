@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Delicute | Customer Menu</title>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -18,6 +19,7 @@
       color: #1a1a1a;
       min-height: 100vh;
       line-height: 1.5;
+      overflow-x: hidden;
     }
 
     .container {
@@ -29,9 +31,9 @@
     .header {
       text-align: center;
       padding: 1.5rem 0;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
       backdrop-filter: blur(12px);
       margin-bottom: 1.5rem;
     }
@@ -44,7 +46,7 @@
     .header h1 {
       font-family: 'Playfair Display', serif;
       font-size: 2.2rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #1a1a1a;
       margin-top: 0.5rem;
       animation: fadeInUp 0.8s ease-out 0.2s forwards;
@@ -93,7 +95,7 @@
       margin-bottom: 1.2rem;
       display: flex;
       align-items: center;
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 8px;
       overflow: hidden;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -153,11 +155,11 @@
     }
 
     .category-filter button {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.95);
       border: none;
-      font-family: 'Roboto', sans-serif;
+      font-family: 'Playfair Display', serif;
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 600;
       color: #1a1a1a;
       cursor: pointer;
       padding: 0.6rem 1.2rem;
@@ -175,73 +177,121 @@
     }
 
     .category-filter button:hover {
-      background: rgba(255, 98, 0, 0.3);
-      color: #1a1a1a;
+      background: #ff6200;
+      color: #ffffff;
     }
 
     .top-picks-section {
-      margin-bottom: 1.5rem;
+      margin-bottom: 2rem;
+      padding: 1rem 0;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     }
 
     .top-picks-section h2 {
       font-family: 'Playfair Display', serif;
-      font-size: 1.6rem;
+      font-size: 1.8rem;
+      font-weight: 700;
       color: #1a1a1a;
-      margin-bottom: 0.8rem;
+      margin-bottom: 1rem;
+      text-align: center;
+      position: relative;
+      animation: fadeInUp 0.8s ease-out;
+    }
+
+    .top-picks-section h2::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(45deg, #ff6200, #ff8c00);
+      margin: 0.5rem auto;
     }
 
     .top-picks-scroll {
       display: flex;
       overflow-x: auto;
-      gap: 1rem;
-      padding-bottom: 0.5rem;
+      gap: 1.2rem;
+      padding: 0.5rem;
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
     }
 
     .top-picks-scroll::-webkit-scrollbar {
-      display: none;
+      height: 6px;
     }
 
-    .top-picks-scroll {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+    .top-picks-scroll::-webkit-scrollbar-thumb {
+      background: #ff6200;
+      border-radius: 3px;
+    }
+
+    .top-picks-scroll::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .top-pick-item {
-      flex: 0 0 160px;
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 10px;
+      flex: 0 0 200px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 12px;
       padding: 1rem;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
       backdrop-filter: blur(10px);
-      scroll-snap-align: start;
+      scroll-snap-align: center;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .top-pick-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
     }
 
     .top-pick-item img {
       width: 100%;
-      height: 100px;
+      height: 140px;
       object-fit: cover;
       border-radius: 8px;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.8rem;
+      transition: transform 0.3s ease;
+    }
+
+    .top-pick-item:hover img {
+      transform: scale(1.05);
     }
 
     .top-pick-item h3 {
       font-family: 'Playfair Display', serif;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
+      font-weight: 600;
       color: #1a1a1a;
       margin-bottom: 0.4rem;
     }
 
     .top-pick-item p {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: #4a4a4a;
-      line-height: 1.3;
+      line-height: 1.4;
       display: -webkit-box;
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+    }
+
+    .top-pick-item .price {
+      font-size: 1rem;
+      margin: 0.6rem 0;
+    }
+
+    .top-pick-item .saved-amount {
+      position: absolute;
+      top: 0.8rem;
+      right: 0.8rem;
+      font-size: 0.7rem;
+      padding: 0.3rem 0.6rem;
     }
 
     .menu-grid {
@@ -251,14 +301,19 @@
     }
 
     .menu-item {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 10px;
       padding: 1rem;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       backdrop-filter: blur(10px);
       display: flex;
       gap: 1rem;
       align-items: center;
+      transition: transform 0.3s ease;
+    }
+
+    .menu-item:hover {
+      transform: translateY(-2px);
     }
 
     .menu-item img {
@@ -267,6 +322,7 @@
       object-fit: cover;
       border-radius: 8px;
       flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .menu-item-content {
@@ -279,6 +335,7 @@
     .menu-item h3 {
       font-family: 'Playfair Display', serif;
       font-size: 1.1rem;
+      font-weight: 600;
       color: #1a1a1a;
     }
 
@@ -286,6 +343,10 @@
       font-size: 0.8rem;
       color: #4a4a4a;
       line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .price {
@@ -325,6 +386,9 @@
       box-shadow: 0 3px 6px rgba(255, 98, 0, 0.3);
       min-width: 90px;
       align-self: flex-start;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .btn:hover {
@@ -342,14 +406,15 @@
     }
 
     .remove-btn {
-      background: #ef5350;
+      background: linear-gradient(45deg, #ef5350, #ff8a80);
       padding: 0.4rem 0.8rem;
       font-size: 0.8rem;
+      box-shadow: 0 2px 4px rgba(239, 83, 80, 0.3);
     }
 
     .remove-btn:hover {
-      background: #d32f2f;
-      box-shadow: 0 2px 4px rgba(239, 83, 80, 0.3);
+      background: linear-gradient(45deg, #d32f2f, #ef5350);
+      box-shadow: 0 4px 8px rgba(239, 83, 80, 0.4);
     }
 
     .modal {
@@ -363,28 +428,33 @@
       justify-content: center;
       align-items: center;
       z-index: 1000;
+      animation: fadeIn 0.3s ease-out;
     }
 
     .modal-content {
       background: rgba(255, 255, 255, 0.95);
-      border-radius: 10px;
-      padding: 1.2rem;
+      border-radius: 12px;
+      padding: 1.5rem;
       max-width: 90%;
-      max-height: 80vh;
+      max-height: 85vh;
       overflow-y: auto;
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
       backdrop-filter: blur(12px);
+      position: relative;
     }
 
     .modal-content h2 {
       font-family: 'Playfair Display', serif;
       font-size: 1.5rem;
+      font-weight: 700;
       margin-bottom: 1rem;
       color: #1a1a1a;
     }
 
     .close-btn {
-      float: right;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
       font-size: 1.3rem;
       cursor: pointer;
       color: #4a4a4a;
@@ -401,13 +471,14 @@
 
     .form-group label {
       display: block;
+      font-family: 'Playfair Display', serif;
       font-size: 0.9rem;
-      font-weight: 500;
+      font-weight: 600;
       color: #2c2c2c;
       margin-bottom: 0.5rem;
     }
 
-    .form-group input, .form-group textarea {
+    .form-group input, .form-group textarea, .form-group select {
       width: 100%;
       padding: 0.9rem;
       border: 1px solid rgba(0, 0, 0, 0.08);
@@ -417,7 +488,7 @@
       font-family: 'Roboto', sans-serif;
     }
 
-    .form-group input:focus, .form-group textarea:focus {
+    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
       outline: none;
       border-color: #ff6200;
       box-shadow: 0 0 0 2px rgba(255, 98, 0, 0.2);
@@ -430,10 +501,13 @@
       padding: 0.6rem 0;
       border-bottom: 1px solid rgba(0, 0, 0, 0.08);
       font-size: 0.9rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     .cart-item-details {
       flex: 1;
+      min-width: 150px;
     }
 
     .quantity-controls {
@@ -446,10 +520,15 @@
       width: 34px;
       height: 34px;
       border: 1px solid rgba(0, 0, 0, 0.1);
-      background: none;
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 4px;
       cursor: pointer;
       font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+
+    .quantity-controls button:hover {
+      background: rgba(255, 98, 0, 0.1);
     }
 
     .total {
@@ -457,6 +536,8 @@
       margin: 1rem 0;
       font-size: 1.1rem;
       color: #2c2c2c;
+      display: flex;
+      justify-content: space-between;
     }
 
     .cart-footer {
@@ -472,6 +553,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .remove-coupon {
@@ -483,6 +565,83 @@
 
     .remove-coupon:hover {
       color: #d32f2f;
+    }
+
+    .coupon-list {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.8rem;
+      max-height: 300px;
+      overflow-y: auto;
+      padding: 0.5rem;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .coupon-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .coupon-list::-webkit-scrollbar-thumb {
+      background: #ff6200;
+      border-radius: 3px;
+    }
+
+    .coupon-list::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .coupon-item {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 8px;
+      padding: 0.8rem;
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.3s ease;
+    }
+
+    .coupon-item:hover {
+      transform: translateY(-2px);
+    }
+
+    .coupon-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 6px;
+      flex-shrink: 0;
+    }
+
+    .coupon-item-details {
+      flex: 1;
+    }
+
+    .coupon-item-details h4 {
+      font-family: 'Playfair Display', serif;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 0.3rem;
+    }
+
+    .coupon-item-details p {
+      font-size: 0.8rem;
+      color: #4a4a4a;
+      line-height: 1.3;
+    }
+
+    .coupon-item button {
+      font-size: 0.8rem;
+      padding: 0.4rem 0.8rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 1rem;
+      font-size: 0.9rem;
+      color: #4a4a4a;
     }
 
     .toast {
@@ -531,13 +690,22 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
     @media (min-width: 768px) {
       .menu-grid {
         grid-template-columns: repeat(2, 1fr);
       }
 
       .top-pick-item {
-        flex: 0 0 180px;
+        flex: 0 0 240px;
+      }
+
+      .top-pick-item img {
+        height: 160px;
       }
 
       .header h1 {
@@ -552,6 +720,15 @@
         width: 80px;
         height: 80px;
       }
+
+      .coupon-item img {
+        width: 60px;
+        height: 60px;
+      }
+
+      .coupon-list {
+        grid-template-columns: repeat(2, 1fr);
+      }
     }
 
     @media (min-width: 1024px) {
@@ -560,7 +737,15 @@
       }
 
       .top-pick-item {
-        flex: 0 0 200px;
+        flex: 0 0 280px;
+      }
+
+      .top-pick-item img {
+        height: 180px;
+      }
+
+      .coupon-list {
+        grid-template-columns: repeat(3, 1fr);
       }
     }
 
@@ -596,11 +781,15 @@
       }
 
       .top-pick-item {
-        flex: 0 0 140px;
+        flex: 0 0 160px;
       }
 
       .top-pick-item img {
-        height: 90px;
+        height: 120px;
+      }
+
+      .top-picks-section h2 {
+        font-size: 1.5rem;
       }
 
       .cart-icon {
@@ -616,13 +805,14 @@
 
       .modal-content {
         padding: 1rem;
+        max-width: 95%;
       }
 
       .modal-content h2 {
         font-size: 1.3rem;
       }
 
-      .form-group input, .form-group textarea {
+      .form-group input, .form-group textarea, .form-group select {
         padding: 0.7rem;
         font-size: 0.9rem;
       }
@@ -636,6 +826,37 @@
         padding: 0.7rem 1rem;
         font-size: 0.85rem;
       }
+
+      .coupon-item img {
+        width: 40px;
+        height: 40px;
+      }
+
+      .coupon-item-details h4 {
+        font-size: 0.85rem;
+      }
+
+      .coupon-item-details p {
+        font-size: 0.75rem;
+      }
+
+      .coupon-item button {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.6rem;
+      }
+
+      .cart-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .quantity-controls {
+        margin-top: 0.5rem;
+      }
+
+      .coupon-list {
+        max-height: 200px;
+      }
     }
   </style>
 </head>
@@ -646,14 +867,14 @@
       <h1>Delicute Menu</h1>
     </div>
     <div class="cart-icon" onclick="openCartModal()">
-      <span>🛒</span>
+      <i class="fas fa-shopping-cart"></i>
       <span class="cart-count" id="cart-count">0</span>
     </div>
     <div id="toast-container"></div>
 
     <div class="search-bar">
       <input type="text" id="search-input" placeholder="Search menu items..." />
-      <button onclick="searchMenu()">Search</button>
+      <button onclick="searchMenu()"><i class="fas fa-search"></i> Search</button>
     </div>
 
     <div class="category-filter">
@@ -661,11 +882,15 @@
     </div>
 
     <div class="top-picks-section">
-      <h2>Top Picks</h2>
-      <div id="top-picks" class="top-picks-scroll"></div>
+      <h2><i class="fas fa-star"></i> Our Delicute Specials 😋</h2>
+      <div id="top-picks" class="top-picks-scroll">
+        <div class="loading">Loading top picks...</div>
+      </div>
     </div>
 
-    <div id="menu" class="menu-grid"></div>
+    <div id="menu" class="menu-grid">
+      <div class="loading">Loading menu...</div>
+    </div>
 
     <div id="cart-modal" class="modal">
       <div class="modal-content">
@@ -674,16 +899,15 @@
         <div id="cart-items"></div>
         <div class="total">Total: ₹<span id="cart-total">0.00</span></div>
         <div class="form-group">
-          <label for="coupon-code">Apply Coupon</label>
-          <div style="display: flex; gap: 0.6rem;">
-            <input type="text" id="coupon-code" placeholder="Enter coupon code" />
-            <button class="btn" onclick="applyCoupon()">Apply</button>
+          <label for="coupon-select">Available Coupons</label>
+          <div id="coupon-list" class="coupon-list">
+            <div class="loading">Loading coupons...</div>
           </div>
           <p id="coupon-applied" class="coupon-applied" style="display: none;"></p>
         </div>
         <div class="cart-footer">
-          <button class="btn" onclick="openOrderModal()">Proceed to Order</button>
-          <button class="btn remove-btn" onclick="closeModal('cart-modal')">Close</button>
+          <button class="btn" onclick="openOrderModal()"><i class="fas fa-check"></i> Proceed to Order</button>
+          <button class="btn remove-btn" onclick="closeModal('cart-modal')"><i class="fas fa-times"></i> Close</button>
         </div>
       </div>
     </div>
@@ -695,19 +919,19 @@
         <form id="order-form">
           <div class="form-group">
             <label for="customer-name">Full Name</label>
-            <input type="text" id="customer-name" required placeholder="Enter your full name" />
+            <input type="text" id="customer-name" name="customer-name" required placeholder="Enter your full name" />
           </div>
           <div class="form-group">
             <label for="table-number">Table Number</label>
-            <input type="number" id="table-number" required placeholder="Enter table number (1-50)" min="1" max="50" />
+            <input type="number" id="table-number" name="table-number" required placeholder="Enter table number (1-100)" min="1" max="100" />
           </div>
           <div class="form-group">
             <label for="special-instructions">Special Instructions</label>
-            <textarea id="special-instructions" rows="4" placeholder="Any special requests?"></textarea>
+            <textarea id="special-instructions" name="special-instructions" rows="4" placeholder="Any special requests?"></textarea>
           </div>
           <div class="form-group">
-            <button type="submit" class="btn">Submit Order</button>
-            <button type="button" class="btn remove-btn" onclick="closeModal('order-modal')">Cancel</button>
+            <button type="submit" class="btn"><i class="fas fa-save"></i> Submit Order</button>
+            <button type="button" class="btn remove-btn" onclick="closeModal('order-modal')"><i class="fas fa-times"></i> Cancel</button>
           </div>
         </form>
       </div>
@@ -716,10 +940,11 @@
 
   <script>
     const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
-    const PLACEHOLDER_IMAGE = '/public/images/placeholder.jpg';
+    const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x300.png?text=Image+Not+Found';
     let cart = [];
     let appliedCoupon = null;
     let allMenuItems = [];
+    let availableCoupons = [];
 
     function showToast(message, type = 'success') {
       const toastContainer = document.getElementById('toast-container');
@@ -732,6 +957,20 @@
         toast.style.display = 'none';
         toast.remove();
       }, 5000);
+    }
+
+    function checkCouponEligibility() {
+      if (!appliedCoupon) return;
+      const eligibleItems = cart.filter(item => item.category === appliedCoupon.category);
+      const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+      if (eligibleQuantity < appliedCoupon.buy_x) {
+        const couponCode = appliedCoupon.code;
+        appliedCoupon = null;
+        document.getElementById('coupon-applied').style.display = 'none';
+        updateCart();
+        renderCoupons();
+        showToast(`Coupon ${couponCode} removed as eligibility criteria not met`, 'error');
+      }
     }
 
     function updateCart() {
@@ -756,7 +995,7 @@
             <button onclick="updateQuantity(${index}, -1)">-</button>
             <span>${item.quantity}</span>
             <button onclick="updateQuantity(${index}, 1)">+</button>
-            <button class="btn remove-btn" onclick="removeFromCart(${index})">Remove</button>
+            <button class="btn remove-btn" onclick="removeFromCart(${index})"><i class="fas fa-trash"></i> Remove</button>
           </div>
         `;
         cartItems.appendChild(div);
@@ -764,15 +1003,44 @@
 
       const subtotal = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
       let total = subtotal;
+      let discount = 0;
       if (appliedCoupon) {
         const eligibleItems = cart.filter(item => item.category === appliedCoupon.category);
         const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
         const discountItems = Math.floor(eligibleQuantity / appliedCoupon.buy_x);
-        const discount = discountItems * eligibleItems.reduce((min, item) => Math.min(min, Number(item.price)), Infinity) || 0;
-        total = Math.max(subtotal - discount, 0);
+        if (discountItems > 0) {
+          const minPrice = eligibleItems.reduce((min, item) => Math.min(min, Number(item.price)), Infinity);
+          discount = discountItems * (minPrice * (appliedCoupon.discountPercent / 100));
+          total = Math.max(subtotal - discount, 0);
+        }
       }
       cartTotal.textContent = total.toFixed(2);
       cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+    }
+
+    function renderCoupons() {
+      const couponList = document.getElementById('coupon-list');
+      couponList.innerHTML = '';
+
+      if (availableCoupons.length === 0) {
+        couponList.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">No coupons available</p>';
+        return;
+      }
+
+      availableCoupons.forEach(coupon => {
+        const div = document.createElement('div');
+        div.className = 'coupon-item';
+        div.innerHTML = `
+          <img src="${coupon.image || PLACEHOLDER_IMAGE}" alt="${coupon.code}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
+          <div class="coupon-item-details">
+            <h4>${coupon.code}</h4>
+            <p>${coupon.description || 'No description'} (Buy ${coupon.buy_x} items in ${coupon.category}, get ${coupon.discountPercent}% off)</p>
+            <p>Valid: ${new Date(coupon.validFrom).toLocaleDateString()} - ${new Date(coupon.validTo).toLocaleDateString()}</p>
+          </div>
+          <button class="btn add-to-cart-btn" onclick="applyCoupon('${coupon.code}')">${appliedCoupon && appliedCoupon.code === coupon.code ? 'Applied' : 'Apply'}</button>
+        `;
+        couponList.appendChild(div);
+      });
     }
 
     function addToCart(item) {
@@ -783,6 +1051,8 @@
         cart.push({ ...item, quantity: 1 });
       }
       updateCart();
+      renderCoupons();
+      checkCouponEligibility();
       showToast(`${item.name} added to cart`, 'success');
     }
 
@@ -794,40 +1064,42 @@
         showToast(`${itemName} removed from cart`, 'success');
       }
       updateCart();
+      renderCoupons();
+      checkCouponEligibility();
     }
 
     function removeFromCart(index) {
       const itemName = cart[index].name;
       cart.splice(index, 1);
       updateCart();
+      renderCoupons();
+      checkCouponEligibility();
       showToast(`${itemName} removed from cart`, 'success');
     }
 
-    async function applyCoupon() {
-      const couponCode = document.getElementById('coupon-code').value.trim().toUpperCase();
-      if (!couponCode) {
-        showToast('Please enter a coupon code', 'error');
-        return;
-      }
-
+    async function applyCoupon(couponCode) {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/coupons?code=${encodeURIComponent(couponCode)}`);
-        const result = await response.json();
-        if (!response.ok || !result.success || !result.data) {
-          throw new Error(result.message || 'Invalid or expired coupon');
+        const coupon = availableCoupons.find(c => c.code === couponCode);
+        if (!coupon) {
+          throw new Error('Coupon not found');
         }
 
-        const coupon = result.data;
         const now = new Date();
         if (new Date(coupon.validFrom) > now || new Date(coupon.validTo) < now) {
           throw new Error('Coupon is not valid at this time');
         }
 
+        const eligibleItems = cart.filter(item => item.category === coupon.category);
+        const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+        if (eligibleQuantity < coupon.buy_x) {
+          throw new Error(`Add at least ${coupon.buy_x} items from ${coupon.category} to use this coupon`);
+        }
+
         appliedCoupon = coupon;
-        document.getElementById('coupon-applied').innerHTML = `Coupon "${coupon.code}" applied! Buy ${coupon.buy_x} items in ${coupon.category} to get one free. <span class="remove-coupon" onclick="removeCoupon()">Remove</span>`;
+        document.getElementById('coupon-applied').innerHTML = `Coupon "${coupon.code}" applied! Buy ${coupon.buy_x} items in ${coupon.category} for ${coupon.discountPercent}% off. <span class="remove-coupon" onclick="removeCoupon()">Remove</span>`;
         document.getElementById('coupon-applied').style.display = 'flex';
-        document.getElementById('coupon-code').value = '';
         updateCart();
+        renderCoupons();
         showToast('Coupon applied successfully', 'success');
       } catch (error) {
         showToast(error.message, 'error');
@@ -838,12 +1110,14 @@
       appliedCoupon = null;
       document.getElementById('coupon-applied').style.display = 'none';
       updateCart();
+      renderCoupons();
       showToast('Coupon removed', 'success');
     }
 
     function openCartModal() {
       document.getElementById('cart-modal').style.display = 'flex';
       updateCart();
+      renderCoupons();
     }
 
     function closeModal(modalId) {
@@ -870,12 +1144,12 @@
           <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
           <div class="menu-item-content">
             <h3>${item.name}</h3>
-            <p>${item.description}</p>
+            <p>${item.description || 'No description'}</p>
             <div class="price">
               ₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
               ${savedAmount !== null && !isNaN(savedAmount) ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
             </div>
-            <button class="btn add-to-cart-btn" data-index="${index}">Add to Cart</button>
+            <button class="btn add-to-cart-btn" data-index="${index}"><i class="fas fa-plus"></i> Add to Cart</button>
           </div>
         `;
         menuGrid.appendChild(div);
@@ -890,15 +1164,16 @@
     }
 
     async function fetchTopPicks() {
+      const topPicksScroll = document.getElementById('top-picks');
       try {
         const response = await fetch(`${API_BASE_URL}/api/top-picks`);
         const result = await response.json();
+        console.log('Top Picks Response:', result); // Debugging
         if (!response.ok || !result.success) {
           throw new Error(result.message || 'Failed to fetch top picks');
         }
 
         const topPicks = result.data;
-        const topPicksScroll = document.getElementById('top-picks');
         topPicksScroll.innerHTML = '';
         if (!Array.isArray(topPicks) || topPicks.length === 0) {
           topPicksScroll.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">No top picks available</p>';
@@ -913,12 +1188,12 @@
           div.innerHTML = `
             <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
             <h3>${item.name}</h3>
-            <p>${item.description}</p>
+            <p>${item.description || 'A Delicute favorite!'}</p>
             <div class="price">
               ₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
               ${savedAmount !== null && !isNaN(savedAmount) ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
             </div>
-            <button class="btn add-to-cart-btn" data-index="${index}">Add to Cart</button>
+            <button class="btn add-to-cart-btn" data-index="${index}"><i class="fas fa-plus"></i> Add to Cart</button>
           `;
           topPicksScroll.appendChild(div);
         });
@@ -930,6 +1205,8 @@
           });
         });
       } catch (error) {
+        console.error('Top Picks Error:', error);
+        topPicksScroll.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">Unable to load top picks</p>';
         showToast(error.message, 'error');
       }
     }
@@ -938,6 +1215,7 @@
       try {
         const response = await fetch(`${API_BASE_URL}/api/categories`);
         const result = await response.json();
+        console.log('Categories Response:', result); // Debugging
         if (!response.ok || !result.success) {
           throw new Error(result.message || 'Failed to fetch categories');
         }
@@ -966,14 +1244,17 @@
           }
         });
       } catch (error) {
+        console.error('Categories Error:', error);
         showToast(error.message, 'error');
       }
     }
 
     async function fetchMenu() {
+      const menuGrid = document.getElementById('menu');
       try {
         const response = await fetch(`${API_BASE_URL}/api/menu`);
         const result = await response.json();
+        console.log('Menu Response:', result); // Debugging
         if (!response.ok || !result.success) {
           throw new Error(result.message || 'Failed to fetch menu');
         }
@@ -981,6 +1262,30 @@
         allMenuItems = result.data;
         renderMenu(allMenuItems);
       } catch (error) {
+        console.error('Menu Error:', error);
+        menuGrid.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">Unable to load menu</p>';
+        showToast(error.message, 'error');
+      }
+    }
+
+    async function fetchCoupons() {
+      const couponList = document.getElementById('coupon-list');
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/coupons`);
+        const result = await response.json();
+        console.log('Coupons Response:', result); // Debugging
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || 'Failed to fetch coupons');
+        }
+
+        const now = new Date();
+        availableCoupons = result.data.filter(coupon => {
+          return new Date(coupon.validFrom) <= now && new Date(coupon.validTo) >= now;
+        });
+        renderCoupons();
+      } catch (error) {
+        console.error('Coupons Error:', error);
+        couponList.innerHTML = '<p style="color: #4a4a4a; font-size: 0.9rem;">Unable to load coupons</p>';
         showToast(error.message, 'error');
       }
     }
@@ -1020,14 +1325,14 @@
         showToast('Please enter your full name', 'error');
         return;
       }
-      if (!tableNumber || isNaN(tableNumber) || tableNumber < 1 || tableNumber > 50) {
-        showToast('Please enter a valid table number (1-50)', 'error');
+      if (!tableNumber || isNaN(tableNumber) || tableNumber < 1 || tableNumber > 100) {
+        showToast('Please enter a valid table number (1-100)', 'error');
         return;
       }
 
       const order = {
         customer: { name: customerName },
-        tableNumber,
+        tableNumber: parseInt(tableNumber),
         specialInstructions: specialInstructions || null,
         items: cart.map(item => ({
           _id: item._id,
@@ -1045,6 +1350,7 @@
           body: JSON.stringify(order),
         });
         const result = await response.json();
+        console.log('Order Response:', result); // Debugging
         if (!response.ok || !result.success) {
           throw new Error(result.message || 'Failed to place order');
         }
@@ -1053,8 +1359,10 @@
         appliedCoupon = null;
         document.getElementById('coupon-applied').style.display = 'none';
         updateCart();
+        renderCoupons();
         closeModal('order-modal');
       } catch (error) {
+        console.error('Order Error:', error);
         showToast(error.message, 'error');
       }
     }
@@ -1066,6 +1374,7 @@
     fetchTopPicks();
     fetchCategories();
     fetchMenu();
+    fetchCoupons();
   </script>
 </body>
 </html>
