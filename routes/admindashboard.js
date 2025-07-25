@@ -59,7 +59,10 @@ const authenticate = async (req, res, next) => {
     next();
   } catch (err) {
     console.error('Authentication error:', { message: err.message, stack: err.stack });
-    return res.status(403).json({ message: 'Invalid or expired token', error: 'Forbidden' });
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Token has expired', error: 'Unauthorized' });
+    }
+    return res.status(403).json({ message: 'Invalid token', error: 'Forbidden' });
   }
 };
 
@@ -77,6 +80,29 @@ const validateMenuInput = (req, res, next) => {
   }
   if (!category || category.trim().length < 2) {
     return res.status(400).json({ message: 'Category must be at least 2 characters long', error: 'Bad Request' });
+  }
+  next();
+};
+
+// Middleware to validate order input
+const validateOrderInput = (req, res, next) => {
+  const { customerName, tableNumber, items, extraToppings, total } = req.body;
+  if (!customerName || customerName.trim().length < 2) {
+    return res.status(400).json({ message: 'Customer name must be at least 2 characters long', error: 'Bad Request' });
+  }
+  if (!tableNumber || tableNumber.toString().trim().length === 0) {
+    return res.status(400).json({ message: 'Table number is required', error: 'Bad Request' });
+  }
+  if (!items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ message: 'Items must be a non-empty array', error: 'Bad Request' });
+  }
+  if (!total || isNaN(total) || Number(total) <= 0) {
+    return res.status(400).json({ message: 'Total must be a positive number', error: 'Bad Request' });
+  }
+  for (const item of items) {
+    if (!item.item || !item.price || !item.quantity || isNaN(item.price) || isNaN(item.quantity) || item.quantity < 1) {
+      return res.status(400).json({ message: 'Each item must have a valid name, price, and quantity', error: 'Bad Request' });
+    }
   }
   next();
 };
@@ -112,7 +138,11 @@ router.post('/login', async (req, res) => {
         return res.status(401).json({ message: 'Invalid email or password', error: 'Unauthorized' });
       }
 
-      const token = jwt.sign({ userId: admin.id, email: admin.email }, process.env.JWT_SECRET || 'your_jwt_secret', { expiresIn: '1h' });
+      const token = jwt.sign(
+        { userId: admin.id, email: admin.email },
+        process.env.JWT_SECRET || 'your_jwt_secret',
+        { expiresIn: '1h' }
+      );
       res.json({ message: 'Login successful', token });
     } finally {
       conn.release();
@@ -120,6 +150,27 @@ router.post('/login', async (req, res) => {
   } catch (err) {
     console.error('Error during login:', { message: err.message, stack: err.stack });
     res.status(500).json({ message: 'Failed to login', error: 'Internal server error' });
+  }
+});
+
+// Refresh token
+router.post('/refresh-token', async (req, res) => {
+  const { token } = req.body;
+  if (!token) {
+    return res.status(401).json({ message: 'No token provided', error: 'Unauthorized' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your_jwt_secret', { ignoreExpiration: true });
+    const newToken = jwt.sign(
+      { userId: decoded.userId, email: decoded.email },
+      process.env.JWT_SECRET || 'your_jwt_secret',
+      { expiresIn: '1h' }
+    );
+    res.json({ message: 'Token refreshed successfully', token: newToken });
+  } catch (err) {
+    console.error('Error refreshing token:', { message: err.message, stack: err.stack });
+    res.status(403).json({ message: 'Invalid token', error: 'Forbidden' });
   }
 });
 
@@ -136,7 +187,7 @@ router.post('/menu', authenticate, upload.single('image'), validateMenuInput, as
     const conn = await pool.getConnection();
     try {
       const [result] = await conn.execute(
-        'INSERT INTO menu (name, description, image, price, category, is_top, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
+        'INSERT INTO menu_items (name, description, image, price, category, is_top, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())',
         [name.trim(), description.trim(), image, Number(price), category.trim(), false]
       );
       res.status(201).json({ message: 'Menu item added successfully', id: result.insertId });
@@ -150,12 +201,12 @@ router.post('/menu', authenticate, upload.single('image'), validateMenuInput, as
 });
 
 // Get all menu items
-router.get('/menu', async (req, res) => {
+router.get('/menu', authenticate, async (req, res) => {
   try {
     const conn = await pool.getConnection();
     try {
       const [rows] = await conn.execute(
-        'SELECT id, name, description, image, price, category, is_top, created_at, updated_at FROM menu ORDER BY id DESC'
+        'SELECT id, name, description, image, price, category, is_top, created_at, updated_at FROM menu_items ORDER BY id DESC'
       );
       res.json(rows);
     } finally {
@@ -176,7 +227,7 @@ router.put('/menu/:id', authenticate, upload.single('image'), validateMenuInput,
   try {
     const conn = await pool.getConnection();
     try {
-      const [result] = await conn.execute('SELECT id, image FROM menu WHERE id = ?', [id]);
+      const [result] = await conn.execute('SELECT id, image FROM menu_items WHERE id = ?', [id]);
       if (result.length === 0) {
         return res.status(404).json({ message: 'Menu item not found', error: 'Not Found' });
       }
@@ -187,7 +238,7 @@ router.put('/menu/:id', authenticate, upload.single('image'), validateMenuInput,
         price: Number(price),
         category: category.trim()
       };
-      let query = 'UPDATE menu SET name = ?, description = ?, price = ?, category = ?, updated_at = NOW()';
+      let query = 'UPDATE menu_items SET name = ?, description = ?, price = ?, category = ?, updated_at = NOW()';
       const params = [updates.name, updates.description, updates.price, updates.category];
 
       if (image) {
@@ -220,7 +271,7 @@ router.delete('/menu/:id', authenticate, async (req, res) => {
   try {
     const conn = await pool.getConnection();
     try {
-      const [result] = await conn.execute('SELECT image FROM menu WHERE id = ?', [id]);
+      const [result] = await conn.execute('SELECT image FROM menu_items WHERE id = ?', [id]);
       if (result.length === 0) {
         return res.status(404).json({ message: 'Menu item not found', error: 'Not Found' });
       }
@@ -230,7 +281,7 @@ router.delete('/menu/:id', authenticate, async (req, res) => {
         fs.unlinkSync(imagePath);
       }
 
-      await conn.execute('DELETE FROM menu WHERE id = ?', [id]);
+      await conn.execute('DELETE FROM menu_items WHERE id = ?', [id]);
       res.json({ message: 'Menu item deleted successfully' });
     } finally {
       conn.release();
@@ -248,12 +299,12 @@ router.post('/menu/top/:id', authenticate, async (req, res) => {
   try {
     const conn = await pool.getConnection();
     try {
-      const [result] = await conn.execute('SELECT id, is_top FROM menu WHERE id = ?', [id]);
+      const [result] = await conn.execute('SELECT id, is_top FROM menu_items WHERE id = ?', [id]);
       if (result.length === 0) {
         return res.status(404).json({ message: 'Menu item not found', error: 'Not Found' });
       }
 
-      await conn.execute('UPDATE menu SET is_top = ?, updated_at = NOW() WHERE id = ?', [!result[0].is_top, id]);
+      await conn.execute('UPDATE menu_items SET is_top = ?, updated_at = NOW() WHERE id = ?', [!result[0].is_top, id]);
       res.json({ message: 'Top item status toggled successfully', is_top: !result[0].is_top });
     } finally {
       conn.release();
@@ -264,15 +315,80 @@ router.post('/menu/top/:id', authenticate, async (req, res) => {
   }
 });
 
+// Add new order
+router.post('/orders', validateOrderInput, async (req, res) => {
+  const { customerName, tableNumber, items, extraToppings, total } = req.body;
+
+  try {
+    const conn = await pool.getConnection();
+    try {
+      await conn.beginTransaction();
+
+      // Insert into orders table, including items as JSON for backward compatibility
+      const [orderResult] = await conn.execute(
+        'INSERT INTO orders (customer_name, table_number, extra_toppings, total, items, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())',
+        [customerName.trim(), tableNumber.toString().trim(), extraToppings ? extraToppings.trim() : '', Number(total), JSON.stringify(items)]
+      );
+      const orderId = orderResult.insertId;
+
+      // Insert items into order_items table
+      for (const item of items) {
+        await conn.execute(
+          'INSERT INTO order_items (order_id, item_name, price, quantity) VALUES (?, ?, ?, ?)',
+          [orderId, item.item.trim(), Number(item.price), Number(item.quantity)]
+        );
+      }
+
+      await conn.commit();
+      res.status(201).json({ message: 'Order placed successfully', orderId });
+    } catch (err) {
+      await conn.rollback();
+      console.error('Error placing order:', { message: err.message, sql: err.sql, stack: err.stack });
+      res.status(500).json({ message: 'Failed to place order', error: 'Internal server error' });
+    } finally {
+      conn.release();
+    }
+  } catch (err) {
+    console.error('Error getting database connection:', { message: err.message, stack: err.stack });
+    res.status(500).json({ message: 'Failed to place order', error: 'Internal server error' });
+  }
+});
+
 // Get all orders
 router.get('/orders', authenticate, async (req, res) => {
   try {
     const conn = await pool.getConnection();
     try {
-      const [rows] = await conn.execute(
-        'SELECT id, customer_name, table_number, created_at, is_delivered FROM orders ORDER BY created_at DESC'
+      const [orders] = await conn.execute(
+        'SELECT id, customer_name, table_number, extra_toppings, total, is_delivered, created_at, updated_at, items FROM orders ORDER BY created_at DESC'
       );
-      res.json(rows);
+      const [orderItems] = await conn.execute(
+        'SELECT order_id, item_name AS item, price, quantity FROM order_items'
+      );
+
+      // Combine orders with items from order_items or parse items JSON as fallback
+      const ordersWithItems = orders.map(order => {
+        let items = orderItems
+          .filter(item => item.order_id === order.id)
+          .map(item => ({ item: item.item, price: item.price, quantity: item.quantity }));
+        
+        // Fallback to parsing items JSON if order_items is empty for this order
+        if (items.length === 0 && order.items) {
+          try {
+            items = JSON.parse(order.items);
+          } catch (e) {
+            console.warn(`Failed to parse items JSON for order ${order.id}:`, e.message);
+            items = [];
+          }
+        }
+
+        return {
+          ...order,
+          items
+        };
+      });
+
+      res.json(ordersWithItems);
     } finally {
       conn.release();
     }

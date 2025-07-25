@@ -29,7 +29,7 @@
       background: #fff;
       display: flex;
       justify-content: center;
-      gap: 1.5rem;
+      gap: 1rem;
       padding: 1rem;
       box-shadow: 0 2px 10px rgba(0,0,0,0.05);
     }
@@ -46,6 +46,13 @@
     nav button:hover {
       background: #e56f15;
       transform: translateY(-1px);
+    }
+    nav button.logout {
+      background: #6c757d;
+      margin-left: 1rem;
+    }
+    nav button.logout:hover {
+      background: #5c636a;
     }
     section {
       padding: 2rem;
@@ -105,6 +112,47 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
       margin-bottom: 1rem;
     }
+    .order-card .summary {
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .order-card .details {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 6px;
+    }
+    .order-card .details.show {
+      display: block;
+    }
+    .order-card .details ul {
+      list-style: none;
+      margin: 0.5rem 0;
+      padding-left: 1rem;
+    }
+    .order-card .details ul li {
+      font-size: 0.9rem;
+      color: #555;
+      margin-bottom: 0.3rem;
+      padding: 0.2rem 0;
+    }
+    .order-card .details .toppings {
+      font-size: 0.9rem;
+      color: #555;
+      margin-top: 0.5rem;
+    }
+    .order-card .details .toppings strong {
+      color: #333;
+    }
+    .order-card .total {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #333;
+      margin-top: 0.5rem;
+    }
     .menu-item-actions, .order-actions {
       margin-top: 1rem;
       display: flex;
@@ -158,7 +206,7 @@
     .toast.show {
       display: block;
     }
-    .no-data {
+    .no-data, .loading {
       text-align: center;
       color: #666;
       font-size: 1rem;
@@ -169,12 +217,18 @@
         flex-direction: column;
         gap: 0.5rem;
       }
+      nav button.logout {
+        margin-left: 0;
+      }
       section {
         padding: 1rem;
       }
       .menu-img {
         width: 100px;
         height: 75px;
+      }
+      .order-card .details ul li {
+        font-size: 0.85rem;
       }
     }
   </style>
@@ -183,19 +237,29 @@
   <header>Delicute Admin Dashboard</header>
 
   <nav>
-    <button onclick="logout()">Logout</button>
+    <button onclick="showSection('orders')">View Orders</button>
     <button onclick="showSection('menu')">Manage Menu</button>
     <button onclick="showSection('top')">Top Items</button>
-    <button onclick="showSection('orders')">View Orders</button>
+    <button class="logout" onclick="logout()">Logout</button>
   </nav>
 
-  <section id="menu" class="active">
+  <section id="orders" class="active">
+    <h2>Orders Received</h2>
+    <div class="search-container">
+      <input type="text" id="orderSearch" placeholder="Search by customer name or table number" oninput="searchOrders()" />
+    </div>
+    <div class="order-list" id="orderList">
+      <p class="loading">Loading orders...</p>
+    </div>
+  </section>
+
+  <section id="menu">
     <h2>Manage Menu Items</h2>
     <div class="menu-form" id="menuForm">
       <input type="text" id="itemName" placeholder="Item Name" />
       <textarea id="itemDescription" placeholder="Item Description" rows="4"></textarea>
       <input type="file" id="itemImage" accept="image/*" />
-      <input type="number" id="itemPrice" placeholder="Price in ₹" step="0.01" />
+      <input type="number" id="itemPrice" placeholder="Price in ₹" step="0.01" min="0" />
       <input type="text" id="itemCategory" placeholder="Category (e.g., Pizza, Shake)" />
       <input type="hidden" id="itemId" />
       <button onclick="submitMenuItem()">Add Item</button>
@@ -208,19 +272,12 @@
     <div class="top-list" id="topItems"></div>
   </section>
 
-  <section id="orders">
-    <h2>Orders Received</h2>
-    <div class="search-container">
-      <input type="text" id="orderSearch" placeholder="Search by customer name or table number" oninput="searchOrders()" />
-    </div>
-    <div class="order-list" id="orderList"></div>
-  </section>
-
   <div id="toast" class="toast"></div>
 
   <script>
     const API_BASE_URL = 'http://localhost:3000';
     let allOrders = [];
+    let menuItems = [];
 
     function showSection(id) {
       document.querySelectorAll('section').forEach(sec => sec.classList.remove('active'));
@@ -252,11 +309,11 @@
       const name = document.getElementById('itemName').value.trim();
       const desc = document.getElementById('itemDescription').value.trim();
       const imageInput = document.getElementById('itemImage');
-      const price = document.getElementById('itemPrice').value.trim();
+      const price = parseFloat(document.getElementById('itemPrice').value.trim());
       const category = document.getElementById('itemCategory').value.trim();
 
-      if (!name || !desc || (!imageInput.files.length && !itemId) || !price || !category) {
-        showToast('Please fill in all fields.', 'error');
+      if (!name || !desc || (!imageInput.files.length && !itemId) || isNaN(price) || price <= 0 || !category) {
+        showToast('Please fill in all fields correctly.', 'error');
         return;
       }
 
@@ -310,13 +367,13 @@
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        const items = await response.json();
+        menuItems = await response.json();
         const menuList = document.getElementById('menuList');
-        if (!Array.isArray(items) || items.length === 0) {
+        if (!Array.isArray(menuItems) || menuItems.length === 0) {
           menuList.innerHTML = '<p class="no-data">No menu items available.</p>';
           return;
         }
-        menuList.innerHTML = items.map(item => `
+        menuList.innerHTML = menuItems.map(item => `
           <div class="menu-card">
             <h3>${item.name}</h3>
             <p>${item.description}</p>
@@ -324,7 +381,7 @@
             <p>Category: ${item.category}</p>
             <img src="${API_BASE_URL}${item.image}" class="menu-img" alt="${item.name}">
             <div class="menu-item-actions">
-              <button class="edit" onclick="editMenuItem(${item.id}, '${item.name}', '${item.description}', ${item.price}, '${item.category}')">Edit</button>
+              <button class="edit" onclick="editMenuItem(${item.id}, '${item.name.replace(/'/g, "\\'")}', '${item.description.replace(/'/g, "\\'")}', ${item.price}, '${item.category.replace(/'/g, "\\'")}')">Edit</button>
               <button class="remove" onclick="deleteMenuItem(${item.id})">Remove</button>
               <button class="top" onclick="toggleTopItem(${item.id})">${item.is_top ? 'Remove Top' : 'Set Top'}</button>
             </div>
@@ -423,21 +480,57 @@
     }
 
     async function fetchOrders() {
+      const orderList = document.getElementById('orderList');
+      orderList.innerHTML = '<p class="loading">Loading orders...</p>';
       try {
-        const response = await fetch(`${API_BASE_URL}/api/orders`, {
+        let response = await fetch(`${API_BASE_URL}/api/orders`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('authToken')}`
           }
         });
+        if (response.status === 401 && (await response.json()).message === 'Token has expired') {
+          const refreshResponse = await fetch(`${API_BASE_URL}/api/refresh-token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: localStorage.getItem('authToken') })
+          });
+          if (refreshResponse.ok) {
+            const { token } = await refreshResponse.json();
+            localStorage.setItem('authToken', token);
+            response = await fetch(`${API_BASE_URL}/api/orders`, {
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+              }
+            });
+          } else {
+            showToast('Session expired. Please log in again.', 'error');
+            logout();
+            return;
+          }
+        }
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         allOrders = await response.json();
+        console.log('Fetched orders:', allOrders); // Debug log
+        // Sort orders to prioritize those with top items
+        const topItemIds = menuItems.filter(item => item.is_top).map(item => item.name);
+        allOrders.sort((a, b) => {
+          const aHasTop = a.items?.some(item => topItemIds.includes(item.item)) || false;
+          const bHasTop = b.items?.some(item => topItemIds.includes(item.item)) || false;
+          return bHasTop - aHasTop || b.created_at.localeCompare(a.created_at);
+        });
         renderOrders(allOrders);
       } catch (err) {
         console.error('Error fetching orders:', err);
+        orderList.innerHTML = '<p class="no-data">Failed to load orders.</p>';
         showToast('Error fetching orders.', 'error');
       }
+    }
+
+    function toggleOrderDetails(id) {
+      const details = document.getElementById(`order-details-${id}`);
+      details.classList.toggle('show');
     }
 
     function renderOrders(orders) {
@@ -446,18 +539,38 @@
         orderList.innerHTML = '<p class="no-data">No orders available.</p>';
         return;
       }
-      orderList.innerHTML = orders.map(order => `
-        <div class="order-card">
-          <h3>Order #${order.id}</h3>
-          <p>Customer: ${order.customer_name || 'N/A'}</p>
-          <p>Table: ${order.table_number || 'N/A'}</p>
-          <p>Placed: ${new Date(order.created_at).toLocaleString()}</p>
-          <p>Status: ${order.is_delivered ? 'Delivered' : 'Pending'}</p>
-          <div class="order-actions">
-            ${!order.is_delivered ? `<button class="delivered" onclick="markOrderDelivered(${order.id})">Mark as Delivered</button>` : ''}
+      orderList.innerHTML = orders.map(order => {
+        let items = Array.isArray(order.items) ? order.items : [];
+        console.log(`Rendering order ${order.id} items:`, items); // Debug log
+        const total = parseFloat(order.total || 0).toFixed(2);
+        return `
+          <div class="order-card">
+            <div class="summary" onclick="toggleOrderDetails(${order.id})">
+              <div>
+                <h3>Order #${order.id}</h3>
+                <p>Customer: ${order.customer_name || 'N/A'}</p>
+                <p>Table: ${order.table_number || 'N/A'}</p>
+                <p>Status: ${order.is_delivered ? 'Delivered' : 'Pending'}</p>
+              </div>
+              <span>${items.length} item${items.length !== 1 ? 's' : ''}</span>
+            </div>
+            <div class="details" id="order-details-${order.id}">
+              ${items.length > 0 ? `
+                <ul>
+                  ${items.map(item => `
+                    <li>${item.item || 'Unknown Item'} - ₹${parseFloat(item.price || 0).toFixed(2)} x ${item.quantity || 0}</li>
+                  `).join('')}
+                </ul>
+              ` : '<p>No items available for this order.</p>'}
+              ${order.extra_toppings ? `<p class="toppings"><strong>Extra Toppings/Instructions:</strong> ${order.extra_toppings}</p>` : '<p class="toppings">No extra toppings.</p>'}
+              <p class="total">Total: ₹${total}</p>
+            </div>
+            <div class="order-actions">
+              ${!order.is_delivered ? `<button class="delivered" onclick="markOrderDelivered(${order.id})">Mark as Delivered</button>` : ''}
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     async function markOrderDelivered(id) {
@@ -485,10 +598,10 @@
 
     function searchOrders() {
       const searchTerm = document.getElementById('orderSearch').value.toLowerCase();
-      const filteredOrders = allOrders.filter(order =>
-        (order.customer_name?.toLowerCase() || '').includes(searchTerm) ||
-        (order.table_number?.toString() || '').includes(searchTerm)
-      );
+      const filteredOrders = allOrders.filter(order => {
+        return (order.customer_name?.toLowerCase() || '').includes(searchTerm) ||
+               (order.table_number?.toString() || '').includes(searchTerm);
+      });
       renderOrders(filteredOrders);
     }
 
@@ -498,11 +611,11 @@
     }
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       checkAuth();
-      fetchMenuItems();
+      await fetchMenuItems();
+      await fetchOrders();
       fetchTopItems();
-      fetchOrders();
     });
   </script>
 </body>

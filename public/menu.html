@@ -85,7 +85,6 @@
       padding: 0.5rem;
     }
 
-    /* Styling for single top pick */
     .menu-grid.single-top-pick {
       display: flex;
       justify-content: center;
@@ -241,7 +240,8 @@
       text-align: center;
     }
 
-    .cart-panel input {
+    .cart-panel input,
+    .cart-panel textarea {
       width: 100%;
       padding: 0.6rem;
       margin: 0.5rem 0;
@@ -252,7 +252,14 @@
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .cart-panel input:focus {
+    .cart-panel textarea {
+      resize: vertical;
+      min-height: 80px;
+      max-height: 200px;
+    }
+
+    .cart-panel input:focus,
+    .cart-panel textarea:focus {
       border-color: #ff6200;
       box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.1);
       outline: none;
@@ -579,6 +586,9 @@
     <div class="form-group">
       <input type="text" id="table-number" placeholder="Enter Table Number">
     </div>
+    <div class="form-group">
+      <textarea id="extra-toppings" placeholder="Extra toppings or special instructions"></textarea>
+    </div>
     <div id="cart-items"></div>
     <div class="cart-total" id="cart-total">Total: ₹0</div>
     <button class="place-order" onclick="placeOrder()">Place Order</button>
@@ -705,6 +715,7 @@
     async function placeOrder() {
       const customerName = document.getElementById('customer-name').value.trim();
       const tableNumber = document.getElementById('table-number').value.trim();
+      const extraToppings = document.getElementById('extra-toppings').value.trim();
       const cartError = document.getElementById('cart-error');
 
       if (!customerName || !tableNumber) {
@@ -725,6 +736,7 @@
         customerName,
         tableNumber,
         items: cart.map(({ item, price, quantity }) => ({ item, price, quantity })),
+        extraToppings,
         total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
       };
 
@@ -743,10 +755,11 @@
         }
 
         const result = await response.json();
-        showToast('Order placed successfully!', 'success');
+        showToast(`Thank you, ${customerName}! Your order has been placed successfully! 😊 We're preparing your delicious meal now!`, 'success');
         cart = [];
         document.getElementById('customer-name').value = '';
         document.getElementById('table-number').value = '';
+        document.getElementById('extra-toppings').value = '';
         cartError.style.display = 'none';
         updateCart();
         toggleCart();
@@ -782,7 +795,6 @@
       topItemsContainer.innerHTML = '';
       categorySelect.innerHTML = '<option value="all">All Categories</option>';
 
-      // Check if there's only one top pick
       const topPicks = menuItems.filter(item => item.is_top);
       if (topPicks.length === 1) {
         topItemsContainer.classList.add('single-top-pick');
@@ -816,10 +828,8 @@
       });
     }
 
-    // Fetch menu items on load
     fetchMenuItems();
 
-    // Event listeners for search and category filter
     document.getElementById('search').addEventListener('input', filterMenu);
     document.getElementById('category').addEventListener('change', filterMenu);
   </script>
