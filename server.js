@@ -10,15 +10,40 @@ dotenv.config();
 
 const app = express();
 
+// CORS configuration
 app.use(cors({
   origin: ['http://localhost:3000', 'https://delicute-3bf1.onrender.com'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+// Serve static files from 'public' and 'Uploads' folders
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/Uploads', express.static(path.join(__dirname, 'Uploads'), {
+  // Fallback for non-existent files
+  fallthrough: false,
+  // Set headers for cache control
+  setHeaders: (res) => {
+    res.set('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+  }
+}));
+
+// Ensure 'Uploads' folder exists
+const uploadPath = path.join(__dirname, 'Uploads');
+if (!fs.existsSync(uploadPath)) {
+  try {
+    fs.mkdirSync(uploadPath, { recursive: true });
+    console.log('✅ Created Uploads folder');
+  } catch (err) {
+    console.error('❌ Failed to create Uploads folder:', err.message);
+    process.exit(1);
+  }
+}
 
 const isProduction = process.env.NODE_ENV === 'production';
 let sslOptions;
@@ -29,11 +54,12 @@ if (isProduction) {
       ca: fs.readFileSync(path.join(__dirname, 'ca.pem')),
     };
   } catch (err) {
-    console.error('SSL Error:', err.message);
+    console.error('❌ SSL Error:', err.message);
     process.exit(1);
   }
 }
 
+// MySQL connection pool
 const pool = mysql.createPool({
   host: process.env.DB_HOST,
   port: Number(process.env.DB_PORT),
@@ -48,6 +74,7 @@ const pool = mysql.createPool({
 
 app.locals.db = pool;
 
+// Verify MySQL connection
 pool.getConnection()
   .then(conn => {
     console.log('✅ Connected to MySQL');
@@ -58,6 +85,7 @@ pool.getConnection()
     process.exit(1);
   });
 
+// Load routes
 try {
   const adminRoutes = require('./routes/admin');
   const dashboardRoutes = require('./routes/admindashboard');
@@ -71,11 +99,13 @@ try {
   process.exit(1);
 }
 
+// Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server Error:', err.message);
-  res.status(500).json({ message: 'Internal server error', error: err.message });
+  console.error('Server Error:', err.stack);
+  res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
 });
 
+// Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
