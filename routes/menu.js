@@ -1,4 +1,3 @@
-// routes/api.js
 const express = require('express');
 const router = express.Router();
 
@@ -61,8 +60,8 @@ router.post('/orders', async (req, res) => {
   const { customer, tableNumber, specialInstructions, items, coupon } = req.body;
 
   // Input validation
-  if (!customer?.name || typeof customer.name !== 'string' || customer.name.trim().length === 0) {
-    return res.status(400).json({ success: false, message: 'Customer name is required and must be a non-empty string' });
+  if (!customer || typeof customer !== 'object' || !customer.name || typeof customer.name !== 'string' || customer.name.trim().length === 0) {
+    return res.status(400).json({ success: false, message: 'Customer object with a non-empty name string is required' });
   }
   if (!Number.isInteger(Number(tableNumber)) || tableNumber < 1 || tableNumber > 100) {
     return res.status(400).json({ success: false, message: 'Table number must be an integer between 1 and 100' });
@@ -76,54 +75,110 @@ router.post('/orders', async (req, res) => {
 
   // Validate items
   for (const item of items) {
-    if (!item._id || !Number.isInteger(Number(item._id)) || !Number.isInteger(item.quantity) || item.quantity < 1 || isNaN(Number(item.price))) {
-      return res.status(400).json({ success: false, message: 'Invalid item data: id, quantity, and price are required' });
+    const itemId = Number(item._id);
+    if (!item._id || isNaN(itemId) || !Number.isInteger(itemId) || !Number.isInteger(item.quantity) || item.quantity < 1 || isNaN(Number(item.price)) || Number(item.price) < 0) {
+      return res.status(400).json({ success: false, message: 'Invalid item data: _id (integer), quantity (integer >= 1), and price (number >= 0) are required' });
     }
   }
 
+  let connection;
   try {
+    // Acquire a connection from the pool
+    connection = await req.app.locals.db.getConnection();
+    console.log('Connection acquired for order placement');
+
+    // Verify items exist in menu
+    const itemIds = items.map(item => Number(item._id));
+    const [menuItems] = await connection.query('SELECT id, category FROM menu WHERE id IN (?)', [itemIds]);
+    const validItemIds = menuItems.map(item => item.id);
+    const invalidItems = itemIds.filter(id => !validItemIds.includes(id));
+    if (invalidItems.length > 0) {
+      return res.status(400).json({ success: false, message: `Invalid menu item IDs: ${invalidItems.join(', ')}` });
+    }
+
     // Verify coupon
+    let couponData = null;
     if (coupon) {
-      const [couponRows] = await req.app.locals.db.query('SELECT * FROM coupons WHERE code = ? AND valid_from <= NOW() AND valid_to >= NOW()', [coupon]);
+      const [couponRows] = await connection.query(
+        'SELECT id, code, category, buy_x, discount FROM coupons WHERE code = ? AND valid_from <= NOW() AND valid_to >= NOW()',
+        [coupon.trim()]
+      );
       if (couponRows.length === 0) {
         return res.status(400).json({ success: false, message: 'Invalid or expired coupon code' });
       }
+      couponData = couponRows[0];
+
+      // Validate coupon eligibility
+      const eligibleItems = items.filter(item => {
+        const menuItem = menuItems.find(m => m.id === Number(item._id));
+        return menuItem && menuItem.category === couponData.category;
+      });
+      const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+      if (eligibleQuantity < couponData.buy_x) {
+        return res.status(400).json({ success: false, message: `Coupon requires at least ${couponData.buy_x} items from ${couponData.category}` });
+      }
     }
 
-    // Transaction
-    const connection = await req.app.locals.db;
-    try {
-      await connection.beginTransaction();
-
-      const [orderResult] = await connection.query(
-        'INSERT INTO orders (customer_name, table_number, special_instructions, coupon_code, created_at) VALUES (?, ?, ?, ?, NOW())',
-        [customer.name.trim(), Number(tableNumber), specialInstructions?.trim() || null, coupon || null]
-      );
-
-      const orderId = orderResult.insertId;
-      const orderItems = items.map(item => [
-        orderId,
-        Number(item._id),
-        Number(item.quantity),
-        Number(item.price)
-      ]);
-
-      await connection.query(
-        'INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES ?',
-        [orderItems]
-      );
-
-      await connection.commit();
-      res.json({ success: true, message: 'Order placed successfully', data: { orderId } });
-    } catch (error) {
-      await connection.rollback();
-      throw error;
-    } finally {
-      connection.release();
+    // Calculate totals
+    const subtotal = items.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+    let discount = 0;
+    if (couponData) {
+      const eligibleItems = items.filter(item => {
+        const menuItem = menuItems.find(m => m.id === Number(item._id));
+        return menuItem && menuItem.category === couponData.category;
+      });
+      const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+      const discountItems = Math.floor(eligibleQuantity / couponData.buy_x);
+      if (discountItems > 0) {
+        const minPrice = eligibleItems.reduce((min, item) => Math.min(min, Number(item.price)), Infinity);
+        discount = discountItems * (minPrice * (couponData.discount / 100));
+      }
     }
+    const total = Math.max(subtotal - discount, 0);
+
+    // Start transaction
+    await connection.beginTransaction();
+    console.log('Transaction started');
+
+    // Insert into orders
+    const [orderResult] = await connection.query(
+      'INSERT INTO orders (customer_name, table_number, special_instructions, coupon_code, subtotal, discount, total, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+      [customer.name.trim(), Number(tableNumber), specialInstructions?.trim() || null, coupon?.trim() || null, subtotal, discount, total]
+    );
+    const orderId = orderResult.insertId;
+    console.log('Order inserted, orderId:', orderId);
+
+    // Insert into order_items
+    const orderItems = items.map(item => [
+      orderId,
+      Number(item._id),
+      Number(item.quantity),
+      Number(item.price)
+    ]);
+    console.log('Order items to insert:', orderItems);
+
+    await connection.query(
+      'INSERT INTO order_items (order_id, menu_item_id, quantity, price) VALUES ?',
+      [orderItems]
+    );
+    console.log('Order items inserted');
+
+    await connection.commit();
+    console.log('Transaction committed');
+
+    res.json({ success: true, message: 'Order placed successfully', data: { orderId, subtotal, discount, total } });
   } catch (error) {
-    console.error('Error placing order:', error.message, error.sqlMessage);
-    res.status(500).json({ success: false, message: 'Failed to place order', error: error.message });
+    if (connection) {
+      await connection.rollback();
+      console.log('Transaction rolled back');
+    }
+    console.error('Error placing order:', error.message, error.sqlMessage, error.sql);
+    res.status(500).json({ success: false, message: 'Failed to place order', error: error.message, sqlMessage: error.sqlMessage, sql: error.sql });
+  } finally {
+    if (connection) {
+      connection.release();
+      console.log('Connection released');
+    }
   }
 });
 
