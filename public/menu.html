@@ -170,6 +170,8 @@
       white-space: nowrap;
       scroll-snap-align: start;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      min-width: 100px;
+      min-height: 48px;
     }
 
     .category-filter button.active {
@@ -393,6 +395,7 @@
       transition: all 0.3s ease;
       box-shadow: 0 6px 12px rgba(255, 98, 0, 0.3);
       min-width: 120px;
+      min-height: 48px;
       align-self: flex-start;
       display: inline-flex;
       align-items: center;
@@ -411,6 +414,7 @@
       font-size: 0.95rem;
       border-radius: 8px;
       box-shadow: 0 4px 8px rgba(255, 140, 0, 0.2);
+      min-height: 48px;
     }
 
     .remove-btn {
@@ -418,6 +422,11 @@
       padding: 0.6rem 1.2rem;
       font-size: 0.95rem;
       box-shadow: 0 4px 8px rgba(239, 83, 80, 0.3);
+      min-height: 48px;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      width: auto;
     }
 
     .remove-btn:hover {
@@ -471,6 +480,11 @@
       cursor: pointer;
       color: #4a4a4a;
       transition: color 0.3s ease;
+      min-width: 48px;
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .close-btn:hover {
@@ -498,6 +512,7 @@
       font-size: 1.1rem;
       background: rgba(255, 255, 255, 0.8);
       font-family: 'Roboto', sans-serif;
+      min-height: 50px;
     }
 
     .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
@@ -554,8 +569,8 @@
     }
 
     .quantity-controls button {
-      width: 44px;
-      height: 44px;
+      width: 48px;
+      height: 48px;
       border: 1px solid rgba(0, 0, 0, 0.12);
       background: rgba(255, 255, 255, 0.98);
       border-radius: 10px;
@@ -693,6 +708,7 @@
     .coupon-item button {
       font-size: 1rem;
       padding: 0.6rem 1.2rem;
+      min-height: 48px;
     }
 
     .loading {
@@ -864,7 +880,9 @@
 
       .category-filter button {
         font-size: 1rem;
-        padding: 0.7rem 1.4rem;
+        padding: 0.8rem 1.5rem;
+        min-width: 90px;
+        min-height: 50px;
       }
 
       .top-pick-item {
@@ -886,8 +904,10 @@
       }
 
       .btn {
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
+        padding: 1rem 1.5rem;
+        font-size: 1rem;
+        min-width: 140px;
+        min-height: 50px;
       }
 
       .modal-content {
@@ -900,18 +920,19 @@
       }
 
       .form-group input, .form-group textarea, .form-group select {
-        padding: 1rem;
-        font-size: 1rem;
+        padding: 1.2rem;
+        font-size: 1.1rem;
+        min-height: 55px;
       }
 
       .search-bar input {
-        padding: 1rem;
-        font-size: 1rem;
+        padding: 1.2rem 1.8rem;
+        font-size: 1.1rem;
       }
 
       .search-bar button {
-        padding: 1rem 1.4rem;
-        font-size: 1rem;
+        padding: 1.2rem 1.8rem;
+        font-size: 1.1rem;
       }
 
       .coupon-item img {
@@ -928,8 +949,9 @@
       }
 
       .coupon-item button {
-        font-size: 0.9rem;
-        padding: 0.5rem 1rem;
+        font-size: 1rem;
+        padding: 0.8rem 1.5rem;
+        min-height: 50px;
       }
 
       .cart-item {
@@ -938,12 +960,12 @@
       }
 
       .cart-item img {
-        width: 50px;
-        height: 50px;
+        width: 60px;
+        height: 60px;
       }
 
       .quantity-controls {
-        margin-top: 0.8rem;
+        margin-top: 1rem;
       }
 
       .coupon-list {
@@ -953,8 +975,34 @@
       .toast {
         top: 1.5rem;
         right: 1.5rem;
-        padding: 1rem 1.5rem;
-        font-size: 1rem;
+        padding: 1.2rem 1.8rem;
+        font-size: 1.1rem;
+      }
+
+      #order-modal .modal-content {
+        padding: 2rem;
+      }
+
+      #order-modal .form-group {
+        margin-bottom: 2rem;
+      }
+
+      #order-modal .form-group input,
+      #order-modal .form-group textarea {
+        padding: 1.5rem;
+        font-size: 1.2rem;
+        min-height: 60px;
+      }
+
+      #order-modal .form-group label {
+        font-size: 1.2rem;
+      }
+
+      #order-modal .form-group .btn {
+        padding: 1.2rem 2rem;
+        font-size: 1.2rem;
+        min-width: 160px;
+        min-height: 60px;
       }
     }
   </style>

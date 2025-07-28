@@ -91,18 +91,19 @@ const validate = (validations) => {
 router.get('/orders', authenticate, async (req, res) => {
   try {
     const [orders] = await pool.query(`
-      SELECT o.order_id, o.customer_name, o.customer_email, o.table_number, o.special_instructions, o.status, o.created_at,
-             GROUP_CONCAT(CONCAT(oi.item_name, ' (x', oi.quantity, ')', ' - ₹', oi.price)) as items
+      SELECT o.id AS order_id, o.customer_name, o.table_number, o.special_instructions, o.status, o.created_at,
+             GROUP_CONCAT(CONCAT(m.name, ' (x', oi.quantity, ')', ' - ₹', oi.price)) as items
       FROM orders o
-      LEFT JOIN order_items oi ON o.order_id = oi.order_id
-      GROUP BY o.order_id
+      LEFT JOIN order_items oi ON o.id = oi.order_id
+      LEFT JOIN menu m ON oi.menu_item_id = m.id
+      GROUP BY o.id
     `);
 
     res.json({
       success: true,
       data: orders.map(order => ({
         orderId: order.order_id,
-        customer: { name: order.customer_name, email: order.customer_email },
+        customer: { name: order.customer_name },
         tableNumber: order.table_number || 'N/A',
         items: order.items
           ? order.items.split(',').map(item => {
@@ -114,7 +115,7 @@ router.get('/orders', authenticate, async (req, res) => {
             })
           : [],
         specialInstructions: order.special_instructions || null,
-        status: order.status,
+        status: order.status || 'Pending',
         createdAt: order.created_at
       })),
     });
@@ -131,11 +132,12 @@ router.get(
   async (req, res) => {
     try {
       const [orders] = await pool.query(`
-        SELECT o.order_id, o.customer_name, o.customer_email, o.table_number, o.special_instructions, o.status, o.created_at,
-               oi.item_name, oi.quantity, oi.price
+        SELECT o.id AS order_id, o.customer_name, o.table_number, o.special_instructions, o.status, o.created_at,
+               m.name AS item_name, oi.quantity, oi.price
         FROM orders o
-        LEFT JOIN order_items oi ON o.order_id = oi.order_id
-        WHERE o.order_id = ?
+        LEFT JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN menu m ON oi.menu_item_id = m.id
+        WHERE o.id = ?
       `, [req.params.orderId]);
 
       if (orders.length === 0) {
@@ -147,15 +149,15 @@ router.get(
         success: true,
         data: {
           orderId: order.order_id,
-          customer: { name: order.customer_name, email: order.customer_email },
+          customer: { name: order.customer_name },
           tableNumber: order.table_number || 'N/A',
           items: orders.map(item => ({
-            name: item.item_name,
-            quantity: item.quantity,
-            price: parseFloat(item.price)
+            name: item.item_name || 'Unknown Item',
+            quantity: item.quantity || 1,
+            price: parseFloat(item.price) || 0
           })),
           specialInstructions: order.special_instructions || null,
-          status: order.status,
+          status: order.status || 'Pending',
           createdAt: order.created_at
         }
       });
@@ -177,7 +179,7 @@ router.patch(
     try {
       const { status } = req.body;
       const [result] = await pool.query(
-        'UPDATE orders SET status = ? WHERE order_id = ?',
+        'UPDATE orders SET status = ? WHERE id = ?',
         [status, req.params.orderId]
       );
 
@@ -341,7 +343,7 @@ router.put(
         },
       });
     } catch (err) {
-     _starts: console.error('Menu Update Error:', err.message);
+      console.error('Menu Update Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to update menu item' });
     }
   }
