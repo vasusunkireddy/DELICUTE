@@ -36,16 +36,19 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
+// Serve static files for the 'public' folder (e.g., frontend assets)
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/Uploads', express.static(path.join(__dirname, 'Uploads'), {
-  fallthrough: false,
-  setHeaders: (res) => {
-    res.set('Cache-Control', 'public, max-age=31536000');
-  }
-}));
 
-// Ensure 'Uploads' folder exists
+// Note: Removed /Uploads static middleware since coupon images are on Cloudinary
+// If you need /Uploads for other local files, add conditional logic to skip Cloudinary URLs
+// app.use('/Uploads', express.static(path.join(__dirname, 'Uploads'), {
+//   fallthrough: false,
+//   setHeaders: (res) => {
+//     res.set('Cache-Control', 'public, max-age=31536000');
+//   }
+// }));
+
+// Ensure 'Uploads' folder exists (only if needed for other local files)
 const initializeUploadsFolder = async () => {
   const uploadPath = path.join(__dirname, 'Uploads');
   try {
@@ -100,7 +103,8 @@ const initializePool = async () => {
 let pool;
 const initializeServer = async () => {
   try {
-    await initializeUploadsFolder();
+    // Only initialize Uploads folder if needed for other local files
+    // await initializeUploadsFolder();
     pool = await initializePool();
     app.locals.db = pool;
 
@@ -149,7 +153,7 @@ app.get('/health', async (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error('Server Error:', { message: err.message, stack: err.stack });
+  console.error('Server Error:', { message: err.message, stack: err.stack, path: req.path });
   res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
 });
 

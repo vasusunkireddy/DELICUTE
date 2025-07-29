@@ -7,6 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <style>
+    /* Your existing CSS is unchanged */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -973,7 +974,7 @@
 
     function loadCartAndCoupon() {
       try {
-        const storedCart = localStorage.getItem('cart');
+        const storedCart = sessionStorage.getItem('cart');
         if (storedCart) {
           cart = JSON.parse(storedCart).filter(item => {
             if (!item || !item.id || !item._id || !item.category || !Number.isInteger(item.quantity) || item.quantity < 1 || !item.name || isNaN(Number(item.price))) {
@@ -982,10 +983,10 @@
             }
             return true;
           });
-          localStorage.setItem('cart', JSON.stringify(cart));
+          sessionStorage.setItem('cart', JSON.stringify(cart));
           console.log('Loaded cart:', cart);
         }
-        const storedCoupon = localStorage.getItem('appliedCoupon');
+        const storedCoupon = sessionStorage.getItem('appliedCoupon');
         if (storedCoupon) {
           appliedCoupon = JSON.parse(storedCoupon);
           console.log('Loaded coupon:', appliedCoupon);
@@ -996,17 +997,17 @@
         console.error('Error loading cart/coupon:', error);
         showToast('Error loading cart data');
         cart = [];
-        localStorage.setItem('cart', JSON.stringify(cart));
+        sessionStorage.setItem('cart', JSON.stringify(cart));
       }
     }
 
     function saveAppliedCoupon() {
       try {
         if (appliedCoupon) {
-          localStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon));
+          sessionStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon));
           console.log('Saved coupon:', appliedCoupon);
         } else {
-          localStorage.removeItem('appliedCoupon');
+          sessionStorage.removeItem('appliedCoupon');
           console.log('Cleared coupon');
         }
       } catch (error) {
@@ -1090,7 +1091,7 @@
       cartDiscount.textContent = discount.toFixed(2);
       cartTotal.textContent = total.toFixed(2);
       cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-      localStorage.setItem('cart', JSON.stringify(cart));
+      sessionStorage.setItem('cart', JSON.stringify(cart));
     }
 
     function addToCart(item) {
@@ -1447,7 +1448,7 @@
         showToast(`Order placed! ID: ${result.data.orderId}`);
         cart = [];
         appliedCoupon = null;
-        localStorage.setItem('cart', JSON.stringify(cart));
+        sessionStorage.setItem('cart', JSON.stringify(cart));
         saveAppliedCoupon();
         updateCouponDisplay();
         updateCart();

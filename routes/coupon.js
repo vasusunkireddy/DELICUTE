@@ -25,11 +25,11 @@ router.get('/coupons', async (req, res, next) => {
         validFrom: coupon.validFrom,
         validTo: coupon.validTo,
         description: coupon.description,
-        image: coupon.image ? `${req.protocol}://${req.get('host')}/Uploads/${coupon.image}` : null
+        image: coupon.image || null // Use the Cloudinary URL directly
       }))
     });
   } catch (error) {
-    console.error('Error fetching coupons:', error.message);
+    console.error('Error fetching coupons:', { message: error.message, stack: error.stack });
     next(error);
   }
 });
@@ -84,7 +84,7 @@ router.post('/validate-coupon', async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('Error validating coupon:', error.message);
+    console.error('Error validating coupon:', { message: error.message, stack: error.stack });
     next(error);
   }
 });
