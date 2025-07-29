@@ -605,7 +605,7 @@
           </div>
           <div class="form-group">
             <label for="menu-image">Image</label>
-            <input type="file" id="menu-image" accept="image/*" />
+            <input type="file" id="menu-image" accept="image/jpeg,image/png" />
             <input type="hidden" id="menu-existing-image" />
             <small>Recommended: 300x300px, JPG/PNG</small>
           </div>
@@ -654,8 +654,16 @@
             <input type="number" id="coupon-buy-x" min="1" required />
           </div>
           <div class="form-group">
-            <label for="coupon-discount">Discount (%)</label>
-            <input type="number" id="coupon-discount" min="1" max="100" required />
+            <label for="coupon-discount">Discount</label>
+            <input type="number" id="coupon-discount" min="0" step="0.01" required />
+          </div>
+          <div class="form-group">
+            <label for="coupon-type">Type</label>
+            <select id="coupon-type" required>
+              <option value="percentage">Percentage</option>
+              <option value="flat">Flat</option>
+              <option value="buy_x">Buy X</option>
+            </select>
           </div>
           <div class="form-group">
             <label for="coupon-category">Category</label>
@@ -671,7 +679,7 @@
           </div>
           <div class="form-group">
             <label for="coupon-image">Image</label>
-            <input type="file" id="coupon-image" accept="image/*" />
+            <input type="file" id="coupon-image" accept="image/jpeg,image/png" />
             <input type="hidden" id="coupon-existing-image" />
             <small>Recommended: 300x300px, JPG/PNG</small>
           </div>
@@ -704,12 +712,20 @@
 
   <script>
     const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
-    const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x300.png?text=Image+Not+Found';
+    // Use a Cloudinary-hosted fallback image or a local image served by your backend
+    const PLACEHOLDER_IMAGE = 'https://res.cloudinary.com/do9cbfu5l/image/upload/v1753700000/delicutee/placeholder.png';
 
     function sanitizeInput(input) {
+      if (typeof input !== 'string') return '';
       const div = document.createElement('div');
       div.textContent = input;
       return div.innerHTML;
+    }
+
+    function handleImageError(imgElement, itemName) {
+      console.warn(`Image failed to load for ${itemName}: ${imgElement.src}`);
+      imgElement.src = PLACEHOLDER_IMAGE;
+      imgElement.onerror = null; // Prevent infinite error loops
     }
 
     function setLoading(button, isLoading) {
@@ -749,6 +765,10 @@
       successMessage.textContent = sanitizeInput(message);
       successMessage.style.display = 'block';
       setTimeout(clearMessages, 5000);
+    }
+
+    function isValidCloudinaryUrl(url) {
+      return url && url.startsWith('https://res.cloudinary.com/do9cbfu5l/');
     }
 
     async function fetchOrders() {
@@ -841,9 +861,10 @@
           const savedAmount = item.savedAmount !== null ? Number(item.savedAmount) : null;
           const formattedPrice = isNaN(price) ? 'N/A' : `₹${price.toFixed(2)}`;
           const formattedSavedAmount = savedAmount === null || isNaN(savedAmount) ? 'N/A' : `<span class="saved-amount"><i class="fas fa-tag"></i> ₹${savedAmount.toFixed(2)}</span>`;
+          const imageUrl = isValidCloudinaryUrl(item.image) ? item.image : PLACEHOLDER_IMAGE;
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><img src="${sanitizeInput(item.image || PLACEHOLDER_IMAGE)}" alt="${sanitizeInput(item.name)}" class="menu-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
+            <td><img src="${sanitizeInput(imageUrl)}" alt="${sanitizeInput(item.name)}" class="menu-item" onerror="handleImageError(this, '${sanitizeInput(item.name)}')" /></td>
             <td>${sanitizeInput(item.name)}</td>
             <td class="description-cell">${sanitizeInput(item.description || 'No description')}</td>
             <td>${sanitizeInput(item.category)}</td>
@@ -920,10 +941,11 @@
         }
 
         coupons.forEach(coupon => {
-          const discount = coupon.discount !== null && !isNaN(coupon.discount) ? `${coupon.discount}%` : 'N/A';
+          const discount = coupon.discount !== null && !isNaN(coupon.discount) ? `${coupon.discount}${coupon.type === 'percentage' ? '%' : '₹'}` : 'N/A';
+          const imageUrl = isValidCloudinaryUrl(coupon.image) ? coupon.image : PLACEHOLDER_IMAGE;
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><img src="${sanitizeInput(coupon.image || PLACEHOLDER_IMAGE)}" alt="${sanitizeInput(coupon.code)}" class="coupon-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
+            <td><img src="${sanitizeInput(imageUrl)}" alt="${sanitizeInput(coupon.code)}" class="coupon-item" onerror="handleImageError(this, '${sanitizeInput(coupon.code)}')" /></td>
             <td>${sanitizeInput(coupon.code)}</td>
             <td class="description-cell">${sanitizeInput(coupon.description)}</td>
             <td>Buy ${coupon.buy_x}</td>
@@ -958,9 +980,10 @@
           tbody.innerHTML = '<tr><td colspan="4" class="empty-message">No top picks available</td></tr>';
         } else {
           topPicks.forEach(item => {
+            const imageUrl = isValidCloudinaryUrl(item.image) ? item.image : PLACEHOLDER_IMAGE;
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td><img src="${sanitizeInput(item.image || PLACEHOLDER_IMAGE)}" alt="${sanitizeInput(item.name)}" class="menu-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
+              <td><img src="${sanitizeInput(imageUrl)}" alt="${sanitizeInput(item.name)}" class="menu-item" onerror="handleImageError(this, '${sanitizeInput(item.name)}')" /></td>
               <td>${sanitizeInput(item.name)}</td>
               <td>${sanitizeInput(item.category)}</td>
               <td><button class="btn btn-danger" onclick="deleteTopPick('${sanitizeInput(item._id)}')"><i class="fas fa-trash"></i> Remove</button></td>
@@ -1016,7 +1039,7 @@
           document.getElementById('menu-category').value = sanitizeInput(item.category || '');
           document.getElementById('menu-price').value = Number(item.price).toFixed(2) || '';
           document.getElementById('menu-saved-amount').value = item.savedAmount !== null ? Number(item.savedAmount).toFixed(2) : '';
-          document.getElementById('menu-existing-image').value = sanitizeInput(item.image || '');
+          document.getElementById('menu-existing-image').value = isValidCloudinaryUrl(item.image) ? item.image : '';
           modal.style.display = 'flex';
         } catch (error) {
           showError(error.message);
@@ -1055,10 +1078,11 @@
           document.getElementById('coupon-description').value = sanitizeInput(coupon.description || '');
           document.getElementById('coupon-buy-x').value = coupon.buy_x || 1;
           document.getElementById('coupon-discount').value = coupon.discount !== null && !isNaN(coupon.discount) ? coupon.discount : '';
+          document.getElementById('coupon-type').value = coupon.type || 'buy_x';
           document.getElementById('coupon-category').value = sanitizeInput(coupon.category || '');
           document.getElementById('coupon-valid-from').value = coupon.validFrom ? new Date(coupon.validFrom).toISOString().split('T')[0] : '';
           document.getElementById('coupon-valid-to').value = coupon.validTo ? new Date(coupon.validTo).toISOString().split('T')[0] : '';
-          document.getElementById('coupon-existing-image').value = sanitizeInput(coupon.image || '');
+          document.getElementById('coupon-existing-image').value = isValidCloudinaryUrl(coupon.image) ? coupon.image : '';
           modal.style.display = 'flex';
         } catch (error) {
           showError(error.message);
@@ -1066,6 +1090,7 @@
       } else {
         form.reset();
         document.getElementById('coupon-existing-image').value = '';
+        document.getElementById('coupon-type').value = 'buy_x';
         modal.style.display = 'flex';
       }
     }
@@ -1269,6 +1294,10 @@
         formData.append('image', imageFile);
       } else if (existingImage && mode === 'edit') {
         formData.append('existingImage', sanitizeInput(existingImage));
+      } else if (mode === 'add') {
+        showError('Image is required for new menu items');
+        setLoading(button, false);
+        return;
       }
 
       try {
@@ -1304,12 +1333,13 @@
       const code = document.getElementById('coupon-code').value.trim().toUpperCase();
       const description = document.getElementById('coupon-description').value.trim();
       const buyX = parseInt(document.getElementById('coupon-buy-x').value);
-      const discount = parseInt(document.getElementById('coupon-discount').value);
+      const discount = parseFloat(document.getElementById('coupon-discount').value);
+      const type = document.getElementById('coupon-type').value;
       const category = document.getElementById('coupon-category').value;
       const validFrom = document.getElementById('coupon-valid-from').value;
       const validTo = document.getElementById('coupon-valid-to').value;
 
-      if (!code || !description || !category || isNaN(buyX) || buyX < 1 || isNaN(discount) || discount < 1 || discount > 100 || !validFrom || !validTo) {
+      if (!code || !description || !category || isNaN(buyX) || buyX < 1 || isNaN(discount) || discount < 0 || !validFrom || !validTo || !type) {
         showError('Please fill all required fields with valid values');
         setLoading(button, false);
         return;
@@ -1326,6 +1356,7 @@
       formData.append('description', sanitizeInput(description));
       formData.append('buy_x', buyX);
       formData.append('discount', discount);
+      formData.append('type', type);
       formData.append('category', sanitizeInput(category));
       formData.append('validFrom', validFrom);
       formData.append('validTo', validTo);
@@ -1335,6 +1366,10 @@
         formData.append('image', imageFile);
       } else if (existingImage && mode === 'edit') {
         formData.append('existingImage', sanitizeInput(existingImage));
+      } else if (mode === 'add') {
+        showError('Image is required for new coupons');
+        setLoading(button, false);
+        return;
       }
 
       try {

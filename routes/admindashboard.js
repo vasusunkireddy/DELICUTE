@@ -72,7 +72,7 @@ initializePool()
   })
   .catch(err => {
     console.error('Error initializing MySQL pool:', { message: err.message });
-    process.exit(1); // Exit process if pool initialization fails
+    process.exit(1);
   });
 
 // === Multer Configuration ===
@@ -144,9 +144,9 @@ const isValidId = (value, { req, location, path }) => {
   if (!value || value === 'undefined' || value === '') {
     throw new Error(`${path} cannot be undefined or empty`);
   }
-  const parsed = Number(value);
-  if (isNaN(parsed) || parsed < 1 || !Number.isInteger(parsed)) {
-    throw new Error(`${path} must be a valid positive integer or a string representing one`);
+  const parsed = parseInt(value, 10);
+  if (isNaN(parsed) || parsed < 1) {
+    throw new Error(`${path} must be a valid positive integer`);
   }
   req.sanitizedId = parsed;
   return true;
@@ -175,7 +175,12 @@ const destroyCloudinaryImage = async (imageUrl) => {
   }
 };
 
-// ========== ORDERS ==========
+// === Utility Function to Validate Cloudinary URL ===
+const isValidCloudinaryUrl = (url) => {
+  return url && url.startsWith(`https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`);
+};
+
+// === ORDERS ===
 router.get('/orders', authenticate, async (req, res) => {
   let connection;
   try {
@@ -186,7 +191,7 @@ router.get('/orders', authenticate, async (req, res) => {
              GROUP_CONCAT(CONCAT(m.name, ' (x', oi.quantity, ')', ' - ₹', oi.price)) AS items
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      LEFT JOIN menu m ON oi.menu_item_id = m.id
+      LEFT JOIN menu_items m ON oi.menu_item_id = m.id
       GROUP BY o.id
       ORDER BY o.created_at DESC
     `);
@@ -232,7 +237,7 @@ router.get(
                m.name AS item_name, oi.quantity, oi.price
         FROM orders o
         LEFT JOIN order_items oi ON o.id = oi.order_id
-        LEFT JOIN menu m ON oi.menu_item_id = m.id
+        LEFT JOIN menu_items m ON oi.menu_item_id = m.id
         WHERE o.id = ?
       `, [req.sanitizedId]);
 
@@ -298,7 +303,7 @@ router.patch(
   }
 );
 
-// ========== MENU ==========
+// === MENU ===
 router.get('/menu', authenticate, async (req, res) => {
   let connection;
   try {
@@ -308,8 +313,9 @@ router.get('/menu', authenticate, async (req, res) => {
       SELECT id AS _id, name, description, category, 
              CAST(price AS DECIMAL(10,2)) AS price, 
              CAST(saved_amount AS DECIMAL(10,2)) AS savedAmount, 
-             image 
-      FROM menu
+             image, is_top_pick AS isTopPick
+      FROM menu_items
+      WHERE is_active = 1
       ORDER BY name ASC
     `);
     res.json({
@@ -319,6 +325,8 @@ router.get('/menu', authenticate, async (req, res) => {
         _id: String(item._id),
         price: parseFloat(item.price),
         savedAmount: item.savedAmount ? parseFloat(item.savedAmount) : null,
+        isTopPick: Boolean(item.isTopPick),
+        image: isValidCloudinaryUrl(item.image) ? item.image : null,
       })),
     });
   } catch (err) {
@@ -342,9 +350,9 @@ router.get(
         SELECT id AS _id, name, description, category, 
                CAST(price AS DECIMAL(10,2)) AS price, 
                CAST(saved_amount AS DECIMAL(10,2)) AS savedAmount, 
-               image 
-        FROM menu 
-        WHERE id = ?
+               image, is_top_pick AS isTopPick
+        FROM menu_items 
+        WHERE id = ? AND is_active = 1
       `, [req.sanitizedId]);
 
       if (!items.length) {
@@ -359,6 +367,8 @@ router.get(
           _id: String(item._id),
           price: parseFloat(item.price),
           savedAmount: item.savedAmount ? parseFloat(item.savedAmount) : null,
+          isTopPick: Boolean(item.isTopPick),
+          image: isValidCloudinaryUrl(item.image) ? item.image : null,
         },
       });
     } catch (err) {
@@ -380,13 +390,20 @@ router.post(
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
     body('savedAmount').optional().isFloat({ min: 0 }).withMessage('Saved amount must be a positive number'),
+    body('isTopPick').optional().isBoolean().withMessage('isTopPick must be a boolean'),
   ]),
   async (req, res) => {
     let connection;
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { name, description, category, price, savedAmount } = req.body;
+      const { name, description, category, price, savedAmount, isTopPick } = req.body;
+
+      // Validate category exists
+      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
+      if (!categories.length) {
+        return res.status(400).json({ success: false, message: 'Invalid category' });
+      }
 
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'Image is required for new menu items' });
@@ -394,16 +411,27 @@ router.post(
 
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'delicutee/menu',
+        width: 300,
+        height: 300,
+        crop: 'fill',
       });
+
+      if (!isValidCloudinaryUrl(result.secure_url)) {
+        throw new Error('Invalid Cloudinary URL returned');
+      }
 
       await cleanupFile(req.file.path);
 
       const imageUrl = result.secure_url;
 
       const [resultDb] = await connection.query(
-        'INSERT INTO menu (name, description, category, price, saved_amount, image) VALUES (?, ?, ?, ?, ?, ?)',
-        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, imageUrl]
+        'INSERT INTO menu_items (name, description, category, price, saved_amount, image, is_top_pick, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, imageUrl, isTopPick ? 1 : 0, 1]
       );
+
+      if (isTopPick) {
+        await connection.query('INSERT INTO top_picks (item_id) VALUES (?)', [resultDb.insertId]);
+      }
 
       res.status(201).json({
         success: true,
@@ -415,6 +443,7 @@ router.post(
           price: parseFloat(price),
           savedAmount: savedAmount ? parseFloat(savedAmount) : null,
           image: imageUrl,
+          isTopPick: Boolean(isTopPick),
         },
       });
     } catch (err) {
@@ -438,6 +467,7 @@ router.put(
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
     body('savedAmount').optional().isFloat({ min: 0 }).withMessage('Saved amount must be a positive number'),
+    body('isTopPick').optional().isBoolean().withMessage('isTopPick must be a boolean'),
     body('existingImage').optional().isString().withMessage('Existing image must be a valid URL'),
   ]),
   async (req, res) => {
@@ -445,30 +475,49 @@ router.put(
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { name, description, category, price, savedAmount, existingImage } = req.body;
+      const { name, description, category, price, savedAmount, isTopPick, existingImage } = req.body;
       let image = existingImage;
+
+      // Validate category exists
+      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
+      if (!categories.length) {
+        return res.status(400).json({ success: false, message: 'Invalid category' });
+      }
 
       if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'delicutee/menu',
+          width: 300,
+          height: 300,
+          crop: 'fill',
         });
+        if (!isValidCloudinaryUrl(result.secure_url)) {
+          throw new Error('Invalid Cloudinary URL returned');
+        }
         image = result.secure_url;
         await cleanupFile(req.file.path);
 
-        if (existingImage) {
+        if (existingImage && isValidCloudinaryUrl(existingImage)) {
           await destroyCloudinaryImage(existingImage);
         }
-      } else if (!image) {
-        return res.status(400).json({ success: false, message: 'Image is required' });
+      } else if (!image || !isValidCloudinaryUrl(image)) {
+        return res.status(400).json({ success: false, message: 'Valid image URL is required' });
       }
 
       const [result] = await connection.query(
-        'UPDATE menu SET name = ?, description = ?, category = ?, price = ?, saved_amount = ?, image = ? WHERE id = ?',
-        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, image, req.sanitizedId]
+        'UPDATE menu_items SET name = ?, description = ?, category = ?, price = ?, saved_amount = ?, image = ?, is_top_pick = ? WHERE id = ? AND is_active = 1',
+        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, image, isTopPick ? 1 : 0, req.sanitizedId]
       );
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ success: false, message: 'Menu item not found' });
+        return res.status(404).json({ success: false, message: 'Menu item not found or inactive' });
+      }
+
+      const [existingTopPick] = await connection.query('SELECT id FROM top_picks WHERE item_id = ?', [req.sanitizedId]);
+      if (isTopPick && !existingTopPick.length) {
+        await connection.query('INSERT INTO top_picks (item_id) VALUES (?)', [req.sanitizedId]);
+      } else if (!isTopPick && existingTopPick.length) {
+        await connection.query('DELETE FROM top_picks WHERE item_id = ?', [req.sanitizedId]);
       }
 
       res.json({
@@ -481,6 +530,7 @@ router.put(
           price: parseFloat(price),
           savedAmount: savedAmount ? parseFloat(savedAmount) : null,
           image,
+          isTopPick: Boolean(isTopPick),
         },
       });
     } catch (err) {
@@ -502,17 +552,21 @@ router.delete(
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [item] = await connection.query('SELECT image FROM menu WHERE id = ?', [req.sanitizedId]);
+      const [item] = await connection.query('SELECT image FROM menu_items WHERE id = ? AND is_active = 1', [req.sanitizedId]);
       if (!item.length) {
-        return res.status(404).json({ success: false, message: 'Menu item not found' });
+        return res.status(404).json({ success: false, message: 'Menu item not found or inactive' });
       }
 
-      await destroyCloudinaryImage(item[0].image);
+      if (isValidCloudinaryUrl(item[0].image)) {
+        await destroyCloudinaryImage(item[0].image);
+      }
 
-      const [result] = await connection.query('DELETE FROM menu WHERE id = ?', [req.sanitizedId]);
+      const [result] = await connection.query('UPDATE menu_items SET is_active = 0 WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Menu item not found' });
       }
+
+      await connection.query('DELETE FROM top_picks WHERE item_id = ?', [req.sanitizedId]);
 
       res.json({ success: true, message: 'Menu item deleted successfully' });
     } catch (err) {
@@ -524,16 +578,16 @@ router.delete(
   }
 );
 
-// ========== CATEGORIES ==========
+// === CATEGORIES ===
 router.get('/categories', authenticate, async (req, res) => {
   let connection;
   try {
     if (!pool) throw new Error('Database pool not initialized');
     connection = await pool.getConnection();
-    const [categories] = await connection.query('SELECT id AS _id, name FROM categories ORDER BY name ASC');
+    const [categories] = await connection.query('SELECT id AS _id, name, is_active AS isActive FROM categories WHERE is_active = 1 ORDER BY name ASC');
     res.json({
       success: true,
-      data: categories.map(category => ({ ...category, _id: String(category._id) })),
+      data: categories.map(category => ({ ...category, _id: String(category._id), isActive: Boolean(category.isActive) })),
     });
   } catch (err) {
     console.error('Categories Fetch Error:', { message: err.message, stack: err.stack });
@@ -552,14 +606,14 @@ router.get(
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [categories] = await connection.query('SELECT id AS _id, name FROM categories WHERE id = ?', [req.sanitizedId]);
+      const [categories] = await connection.query('SELECT id AS _id, name, is_active AS isActive FROM categories WHERE id = ? AND is_active = 1', [req.sanitizedId]);
       if (!categories.length) {
-        return res.status(404).json({ success: false, message: 'Category not found' });
+        return res.status(404).json({ success: false, message: 'Category not found or inactive' });
       }
 
       res.json({
         success: true,
-        data: { ...categories[0], _id: String(categories[0]._id) },
+        data: { ...categories[0], _id: String(categories[0]._id), isActive: Boolean(categories[0].isActive) },
       });
     } catch (err) {
       console.error('Category Fetch Error:', { message: err.message, stack: err.stack });
@@ -581,10 +635,10 @@ router.post(
       connection = await pool.getConnection();
       const { name } = req.body;
 
-      const [result] = await connection.query('INSERT INTO categories (name) VALUES (?)', [name]);
+      const [result] = await connection.query('INSERT INTO categories (name, is_active) VALUES (?, ?)', [name, 1]);
       res.status(201).json({
         success: true,
-        data: { _id: String(result.insertId), name },
+        data: { _id: String(result.insertId), name, isActive: true },
       });
     } catch (err) {
       console.error('Category Add Error:', { message: err.message, stack: err.stack });
@@ -613,14 +667,14 @@ router.put(
       connection = await pool.getConnection();
       const { name } = req.body;
 
-      const [result] = await connection.query('UPDATE categories SET name = ? WHERE id = ?', [name, req.sanitizedId]);
+      const [result] = await connection.query('UPDATE categories SET name = ? WHERE id = ? AND is_active = 1', [name, req.sanitizedId]);
       if (result.affectedRows === 0) {
-        return res.status(404).json({ success: false, message: 'Category not found' });
+        return res.status(404).json({ success: false, message: 'Category not found or inactive' });
       }
 
       res.json({
         success: true,
-        data: { _id: String(req.sanitizedId), name },
+        data: { _id: String(req.sanitizedId), name, isActive: true },
       });
     } catch (err) {
       console.error('Category Update Error:', { message: err.message, stack: err.stack });
@@ -644,8 +698,13 @@ router.delete(
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [menuItems] = await connection.query('SELECT id FROM menu WHERE category = (SELECT name FROM categories WHERE id = ?)', [req.sanitizedId]);
-      const [coupons] = await connection.query('SELECT id FROM coupons WHERE category = (SELECT name FROM categories WHERE id = ?)', [req.sanitizedId]);
+      const [category] = await connection.query('SELECT name FROM categories WHERE id = ? AND is_active = 1', [req.sanitizedId]);
+      if (!category.length) {
+        return res.status(404).json({ success: false, message: 'Category not found or inactive' });
+      }
+
+      const [menuItems] = await connection.query('SELECT id FROM menu_items WHERE category = ? AND is_active = 1', [category[0].name]);
+      const [coupons] = await connection.query('SELECT id FROM coupons WHERE category = ? AND isActive = 1', [category[0].name]);
 
       if (menuItems.length > 0 || coupons.length > 0) {
         return res.status(400).json({
@@ -654,7 +713,7 @@ router.delete(
         });
       }
 
-      const [result] = await connection.query('DELETE FROM categories WHERE id = ?', [req.sanitizedId]);
+      const [result] = await connection.query('UPDATE categories SET is_active = 0 WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Category not found' });
       }
@@ -669,7 +728,7 @@ router.delete(
   }
 );
 
-// ========== COUPONS ==========
+// === COUPONS ===
 router.get('/coupons', authenticate, async (req, res) => {
   let connection;
   try {
@@ -677,8 +736,9 @@ router.get('/coupons', authenticate, async (req, res) => {
     connection = await pool.getConnection();
     const [coupons] = await connection.query(`
       SELECT id AS _id, code, description, buy_x, discount, category, 
-             valid_from AS validFrom, valid_to AS validTo, image 
+             valid_from AS validFrom, valid_to AS validTo, image, isActive, type
       FROM coupons 
+      WHERE isActive = 1
       ORDER BY valid_from DESC
     `);
     res.json({
@@ -687,9 +747,11 @@ router.get('/coupons', authenticate, async (req, res) => {
         ...coupon,
         _id: String(coupon._id),
         buy_x: parseInt(coupon.buy_x),
-        discount: coupon.discount ? parseInt(coupon.discount) : null,
+        discount: coupon.discount ? parseFloat(coupon.discount) : null,
         validFrom: coupon.validFrom.toISOString().split('T')[0],
         validTo: coupon.validTo.toISOString().split('T')[0],
+        isActive: Boolean(coupon.isActive),
+        image: isValidCloudinaryUrl(coupon.image) ? coupon.image : null,
       })),
     });
   } catch (err) {
@@ -711,13 +773,13 @@ router.get(
       connection = await pool.getConnection();
       const [coupons] = await connection.query(`
         SELECT id AS _id, code, description, buy_x, discount, category, 
-               valid_from AS validFrom, valid_to AS validTo, image 
+               valid_from AS validFrom, valid_to AS validTo, image, isActive, type
         FROM coupons 
-        WHERE id = ?
+        WHERE id = ? AND isActive = 1
       `, [req.sanitizedId]);
 
       if (!coupons.length) {
-        return res.status(404).json({ success: false, message: 'Coupon not found' });
+        return res.status(404).json({ success: false, message: 'Coupon not found or inactive' });
       }
 
       const coupon = coupons[0];
@@ -727,9 +789,11 @@ router.get(
           ...coupon,
           _id: String(coupon._id),
           buy_x: parseInt(coupon.buy_x),
-          discount: coupon.discount ? parseInt(coupon.discount) : null,
+          discount: coupon.discount ? parseFloat(coupon.discount) : null,
           validFrom: coupon.validFrom.toISOString().split('T')[0],
           validTo: coupon.validTo.toISOString().split('T')[0],
+          isActive: Boolean(coupon.isActive),
+          image: isValidCloudinaryUrl(coupon.image) ? coupon.image : null,
         },
       });
     } catch (err) {
@@ -749,17 +813,24 @@ router.post(
     body('code').trim().notEmpty().withMessage('Coupon code is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
     body('buy_x').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
-    body('discount').isInt({ min: 1, max: 100 }).withMessage('Discount must be an integer between 1 and 100'),
+    body('discount').isFloat({ min: 0 }).withMessage('Discount must be a positive number'),
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('validFrom').isISO8601().withMessage('Valid from date is invalid'),
     body('validTo').isISO8601().withMessage('Valid to date is invalid'),
+    body('type').isIn(['percentage', 'flat', 'buy_x']).withMessage('Invalid coupon type'),
   ]),
   async (req, res) => {
     let connection;
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { code, description, buy_x, discount, category, validFrom, validTo } = req.body;
+      const { code, description, buy_x, discount, category, validFrom, validTo, type } = req.body;
+
+      // Validate category exists
+      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
+      if (!categories.length) {
+        return res.status(400).json({ success: false, message: 'Invalid category' });
+      }
 
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'Image is required for new coupons' });
@@ -771,15 +842,22 @@ router.post(
 
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'delicutee/coupons',
+        width: 300,
+        height: 300,
+        crop: 'fill',
       });
+
+      if (!isValidCloudinaryUrl(result.secure_url)) {
+        throw new Error('Invalid Cloudinary URL returned');
+      }
 
       await cleanupFile(req.file.path);
 
       const imageUrl = result.secure_url;
 
       const [resultDb] = await connection.query(
-        'INSERT INTO coupons (code, description, buy_x, discount, category, valid_from, valid_to, image, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [code.toUpperCase(), description, parseInt(buy_x), parseInt(discount), category, validFrom, validTo, imageUrl, true]
+        'INSERT INTO coupons (code, description, buy_x, discount, category, valid_from, valid_to, image, type, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [code.toUpperCase(), description, parseInt(buy_x), parseFloat(discount), category, validFrom, validTo, imageUrl, type, 1]
       );
 
       res.status(201).json({
@@ -789,11 +867,13 @@ router.post(
           code: code.toUpperCase(),
           description,
           buy_x: parseInt(buy_x),
-          discount: parseInt(discount),
+          discount: parseFloat(discount),
           category,
           validFrom: new Date(validFrom).toISOString().split('T')[0],
           validTo: new Date(validTo).toISOString().split('T')[0],
           image: imageUrl,
+          type,
+          isActive: true,
         },
       });
     } catch (err) {
@@ -819,10 +899,11 @@ router.put(
     body('code').trim().notEmpty().withMessage('Coupon code is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
     body('buy_x').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
-    body('discount').isInt({ min: 1, max: 100 }).withMessage('Discount must be an integer between 1 and 100'),
+    body('discount').isFloat({ min: 0 }).withMessage('Discount must be a positive number'),
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('validFrom').isISO8601().withMessage('Valid from date is invalid'),
     body('validTo').isISO8601().withMessage('Valid to date is invalid'),
+    body('type').isIn(['percentage', 'flat', 'buy_x']).withMessage('Invalid coupon type'),
     body('existingImage').optional().isString().withMessage('Existing image must be a valid URL'),
   ]),
   async (req, res) => {
@@ -830,8 +911,14 @@ router.put(
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { code, description, buy_x, discount, category, validFrom, validTo, existingImage } = req.body;
+      const { code, description, buy_x, discount, category, validFrom, validTo, type, existingImage } = req.body;
       let image = existingImage;
+
+      // Validate category exists
+      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
+      if (!categories.length) {
+        return res.status(400).json({ success: false, message: 'Invalid category' });
+      }
 
       if (new Date(validFrom) > new Date(validTo)) {
         return res.status(400).json({ success: false, message: 'Valid from date cannot be after valid to date' });
@@ -840,24 +927,30 @@ router.put(
       if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'delicutee/coupons',
+          width: 300,
+          height: 300,
+          crop: 'fill',
         });
+        if (!isValidCloudinaryUrl(result.secure_url)) {
+          throw new Error('Invalid Cloudinary URL returned');
+        }
         image = result.secure_url;
         await cleanupFile(req.file.path);
 
-        if (existingImage) {
+        if (existingImage && isValidCloudinaryUrl(existingImage)) {
           await destroyCloudinaryImage(existingImage);
         }
-      } else if (!image) {
-        return res.status(400).json({ success: false, message: 'Image is required' });
+      } else if (!image || !isValidCloudinaryUrl(image)) {
+        return res.status(400).json({ success: false, message: 'Valid image URL is required' });
       }
 
       const [result] = await connection.query(
-        'UPDATE coupons SET code = ?, description = ?, buy_x = ?, discount = ?, category = ?, valid_from = ?, valid_to = ?, image = ? WHERE id = ?',
-        [code.toUpperCase(), description, parseInt(buy_x), parseInt(discount), category, validFrom, validTo, image, req.sanitizedId]
+        'UPDATE coupons SET code = ?, description = ?, buy_x = ?, discount = ?, category = ?, valid_from = ?, valid_to = ?, image = ?, type = ? WHERE id = ? AND isActive = 1',
+        [code.toUpperCase(), description, parseInt(buy_x), parseFloat(discount), category, validFrom, validTo, image, type, req.sanitizedId]
       );
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ success: false, message: 'Coupon not found' });
+        return res.status(404).json({ success: false, message: 'Coupon not found or inactive' });
       }
 
       res.json({
@@ -867,11 +960,13 @@ router.put(
           code: code.toUpperCase(),
           description,
           buy_x: parseInt(buy_x),
-          discount: parseInt(discount),
+          discount: parseFloat(discount),
           category,
           validFrom: new Date(validFrom).toISOString().split('T')[0],
           validTo: new Date(validTo).toISOString().split('T')[0],
           image,
+          type,
+          isActive: true,
         },
       });
     } catch (err) {
@@ -897,14 +992,16 @@ router.delete(
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [coupon] = await connection.query('SELECT image FROM coupons WHERE id = ?', [req.sanitizedId]);
+      const [coupon] = await connection.query('SELECT image FROM coupons WHERE id = ? AND isActive = 1', [req.sanitizedId]);
       if (!coupon.length) {
-        return res.status(404).json({ success: false, message: 'Coupon not found' });
+        return res.status(404).json({ success: false, message: 'Coupon not found or inactive' });
       }
 
-      await destroyCloudinaryImage(coupon[0].image);
+      if (isValidCloudinaryUrl(coupon[0].image)) {
+        await destroyCloudinaryImage(coupon[0].image);
+      }
 
-      const [result] = await connection.query('DELETE FROM coupons WHERE id = ?', [req.sanitizedId]);
+      const [result] = await connection.query('UPDATE coupons SET isActive = 0 WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
@@ -919,7 +1016,7 @@ router.delete(
   }
 );
 
-// ========== TOP PICKS ==========
+// === TOP PICKS ===
 router.get('/top-picks', authenticate, async (req, res) => {
   let connection;
   try {
@@ -931,7 +1028,8 @@ router.get('/top-picks', authenticate, async (req, res) => {
              CAST(m.saved_amount AS DECIMAL(10,2)) AS savedAmount, 
              m.image
       FROM top_picks t
-      JOIN menu m ON t.item_id = m.id
+      JOIN menu_items m ON t.item_id = m.id
+      WHERE m.is_active = 1
       ORDER BY m.name ASC
     `);
     res.json({
@@ -942,6 +1040,7 @@ router.get('/top-picks', authenticate, async (req, res) => {
         item_id: String(item.item_id),
         price: parseFloat(item.price),
         savedAmount: item.savedAmount ? parseFloat(item.savedAmount) : null,
+        image: isValidCloudinaryUrl(item.image) ? item.image : null,
       })),
     });
   } catch (err) {
@@ -964,9 +1063,9 @@ router.post(
       const { itemId } = req.body;
       const parsedItemId = req.sanitizedId;
 
-      const [items] = await connection.query('SELECT id FROM menu WHERE id = ?', [parsedItemId]);
+      const [items] = await connection.query('SELECT id FROM menu_items WHERE id = ? AND is_active = 1', [parsedItemId]);
       if (!items.length) {
-        return res.status(404).json({ success: false, message: 'Menu item not found' });
+        return res.status(404).json({ success: false, message: 'Menu item not found or inactive' });
       }
 
       const [existing] = await connection.query('SELECT id FROM top_picks WHERE item_id = ?', [parsedItemId]);
@@ -975,6 +1074,8 @@ router.post(
       }
 
       const [result] = await connection.query('INSERT INTO top_picks (item_id) VALUES (?)', [parsedItemId]);
+      await connection.query('UPDATE menu_items SET is_top_pick = 1 WHERE id = ?', [parsedItemId]);
+
       res.status(201).json({
         success: true,
         data: { _id: String(result.insertId), itemId: String(parsedItemId) },
@@ -997,10 +1098,17 @@ router.delete(
     try {
       if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
+      const [topPick] = await connection.query('SELECT item_id FROM top_picks WHERE id = ?', [req.sanitizedId]);
+      if (!topPick.length) {
+        return res.status(404).json({ success: false, message: 'Top pick not found' });
+      }
+
       const [result] = await connection.query('DELETE FROM top_picks WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Top pick not found' });
       }
+
+      await connection.query('UPDATE menu_items SET is_top_pick = 0 WHERE id = ?', [topPick[0].item_id]);
 
       res.json({ success: true, message: 'Top pick removed successfully' });
     } catch (err) {
