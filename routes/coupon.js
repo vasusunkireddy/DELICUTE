@@ -1,11 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs/promises');
 
 // Get all valid coupons
 router.get('/coupons', async (req, res, next) => {
   try {
     const db = req.app.locals.db;
+    if (!db) throw new Error('Database connection not found');
+
     const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
     
     const [coupons] = await db.query(`
@@ -29,7 +30,7 @@ router.get('/coupons', async (req, res, next) => {
     });
   } catch (error) {
     console.error('Error fetching coupons:', error.message);
-    next(error); // Pass to error handling middleware
+    next(error);
   }
 });
 
@@ -37,13 +38,15 @@ router.get('/coupons', async (req, res, next) => {
 router.post('/validate-coupon', async (req, res, next) => {
   try {
     const { couponCode, items } = req.body;
-    if (!couponCode || !Array.isArray(items)) {
+    if (!couponCode || typeof couponCode !== 'string' || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ success: false, message: 'Invalid coupon code or items' });
     }
 
     const db = req.app.locals.db;
-    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    if (!db) throw new Error('Database connection not found');
 
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+    
     const [coupons] = await db.query(`
       SELECT code, category, buy_x, discount
       FROM coupons
@@ -55,14 +58,15 @@ router.post('/validate-coupon', async (req, res, next) => {
     }
 
     const coupon = coupons[0];
-    const eligibleItems = items.filter(item => {
-      // Fetch item category from database to ensure accuracy
-      return db.query('SELECT category FROM menu WHERE id = ?', [item._id])
-        .then(([result]) => result.length > 0 && result[0].category === coupon.category)
-        .catch(() => false);
-    });
+    const eligibleItems = await Promise.all(
+      items.map(async (item) => {
+        if (!item._id || !item.quantity || typeof item.quantity !== 'number') return false;
+        const [result] = await db.query('SELECT category FROM menu WHERE id = ?', [item._id]);
+        return result.length > 0 && result[0].category === coupon.category;
+      })
+    );
 
-    const eligibleQuantity = (await Promise.all(eligibleItems)).reduce((sum, valid, index) => {
+    const eligibleQuantity = eligibleItems.reduce((sum, valid, index) => {
       return valid ? sum + items[index].quantity : sum;
     }, 0);
 
