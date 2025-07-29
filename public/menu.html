@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Delicute | Customer Menu</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
@@ -21,8 +21,6 @@
       min-height: 100vh;
       line-height: 1.6;
       overflow-x: hidden;
-      overscroll-behavior: none;
-      touch-action: manipulation;
     }
 
     .container {
@@ -41,6 +39,7 @@
       margin-bottom: 1.5rem;
       position: relative;
       overflow: hidden;
+      z-index: 100;
     }
 
     .header::before {
@@ -352,7 +351,7 @@
 
     .category-section h2::after {
       content: '';
-      display: unset;
+      display: block;
       width: 80px;
       height: 4px;
       background: linear-gradient(45deg, #ff6200, #ff8c00);
@@ -492,7 +491,7 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: hsl(0, 12%, 5%);
+      color: hwb(60 3% 96%);
       border: none;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -713,25 +712,35 @@
 
     .toast {
       position: fixed;
-      top: 1rem;
+      top: 4.5rem; /* Below header */
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 0.6rem 1rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-      border: 1px solid transparent;
-      border-image: linear-gradient(45deg, #ff6200, #ff8c00) 1;
+      background: linear-gradient(45deg, #ff6200, #ff8c00);
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 0.8rem 1.2rem;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 0 10px rgba(255, 98, 0, 0.4);
       backdrop-filter: blur(8px);
       display: none;
-      z-index: 3000;
-      font-size: 0.85rem;
-      font-weight: 500;
-      color: #1a1a1a;
-      max-width: 85%;
+      z-index: 2000;
+      font-size: 0.9rem;
+      font-weight: 600;
+      max-width: 90%;
       text-align: center;
-      animation: slideDown 0.3s ease-out, slideUp 0.3s ease-in 0.7s forwards;
+      animation: slideDown 0.4s ease-out, slideUp 0.4s ease-in 2.6s forwards;
       will-change: transform, opacity;
+    }
+
+    .toast::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(45deg, rgba(255, 255, 255, 0.2), transparent);
+      border-radius: 12px;
+      z-index: -1;
     }
 
     .toast::after {
@@ -740,9 +749,9 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      height: 2px;
-      background: linear-gradient(90deg, #ff6200, #ff8c00);
-      animation: progress 1s linear forwards;
+      height: 3px;
+      background: #ffffff;
+      animation: progress 3s linear forwards;
     }
 
     .filter-modal .form-group label {
@@ -937,9 +946,9 @@
 
       .toast {
         max-width: 90%;
-        padding: 0.5rem 0.8rem;
-        font-size: 0.8rem;
-        border-radius: 12px;
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+        border-radius: 10px;
       }
     }
   </style>
@@ -1045,10 +1054,18 @@
     let allMenuItems = [];
     let selectedCategories = new Set(['all']);
     let searchQuery = '';
+    let toastTimeout = null;
 
     function showToast(message, type = 'info') {
       const toastContainer = document.getElementById('toast-container');
       if (!toastContainer) return;
+
+      // Clear any existing toast
+      if (toastTimeout) {
+        clearTimeout(toastTimeout);
+        toastContainer.innerHTML = '';
+      }
+
       const toast = document.createElement('div');
       toast.className = 'toast';
       toast.textContent = message;
@@ -1056,10 +1073,11 @@
       toast.setAttribute('role', 'alert');
       toastContainer.appendChild(toast);
       toast.style.display = 'block';
-      setTimeout(() => {
+      toastTimeout = setTimeout(() => {
         toast.style.display = 'none';
         toast.remove();
-      }, 1000);
+        toastTimeout = null;
+      }, 3000);
     }
 
     function loadCartAndCoupon() {
@@ -1357,7 +1375,8 @@
       });
 
       document.querySelectorAll('.menu-item .add-to-cart-btn').forEach(button => {
-        button.addEventListener('click', () => {
+        button.removeEventListener('click', button._clickHandler); // Remove previous listeners
+        button._clickHandler = () => {
           const index = Number(button.dataset.index);
           const item = allMenuItems.find(i => i.id === index);
           if (!item) {
@@ -1365,7 +1384,8 @@
             return;
           }
           addToCart(item);
-        });
+        };
+        button.addEventListener('click', button._clickHandler);
       });
     }
 
@@ -1411,7 +1431,8 @@
           topPicksScroll.appendChild(div);
         });
         document.querySelectorAll('.top-pick-item .add-to-cart-btn').forEach(button => {
-          button.addEventListener('click', () => {
+          button.removeEventListener('click', button._clickHandler); // Remove previous listeners
+          button._clickHandler = () => {
             const index = Number(button.dataset.index);
             const item = topPicks.find(i => i.id === index);
             if (!item) {
@@ -1419,7 +1440,8 @@
               return;
             }
             addToCart(item);
-          });
+          };
+          button.addEventListener('click', button._clickHandler);
         });
       } catch (error) {
         console.error('Top Picks Error:', error);
@@ -1597,11 +1619,6 @@
         document.querySelectorAll('.modal[style*="display: flex"]').forEach(modal => closeModal(modal.id));
       }
     });
-
-    document.addEventListener('gesturestart', e => e.preventDefault());
-    document.addEventListener('touchmove', e => {
-      if (e.scale !== 1) e.preventDefault();
-    }, { passive: false });
   </script>
 </body>
 </html>
