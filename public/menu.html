@@ -423,7 +423,7 @@
       font-size: 0.95rem;
       box-shadow: 0 4px 8px rgba(239, 83, 80, 0.3);
       min-height: 48px;
-      display: inline-flex !important;
+      display: inline-flex;
       align-items: center;
       justify-content: center;
       width: auto;
@@ -504,7 +504,9 @@
       margin-bottom: 0.8rem;
     }
 
-    .form-group input, .form-group textarea, .form-group select {
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
       width: 100%;
       padding: 1.2rem;
       border: 1px solid rgba(0, 0, 0, 0.12);
@@ -515,7 +517,9 @@
       min-height: 50px;
     }
 
-    .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
       outline: none;
       border-color: #ff6200;
       box-shadow: 0 0 0 3px rgba(255, 98, 0, 0.25);
@@ -640,84 +644,6 @@
       color: #d32f2f;
     }
 
-    .coupon-list {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.2rem;
-      max-height: 450px;
-      overflow-y: auto;
-      padding: 1rem;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.4);
-    }
-
-    .coupon-list::-webkit-scrollbar {
-      width: 10px;
-    }
-
-    .coupon-list::-webkit-scrollbar-thumb {
-      background: #ff6200;
-      border-radius: 5px;
-    }
-
-    .coupon-list::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.4);
-    }
-
-    .coupon-item {
-      background: rgba(255, 255, 255, 0.98);
-      border-radius: 12px;
-      padding: 1.2rem;
-      display: flex;
-      gap: 1.2rem;
-      align-items: center;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s ease;
-    }
-
-    .coupon-item:hover {
-      transform: translateY(-4px);
-    }
-
-    .coupon-item img {
-      width: 70px;
-      height: 70px;
-      object-fit: cover;
-      border-radius: 10px;
-      flex-shrink: 0;
-    }
-
-    .coupon-item-details {
-      flex: 1;
-    }
-
-    .coupon-item-details h4 {
-      font-family: 'Playfair Display', serif;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #1a1a1a;
-      margin-bottom: 0.5rem;
-    }
-
-    .coupon-item-details p {
-      font-size: 1rem;
-      color: #4a4a4a;
-      line-height: 1.5;
-    }
-
-    .coupon-item button {
-      font-size: 1rem;
-      padding: 0.6rem 1.2rem;
-      min-height: 48px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 2rem;
-      font-size: 1.1rem;
-      color: #4a4a4a;
-    }
-
     .toast {
       position: fixed;
       top: 2rem;
@@ -823,15 +749,6 @@
         width: 120px;
         height: 120px;
       }
-
-      .coupon-item img {
-        width: 80px;
-        height: 80px;
-      }
-
-      .coupon-list {
-        grid-template-columns: repeat(2, 1fr);
-      }
     }
 
     @media (min-width: 1024px) {
@@ -845,10 +762,6 @@
 
       .top-pick-item img {
         height: 260px;
-      }
-
-      .coupon-list {
-        grid-template-columns: repeat(3, 1fr);
       }
     }
 
@@ -870,11 +783,13 @@
         height: 80px;
       }
 
-      .menu-item h3, .top-pick-item h3 {
+      .menu-item h3,
+      .top-pick-item h3 {
         font-size: 1.2rem;
       }
 
-      .menu-item p, .top-pick-item p {
+      .menu-item p,
+      .top-pick-item p {
         font-size: 0.9rem;
       }
 
@@ -919,7 +834,9 @@
         font-size: 1.6rem;
       }
 
-      .form-group input, .form-group textarea, .form-group select {
+      .form-group input,
+      .form-group textarea,
+      .form-group select {
         padding: 1.2rem;
         font-size: 1.1rem;
         min-height: 55px;
@@ -935,25 +852,6 @@
         font-size: 1.1rem;
       }
 
-      .coupon-item img {
-        width: 60px;
-        height: 60px;
-      }
-
-      .coupon-item-details h4 {
-        font-size: 1rem;
-      }
-
-      .coupon-item-details p {
-        font-size: 0.9rem;
-      }
-
-      .coupon-item button {
-        font-size: 1rem;
-        padding: 0.8rem 1.5rem;
-        min-height: 50px;
-      }
-
       .cart-item {
         flex-direction: column;
         align-items: flex-start;
@@ -966,10 +864,6 @@
 
       .quantity-controls {
         margin-top: 1rem;
-      }
-
-      .coupon-list {
-        max-height: 300px;
       }
 
       .toast {
@@ -1050,10 +944,7 @@
           <p>Total: ₹<span id="cart-total">0.00</span></p>
         </div>
         <div class="form-group">
-          <label for="coupon-select">Available Coupons</label>
-          <div id="coupon-list" class="coupon-list">
-            <div class="loading">Loading coupons...</div>
-          </div>
+          <button class="btn" onclick="window.location.href='coupons.html'" aria-label="View available coupons"><i class="fas fa-ticket-alt"></i> View Coupons</button>
           <p id="coupon-applied" class="coupon-applied" style="display: none;"></p>
         </div>
         <div class="cart-footer">
@@ -1096,11 +987,14 @@
     let cart = [];
     let appliedCoupon = null;
     let allMenuItems = [];
-    let availableCoupons = [];
 
     // Utility function to show toast notifications
     function showToast(message, type = 'success') {
       const toastContainer = document.getElementById('toast-container');
+      if (!toastContainer) {
+        console.error('Toast container not found');
+        return;
+      }
       const toast = document.createElement('div');
       toast.className = `toast ${type}`;
       toast.textContent = message;
@@ -1114,17 +1008,87 @@
       }, 5000);
     }
 
+    // Load cart and applied coupon from localStorage
+    function loadCartAndCoupon() {
+      try {
+        const storedCart = localStorage.getItem('cart');
+        if (storedCart) {
+          cart = JSON.parse(storedCart);
+          console.log('Raw cart from localStorage:', storedCart);
+          // Validate cart items
+          cart = cart.filter(item => {
+            if (!item || !item.id || !item._id || !item.category || !Number.isInteger(item.quantity) || item.quantity < 1 || !item.name || isNaN(Number(item.price))) {
+              console.warn('Invalid cart item filtered out:', item);
+              return false;
+            }
+            return true;
+          });
+          console.log('Validated cart:', cart);
+          localStorage.setItem('cart', JSON.stringify(cart)); // Update localStorage with validated cart
+        } else {
+          console.log('No cart found in localStorage');
+          cart = [];
+        }
+        const storedCoupon = localStorage.getItem('appliedCoupon');
+        if (storedCoupon) {
+          appliedCoupon = JSON.parse(storedCoupon);
+          console.log('Loaded applied coupon:', appliedCoupon);
+        } else {
+          console.log('No applied coupon in localStorage');
+        }
+        updateCouponDisplay();
+        updateCart();
+      } catch (error) {
+        console.error('Error loading cart or coupon from localStorage:', error);
+        showToast('Error loading cart data', 'error');
+        cart = [];
+        localStorage.setItem('cart', JSON.stringify(cart));
+      }
+    }
+
+    // Save applied coupon to localStorage
+    function saveAppliedCoupon() {
+      try {
+        if (appliedCoupon) {
+          localStorage.setItem('appliedCoupon', JSON.stringify(appliedCoupon));
+          console.log('Saved applied coupon:', appliedCoupon);
+        } else {
+          localStorage.removeItem('appliedCoupon');
+          console.log('Removed applied coupon from localStorage');
+        }
+      } catch (error) {
+        console.error('Error saving coupon to localStorage:', error);
+        showToast('Error saving coupon', 'error');
+      }
+    }
+
+    // Update coupon display in cart
+    function updateCouponDisplay() {
+      const couponApplied = document.getElementById('coupon-applied');
+      if (!couponApplied) {
+        console.error('Coupon applied element not found');
+        return;
+      }
+      if (appliedCoupon) {
+        couponApplied.innerHTML = `Coupon "${appliedCoupon.code}" applied! Buy ${appliedCoupon.buy_x} items in ${appliedCoupon.category} for ${appliedCoupon.discount}% off. <span class="remove-coupon" onclick="removeCoupon()" aria-label="Remove coupon">Remove</span>`;
+        couponApplied.style.display = 'flex';
+      } else {
+        couponApplied.style.display = 'none';
+      }
+    }
+
     // Check coupon eligibility
     function checkCouponEligibility() {
       if (!appliedCoupon) return;
-      const eligibleItems = cart.filter(item => item.category === appliedCoupon.category);
+      const eligibleItems = cart.filter(item => item.category.toLowerCase() === appliedCoupon.category.toLowerCase());
       const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
+      console.log('Checking coupon eligibility:', { coupon: appliedCoupon.code, category: appliedCoupon.category, eligibleQuantity, required: appliedCoupon.buy_x });
       if (eligibleQuantity < appliedCoupon.buy_x) {
         const couponCode = appliedCoupon.code;
         appliedCoupon = null;
-        document.getElementById('coupon-applied').style.display = 'none';
+        saveAppliedCoupon();
+        updateCouponDisplay();
         updateCart();
-        renderCoupons();
         showToast(`Coupon ${couponCode} removed as eligibility criteria not met`, 'error');
       }
     }
@@ -1136,8 +1100,14 @@
       const cartDiscount = document.getElementById('cart-discount');
       const cartTotal = document.getElementById('cart-total');
       const cartCount = document.getElementById('cart-count');
-      cartItems.innerHTML = '';
 
+      if (!cartItems || !cartSubtotal || !cartDiscount || !cartTotal || !cartCount) {
+        console.error('Cart UI elements not found');
+        showToast('Error updating cart display', 'error');
+        return;
+      }
+
+      cartItems.innerHTML = '';
       if (cart.length === 0) {
         cartItems.innerHTML = '<p style="color: #4a4a4a; font-size: 1.1rem; text-align: center;">Your cart is empty</p>';
       }
@@ -1164,8 +1134,9 @@
       const subtotal = cart.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
       let discount = 0;
       let total = subtotal;
+
       if (appliedCoupon) {
-        const eligibleItems = cart.filter(item => item.category === appliedCoupon.category);
+        const eligibleItems = cart.filter(item => item.category.toLowerCase() === appliedCoupon.category.toLowerCase());
         const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
         const discountItems = Math.floor(eligibleQuantity / appliedCoupon.buy_x);
         if (discountItems > 0) {
@@ -1174,54 +1145,49 @@
           total = Math.max(subtotal - discount, 0);
         }
       }
+
       cartSubtotal.textContent = subtotal.toFixed(2);
       cartDiscount.textContent = discount.toFixed(2);
       cartTotal.textContent = total.toFixed(2);
       cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-    }
-
-    // Render coupons
-    function renderCoupons() {
-      const couponList = document.getElementById('coupon-list');
-      couponList.innerHTML = '';
-
-      if (availableCoupons.length === 0) {
-        couponList.innerHTML = '<p style="color: #4a4a4a; font-size: 1.1rem; text-align: center;">No coupons available</p>';
-        return;
-      }
-
-      availableCoupons.forEach(coupon => {
-        const div = document.createElement('div');
-        div.className = 'coupon-item';
-        div.innerHTML = `
-          <img src="${coupon.image || PLACEHOLDER_IMAGE}" alt="${coupon.code}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
-          <div class="coupon-item-details">
-            <h4>${coupon.code}</h4>
-            <p>${coupon.description || 'No description'} (Buy ${coupon.buy_x} items in ${coupon.category}, get ${coupon.discount}% off)</p>
-            <p>Valid: ${new Date(coupon.validFrom).toLocaleDateString()} - ${new Date(coupon.validTo).toLocaleDateString()}</p>
-          </div>
-          <button class="btn add-to-cart-btn" onclick="applyCoupon('${coupon.code}')" aria-label="${appliedCoupon && appliedCoupon.code === coupon.code ? 'Coupon applied' : 'Apply coupon ' + coupon.code}">${appliedCoupon && appliedCoupon.code === coupon.code ? 'Applied' : 'Apply'}</button>
-        `;
-        couponList.appendChild(div);
-      });
+      localStorage.setItem('cart', JSON.stringify(cart));
+      console.log('Cart updated and saved to localStorage:', cart);
     }
 
     // Add item to cart
     function addToCart(item) {
+      console.log('Adding item to cart:', item);
+      if (!item || !item.id || !item._id || !item.category || !item.name || isNaN(Number(item.price))) {
+        console.error('Invalid item:', item);
+        showToast('Invalid item data', 'error');
+        return;
+      }
       const existingItem = cart.find(cartItem => cartItem.id === item.id);
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
-        cart.push({ ...item, quantity: 1, _id: Number(item.id) });
+        cart.push({
+          id: Number(item.id),
+          _id: Number(item._id),
+          name: item.name,
+          price: Number(item.price),
+          category: item.category,
+          quantity: 1,
+          image: item.image || PLACEHOLDER_IMAGE
+        });
       }
       updateCart();
-      renderCoupons();
       checkCouponEligibility();
       showToast(`${item.name} added to cart`, 'success');
     }
 
     // Update item quantity in cart
     function updateQuantity(index, change) {
+      if (index < 0 || index >= cart.length) {
+        console.error('Invalid cart index:', index);
+        showToast('Invalid cart operation', 'error');
+        return;
+      }
       cart[index].quantity += change;
       if (cart[index].quantity <= 0) {
         const itemName = cart[index].name;
@@ -1229,75 +1195,59 @@
         showToast(`${itemName} removed from cart`, 'success');
       }
       updateCart();
-      renderCoupons();
       checkCouponEligibility();
     }
 
     // Remove item from cart
     function removeFromCart(index) {
+      if (index < 0 || index >= cart.length) {
+        console.error('Invalid cart index:', index);
+        showToast('Invalid cart operation', 'error');
+        return;
+      }
       const itemName = cart[index].name;
       cart.splice(index, 1);
       updateCart();
-      renderCoupons();
       checkCouponEligibility();
       showToast(`${itemName} removed from cart`, 'success');
-    }
-
-    // Apply coupon
-    async function applyCoupon(couponCode) {
-      try {
-        const coupon = availableCoupons.find(c => c.code === couponCode);
-        if (!coupon) {
-          throw new Error('Coupon not found');
-        }
-
-        const now = new Date();
-        if (new Date(coupon.validFrom) > now || new Date(coupon.validTo) < now) {
-          throw new Error('Coupon is not valid at this time');
-        }
-
-        const eligibleItems = cart.filter(item => item.category === coupon.category);
-        const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
-        if (eligibleQuantity < coupon.buy_x) {
-          throw new Error(`Add at least ${coupon.buy_x} items from ${coupon.category} to use this coupon`);
-        }
-
-        appliedCoupon = coupon;
-        document.getElementById('coupon-applied').innerHTML = `Coupon "${coupon.code}" applied! Buy ${coupon.buy_x} items in ${coupon.category} for ${coupon.discount}% off. <span class="remove-coupon" onclick="removeCoupon()" aria-label="Remove coupon">Remove</span>`;
-        document.getElementById('coupon-applied').style.display = 'flex';
-        updateCart();
-        renderCoupons();
-        showToast('Coupon applied successfully', 'success');
-      } catch (error) {
-        showToast(error.message, 'error');
-      }
     }
 
     // Remove applied coupon
     function removeCoupon() {
       appliedCoupon = null;
-      document.getElementById('coupon-applied').style.display = 'none';
+      saveAppliedCoupon();
+      updateCouponDisplay();
       updateCart();
-      renderCoupons();
       showToast('Coupon removed', 'success');
     }
 
     // Open cart modal
     function openCartModal() {
-      document.getElementById('cart-modal').style.display = 'flex';
+      const cartModal = document.getElementById('cart-modal');
+      if (!cartModal) {
+        console.error('Cart modal not found');
+        showToast('Error opening cart', 'error');
+        return;
+      }
+      cartModal.style.display = 'flex';
       updateCart();
-      renderCoupons();
+      updateCouponDisplay();
     }
 
     // Close modal
     function closeModal(modalId) {
       const modal = document.getElementById(modalId);
+      if (!modal) {
+        console.error(`Modal ${modalId} not found`);
+        return;
+      }
       modal.style.animation = 'fadeOut 0.3s ease-in forwards';
       setTimeout(() => {
         modal.style.display = 'none';
         modal.style.animation = '';
         if (modalId === 'order-modal') {
-          document.getElementById('order-form').reset();
+          const orderForm = document.getElementById('order-form');
+          if (orderForm) orderForm.reset();
         }
       }, 300);
     }
@@ -1305,6 +1255,11 @@
     // Render menu items
     function renderMenu(items) {
       const menuGrid = document.getElementById('menu');
+      if (!menuGrid) {
+        console.error('Menu grid element not found');
+        showToast('Error rendering menu', 'error');
+        return;
+      }
       menuGrid.innerHTML = '';
       if (!Array.isArray(items) || items.length === 0) {
         menuGrid.innerHTML = '<p style="color: #4a4a4a; font-size: 1.1rem; text-align: center;">No menu items available</p>';
@@ -1312,10 +1267,14 @@
       }
 
       items.forEach((item, index) => {
+        if (!item || !item.id || !item._id || !item.category || !item.name) {
+          console.warn('Invalid menu item skipped:', item);
+          return;
+        }
         const div = document.createElement('div');
         div.className = 'menu-item';
         const price = Number(item.price);
-        const savedAmount = item.savedAmount !== null ? Number(item.savedAmount) : null;
+        const savedAmount = item.savedAmount !== null && !isNaN(Number(item.savedAmount)) ? Number(item.savedAmount) : null;
         div.innerHTML = `
           <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'" />
           <div class="menu-item-content">
@@ -1323,7 +1282,7 @@
             <p>${item.description || 'No description'}</p>
             <div class="price">
               ₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
-              ${savedAmount !== null && !isNaN(savedAmount) ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
+              ${savedAmount !== null ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
             </div>
             <button class="btn add-to-cart-btn" data-index="${index}" aria-label="Add ${item.name} to cart"><i class="fas fa-plus"></i> Add to Cart</button>
           </div>
@@ -1333,7 +1292,12 @@
 
       document.querySelectorAll('.menu-item .add-to-cart-btn').forEach(button => {
         button.addEventListener('click', () => {
-          const index = button.dataset.index;
+          const index = Number(button.dataset.index);
+          if (isNaN(index) || index < 0 || index >= items.length) {
+            console.error('Invalid menu item index:', index);
+            showToast('Error adding item to cart', 'error');
+            return;
+          }
           addToCart(items[index]);
         });
       });
@@ -1342,28 +1306,43 @@
     // Fetch top picks
     async function fetchTopPicks() {
       const topPicksScroll = document.getElementById('top-picks');
+      if (!topPicksScroll) {
+        console.error('Top picks element not found');
+        showToast('Error loading top picks', 'error');
+        return;
+      }
       try {
         const response = await fetch(`${API_BASE_URL}/api/top-picks`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
         if (!response.ok) {
-          throw new Error(`Failed to fetch top picks: ${response.statusText}`);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         const result = await response.json();
         console.log('Top Picks Response:', result);
-        if (!result.success) {
-          throw new Error(result.message || 'Failed to fetch top picks');
+        if (!result.success || !Array.isArray(result.data)) {
+          throw new Error(result.message || 'Invalid top picks data');
         }
 
-        const topPicks = result.data;
+        const topPicks = result.data.map(item => ({
+          ...item,
+          id: Number(item.id),
+          _id: Number(item.id),
+          price: Number(item.price),
+          savedAmount: item.savedAmount !== undefined ? Number(item.savedAmount) : null
+        }));
         topPicksScroll.innerHTML = '';
-        if (!Array.isArray(topPicks) || topPicks.length === 0) {
+        if (topPicks.length === 0) {
           topPicksScroll.innerHTML = '<p style="color: #4a4a4a; font-size: 1.1rem; text-align: center;">No top picks available</p>';
           return;
         }
 
         topPicks.forEach((item, index) => {
+          if (!item || !item.id || !item._id || !item.category || !item.name) {
+            console.warn('Invalid top pick item skipped:', item);
+            return;
+          }
           const div = document.createElement('div');
           div.className = 'top-pick-item';
           const price = Number(item.price);
@@ -1374,7 +1353,7 @@
             <p>${item.description || 'A Delicute favorite!'}</p>
             <div class="price">
               ₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
-              ${savedAmount !== null && !isNaN(savedAmount) ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
+              ${savedAmount !== null ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
             </div>
             <button class="btn add-to-cart-btn" data-index="${index}" aria-label="Add ${item.name} to cart"><i class="fas fa-plus"></i> Add to Cart</button>
           `;
@@ -1383,7 +1362,12 @@
 
         document.querySelectorAll('.top-pick-item .add-to-cart-btn').forEach(button => {
           button.addEventListener('click', () => {
-            const index = button.dataset.index;
+            const index = Number(button.dataset.index);
+            if (isNaN(index) || index < 0 || index >= topPicks.length) {
+              console.error('Invalid top pick index:', index);
+              showToast('Error adding item to cart', 'error');
+              return;
+            }
             addToCart(topPicks[index]);
           });
         });
@@ -1396,24 +1380,33 @@
 
     // Fetch categories
     async function fetchCategories() {
+      const categoryFilter = document.querySelector('.category-filter');
+      if (!categoryFilter) {
+        console.error('Category filter element not found');
+        showToast('Error loading categories', 'error');
+        return;
+      }
       try {
         const response = await fetch(`${API_BASE_URL}/api/categories`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
         if (!response.ok) {
-          throw new Error(`Failed to fetch categories: ${response.statusText}`);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         const result = await response.json();
         console.log('Categories Response:', result);
-        if (!result.success) {
-          throw new Error(result.message || 'Failed to fetch categories');
+        if (!result.success || !Array.isArray(result.data)) {
+          throw new Error(result.message || 'Invalid categories data');
         }
 
         const categories = result.data;
-        const categoryFilter = document.querySelector('.category-filter');
         categoryFilter.innerHTML = '<button class="active" data-category="all" aria-label="All categories">All</button>';
         categories.forEach(category => {
+          if (!category || !category.name) {
+            console.warn('Invalid category skipped:', category);
+            return;
+          }
           const button = document.createElement('button');
           button.textContent = category.name;
           button.dataset.category = category.name;
@@ -1422,17 +1415,16 @@
         });
 
         categoryFilter.addEventListener('click', (e) => {
-          if (e.target.tagName === 'BUTTON') {
-            categoryFilter.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-            e.target.classList.add('active');
-            const searchInput = document.getElementById('search-input');
-            searchInput.value = '';
-            if (e.target.dataset.category === 'all') {
-              renderMenu(allMenuItems);
-            } else {
-              const filteredItems = allMenuItems.filter(item => item.category === e.target.dataset.category);
-              renderMenu(filteredItems);
-            }
+          if (e.target.tagName !== 'BUTTON') return;
+          categoryFilter.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+          e.target.classList.add('active');
+          const searchInput = document.getElementById('search-input');
+          if (searchInput) searchInput.value = '';
+          if (e.target.dataset.category === 'all') {
+            renderMenu(allMenuItems);
+          } else {
+            const filteredItems = allMenuItems.filter(item => item.category === e.target.dataset.category);
+            renderMenu(filteredItems);
           }
         });
       } catch (error) {
@@ -1444,25 +1436,36 @@
     // Fetch menu
     async function fetchMenu() {
       const menuGrid = document.getElementById('menu');
+      if (!menuGrid) {
+        console.error('Menu grid element not found');
+        showToast('Error loading menu', 'error');
+        return;
+      }
       try {
         const response = await fetch(`${API_BASE_URL}/api/menu`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' }
         });
         if (!response.ok) {
-          throw new Error(`Failed to fetch menu: ${response.statusText}`);
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
         const result = await response.json();
         console.log('Menu Response:', result);
-        if (!result.success) {
-          throw new Error(result.message || 'Failed to fetch menu');
+        if (!result.success || !Array.isArray(result.data)) {
+          throw new Error(result.message || 'Invalid menu data');
         }
 
         allMenuItems = result.data.map(item => ({
-          ...item,
           id: Number(item.id),
-          _id: Number(item.id)
+          _id: Number(item.id),
+          name: item.name || 'Unnamed Item',
+          price: Number(item.price) || 0,
+          category: item.category || 'Uncategorized',
+          description: item.description || '',
+          image: item.image || '',
+          savedAmount: item.savedAmount !== undefined ? Number(item.savedAmount) : null
         }));
+        console.log('Processed menu items:', allMenuItems);
         renderMenu(allMenuItems);
       } catch (error) {
         console.error('Menu Error:', error);
@@ -1471,39 +1474,16 @@
       }
     }
 
-    // Fetch coupons
-    async function fetchCoupons() {
-      const couponList = document.getElementById('coupon-list');
-      try {
-        const response = await fetch(`${API_BASE_URL}/api/coupons`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        });
-        if (!response.ok) {
-          throw new Error(`Failed to fetch coupons: ${response.statusText}`);
-        }
-        const result = await response.json();
-        console.log('Coupons Response:', result);
-        if (!result.success) {
-          throw new Error(result.message || 'Failed to fetch coupons');
-        }
-
-        const now = new Date();
-        availableCoupons = result.data.filter(coupon => {
-          return new Date(coupon.validFrom) <= now && new Date(coupon.validTo) >= now;
-        });
-        renderCoupons();
-      } catch (error) {
-        console.error('Coupons Error:', error);
-        couponList.innerHTML = '<p style="color: #4a4a4a; font-size: 1.1rem; text-align: center;">Unable to load coupons</p>';
-        showToast('Unable to load coupons. Please try again later.', 'error');
-      }
-    }
-
     // Search menu
     function searchMenu() {
-      const query = document.getElementById('search-input').value.trim().toLowerCase();
-      const activeCategory = document.querySelector('.category-filter button.active').dataset.category;
+      const searchInput = document.getElementById('search-input');
+      if (!searchInput) {
+        console.error('Search input element not found');
+        showToast('Error searching menu', 'error');
+        return;
+      }
+      const query = searchInput.value.trim().toLowerCase();
+      const activeCategory = document.querySelector('.category-filter button.active')?.dataset.category || 'all';
       let filteredItems = allMenuItems;
 
       if (activeCategory !== 'all') {
@@ -1526,23 +1506,39 @@
         showToast('Your cart is empty', 'error');
         return;
       }
+      const orderModal = document.getElementById('order-modal');
+      if (!orderModal) {
+        console.error('Order modal not found');
+        showToast('Error opening order form', 'error');
+        return;
+      }
       closeModal('cart-modal');
-      document.getElementById('order-modal').style.display = 'flex';
+      orderModal.style.display = 'flex';
     }
 
     // Handle order submission
     async function handleOrderSubmit(event) {
       event.preventDefault();
-      const customerName = document.getElementById('customer-name').value.trim();
-      const tableNumber = document.getElementById('table-number').value.trim();
-      const specialInstructions = document.getElementById('special-instructions').value.trim();
+      const customerNameInput = document.getElementById('customer-name');
+      const tableNumberInput = document.getElementById('table-number');
+      const specialInstructionsInput = document.getElementById('special-instructions');
 
-      // Enhanced validation
+      if (!customerNameInput || !tableNumberInput || !specialInstructionsInput) {
+        console.error('Order form inputs not found');
+        showToast('Error submitting order', 'error');
+        return;
+      }
+
+      const customerName = customerNameInput.value.trim();
+      const tableNumber = tableNumberInput.value.trim();
+      const specialInstructions = specialInstructionsInput.value.trim();
+
+      // Validate inputs
       if (!customerName || customerName.length < 2) {
         showToast('Please enter a valid full name (at least 2 characters)', 'error');
         return;
       }
-      if (!tableNumber || isNaN(tableNumber) || tableNumber < 1) {
+      if (!tableNumber || isNaN(tableNumber) || Number(tableNumber) < 1) {
         showToast('Please enter a valid table number', 'error');
         return;
       }
@@ -1552,9 +1548,10 @@
         return;
       }
 
-      // Validate items
+      // Validate cart items
       for (const item of cart) {
         if (!item._id || isNaN(Number(item._id)) || !Number.isInteger(Number(item._id)) || !Number.isInteger(item.quantity) || item.quantity < 1 || isNaN(Number(item.price)) || Number(item.price) < 0) {
+          console.error('Invalid cart item during order submission:', item);
           showToast('Invalid cart item data', 'error');
           return;
         }
@@ -1562,9 +1559,7 @@
 
       // Construct order object
       const order = {
-        customer: {
-          name: customerName
-        },
+        customer: { name: customerName },
         tableNumber: parseInt(tableNumber),
         specialInstructions: specialInstructions || null,
         items: cart.map(item => ({
@@ -1586,19 +1581,17 @@
         const result = await response.json();
         console.log('Order Response:', result);
 
-        if (!response.ok) {
-          throw new Error(result.message || `Failed to place order: ${response.statusText}`);
-        }
-        if (!result.success) {
-          throw new Error(result.message || 'Failed to place order');
+        if (!response.ok || !result.success) {
+          throw new Error(result.message || `HTTP ${response.status}: ${response.statusText}`);
         }
 
         showToast(`Order placed successfully! Order ID: ${result.data.orderId}`, 'success');
         cart = [];
         appliedCoupon = null;
-        document.getElementById('coupon-applied').style.display = 'none';
+        localStorage.setItem('cart', JSON.stringify(cart));
+        saveAppliedCoupon();
+        updateCouponDisplay();
         updateCart();
-        renderCoupons();
         closeModal('order-modal');
       } catch (error) {
         console.error('Order Error:', error);
@@ -1607,8 +1600,27 @@
     }
 
     // Event listeners
-    document.getElementById('order-form').addEventListener('submit', handleOrderSubmit);
-    document.getElementById('search-input').addEventListener('input', searchMenu);
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Initializing menu page');
+      const orderForm = document.getElementById('order-form');
+      const searchInput = document.getElementById('search-input');
+      if (orderForm) {
+        orderForm.addEventListener('submit', handleOrderSubmit);
+      } else {
+        console.error('Order form not found');
+      }
+      if (searchInput) {
+        searchInput.addEventListener('input', searchMenu);
+      } else {
+        console.error('Search input not found');
+      }
+      loadCartAndCoupon();
+      Promise.all([fetchTopPicks(), fetchCategories(), fetchMenu()])
+        .catch(error => {
+          console.error('Initial Load Error:', error);
+          showToast('Failed to load some content. Please refresh the page.', 'error');
+        });
+    });
 
     // Keyboard accessibility
     document.addEventListener('keydown', (e) => {
@@ -1617,13 +1629,6 @@
         openModals.forEach(modal => closeModal(modal.id));
       }
     });
-
-    // Initial load
-    Promise.all([fetchTopPicks(), fetchCategories(), fetchMenu(), fetchCoupons()])
-      .catch(error => {
-        console.error('Initial Load Error:', error);
-        showToast('Failed to load some content. Please refresh the page.', 'error');
-      });
   </script>
 </body>
 </html>

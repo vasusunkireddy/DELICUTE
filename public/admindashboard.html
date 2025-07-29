@@ -206,6 +206,12 @@
       box-shadow: 0 4px 12px rgba(255, 98, 0, 0.4);
     }
 
+    .btn:disabled {
+      background: #cccccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
     .btn-danger {
       background: linear-gradient(45deg, #ef5350, #ff8a80);
       box-shadow: 0 2px 10px rgba(239, 83, 80, 0.3);
@@ -439,6 +445,12 @@
       .btn {
         padding: 0.6rem 1rem;
         font-size: 0.85rem;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
       }
     }
   </style>
@@ -694,6 +706,19 @@
     const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
     const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x300.png?text=Image+Not+Found';
 
+    function sanitizeInput(input) {
+      const div = document.createElement('div');
+      div.textContent = input;
+      return div.innerHTML;
+    }
+
+    function setLoading(button, isLoading) {
+      button.disabled = isLoading;
+      button.innerHTML = isLoading
+        ? '<i class="fas fa-spinner fa-spin"></i> Loading...'
+        : button.dataset.originalText || button.innerHTML;
+    }
+
     function showTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
       document.querySelectorAll('.nav-tabs button').forEach(btn => btn.classList.remove('active'));
@@ -714,14 +739,14 @@
 
     function showError(message) {
       const errorMessage = document.getElementById('error-message');
-      errorMessage.textContent = message;
+      errorMessage.textContent = sanitizeInput(message);
       errorMessage.style.display = 'block';
       setTimeout(clearMessages, 5000);
     }
 
     function showSuccess(message) {
       const successMessage = document.getElementById('success-message');
-      successMessage.textContent = message;
+      successMessage.textContent = sanitizeInput(message);
       successMessage.style.display = 'block';
       setTimeout(clearMessages, 5000);
     }
@@ -745,13 +770,13 @@
         orders.forEach(order => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><span class="order-link" onclick="openOrderDetailsModal('${order.orderId}')">${order.orderId}</span></td>
-            <td>${order.customer.name}</td>
-            <td>${order.tableNumber || 'N/A'}</td>
-            <td>${order.items.map(item => `${item.name} (x${item.quantity})`).join(', ')}</td>
-            <td>${order.specialInstructions || 'None'}</td>
-            <td>${order.status}</td>
-            <td><button class="btn" onclick="updateOrderStatus('${order.orderId}', 'Delivered')"><i class="fas fa-check"></i> Mark Delivered</button></td>
+            <td><span class="order-link" onclick="openOrderDetailsModal('${sanitizeInput(order.orderId)}')">${sanitizeInput(order.orderId)}</span></td>
+            <td>${sanitizeInput(order.customer.name)}</td>
+            <td>${sanitizeInput(order.tableNumber || 'N/A')}</td>
+            <td>${order.items.map(item => `${sanitizeInput(item.name)} (x${item.quantity})`).join(', ')}</td>
+            <td>${sanitizeInput(order.specialInstructions || 'None')}</td>
+            <td>${sanitizeInput(order.status)}</td>
+            <td><button class="btn" onclick="updateOrderStatus('${sanitizeInput(order.orderId)}', 'Delivered')"><i class="fas fa-check"></i> Mark Delivered</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -761,6 +786,10 @@
     }
 
     async function openOrderDetailsModal(orderId) {
+      if (!orderId) {
+        showError('Invalid order ID');
+        return;
+      }
       try {
         const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, { credentials: 'include' });
         const result = await response.json();
@@ -771,16 +800,16 @@
         const order = result.data;
         const content = document.getElementById('order-details-content');
         content.innerHTML = `
-          <p><strong>Order ID:</strong> ${order.orderId}</p>
-          <p><strong>Customer:</strong> ${order.customer.name}</p>
-          <p><strong>Table Number:</strong> ${order.tableNumber || 'N/A'}</p>
+          <p><strong>Order ID:</strong> ${sanitizeInput(order.orderId)}</p>
+          <p><strong>Customer:</strong> ${sanitizeInput(order.customer.name)}</p>
+          <p><strong>Table Number:</strong> ${sanitizeInput(order.tableNumber || 'N/A')}</p>
           <p><strong>Order Date:</strong> ${new Date(order.createdAt).toLocaleString()}</p>
-          <p><strong>Status:</strong> ${order.status}</p>
-          <p><strong>Instructions:</strong> ${order.specialInstructions || 'None'}</p>
+          <p><strong>Status:</strong> ${sanitizeInput(order.status)}</p>
+          <p><strong>Instructions:</strong> ${sanitizeInput(order.specialInstructions || 'None')}</p>
           <p><strong>Items:</strong></p>
           <ul>
             ${order.items.map(item => `
-              <li>${item.name} (x${item.quantity}) - ₹${Number(item.price).toFixed(2)}</li>
+              <li>${sanitizeInput(item.name)} (x${item.quantity}) - ₹${Number(item.price).toFixed(2)}</li>
             `).join('')}
           </ul>
           <p><strong>Total:</strong> ₹${order.items.reduce((total, item) => total + Number(item.price) * item.quantity, 0).toFixed(2)}</p>
@@ -814,15 +843,15 @@
           const formattedSavedAmount = savedAmount === null || isNaN(savedAmount) ? 'N/A' : `<span class="saved-amount"><i class="fas fa-tag"></i> ₹${savedAmount.toFixed(2)}</span>`;
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" class="menu-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
-            <td>${item.name}</td>
-            <td class="description-cell">${item.description || 'No description'}</td>
-            <td>${item.category}</td>
+            <td><img src="${sanitizeInput(item.image || PLACEHOLDER_IMAGE)}" alt="${sanitizeInput(item.name)}" class="menu-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
+            <td>${sanitizeInput(item.name)}</td>
+            <td class="description-cell">${sanitizeInput(item.description || 'No description')}</td>
+            <td>${sanitizeInput(item.category)}</td>
             <td>${formattedPrice}</td>
             <td>${formattedSavedAmount}</td>
             <td>
-              <button class="btn btn-secondary" onclick="openMenuModal('edit', '${item._id}')"><i class="fas fa-edit"></i> Edit</button>
-              <button class="btn btn-danger" onclick="deleteMenuItem('${item._id}')"><i class="fas fa-trash"></i> Delete</button>
+              <button class="btn btn-secondary" onclick="openMenuModal('edit', '${sanitizeInput(item._id)}')"><i class="fas fa-edit"></i> Edit</button>
+              <button class="btn btn-danger" onclick="deleteMenuItem('${sanitizeInput(item._id)}')"><i class="fas fa-trash"></i> Delete</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -849,10 +878,10 @@
           categories.forEach(category => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td>${category.name}</td>
+              <td>${sanitizeInput(category.name)}</td>
               <td>
-                <button class="btn btn-secondary" onclick="openCategoryModal('edit', '${category._id}')"><i class="fas fa-edit"></i> Edit</button>
-                <button class="btn btn-danger" onclick="deleteCategory('${category._id}')"><i class="fas fa-trash"></i> Delete</button>
+                <button class="btn btn-secondary" onclick="openCategoryModal('edit', '${sanitizeInput(category._id)}')"><i class="fas fa-edit"></i> Edit</button>
+                <button class="btn btn-danger" onclick="deleteCategory('${sanitizeInput(category._id)}')"><i class="fas fa-trash"></i> Delete</button>
               </td>
             `;
             tbody.appendChild(tr);
@@ -865,8 +894,8 @@
         couponCategorySelect.innerHTML = '<option value="">Select Category</option>';
         if (Array.isArray(categories)) {
           categories.forEach(category => {
-            menuCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
-            couponCategorySelect.innerHTML += `<option value="${category.name}">${category.name}</option>`;
+            menuCategorySelect.innerHTML += `<option value="${sanitizeInput(category.name)}">${sanitizeInput(category.name)}</option>`;
+            couponCategorySelect.innerHTML += `<option value="${sanitizeInput(category.name)}">${sanitizeInput(category.name)}</option>`;
           });
         }
       } catch (error) {
@@ -894,17 +923,17 @@
           const discount = coupon.discount !== null && !isNaN(coupon.discount) ? `${coupon.discount}%` : 'N/A';
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><img src="${coupon.image || PLACEHOLDER_IMAGE}" alt="${coupon.code}" class="coupon-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
-            <td>${coupon.code}</td>
-            <td class="description-cell">${coupon.description}</td>
+            <td><img src="${sanitizeInput(coupon.image || PLACEHOLDER_IMAGE)}" alt="${sanitizeInput(coupon.code)}" class="coupon-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
+            <td>${sanitizeInput(coupon.code)}</td>
+            <td class="description-cell">${sanitizeInput(coupon.description)}</td>
             <td>Buy ${coupon.buy_x}</td>
             <td>${discount}</td>
-            <td>${coupon.category}</td>
+            <td>${sanitizeInput(coupon.category)}</td>
             <td>${new Date(coupon.validFrom).toLocaleDateString()}</td>
             <td>${new Date(coupon.validTo).toLocaleDateString()}</td>
             <td>
-              <button class="btn btn-secondary" onclick="openCouponModal('edit', '${coupon._id}')"><i class="fas fa-edit"></i> Edit</button>
-              <button class="btn btn-danger" onclick="deleteCoupon('${coupon._id}')"><i class="fas fa-trash"></i> Delete</button>
+              <button class="btn btn-secondary" onclick="openCouponModal('edit', '${sanitizeInput(coupon._id)}')"><i class="fas fa-edit"></i> Edit</button>
+              <button class="btn btn-danger" onclick="deleteCoupon('${sanitizeInput(coupon._id)}')"><i class="fas fa-trash"></i> Delete</button>
             </td>
           `;
           tbody.appendChild(tr);
@@ -931,10 +960,10 @@
           topPicks.forEach(item => {
             const tr = document.createElement('tr');
             tr.innerHTML = `
-              <td><img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" class="menu-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
-              <td>${item.name}</td>
-              <td>${item.category}</td>
-              <td><button class="btn btn-danger" onclick="deleteTopPick('${item._id}')"><i class="fas fa-trash"></i> Remove</button></td>
+              <td><img src="${sanitizeInput(item.image || PLACEHOLDER_IMAGE)}" alt="${sanitizeInput(item.name)}" class="menu-item" onerror="this.src='${PLACEHOLDER_IMAGE}'" /></td>
+              <td>${sanitizeInput(item.name)}</td>
+              <td>${sanitizeInput(item.category)}</td>
+              <td><button class="btn btn-danger" onclick="deleteTopPick('${sanitizeInput(item._id)}')"><i class="fas fa-trash"></i> Remove</button></td>
             `;
             tbody.appendChild(tr);
           });
@@ -951,7 +980,7 @@
         select.innerHTML = '<option value="">Select Item</option>';
         if (Array.isArray(menuItems)) {
           menuItems.forEach(item => {
-            select.innerHTML += `<option value="${item._id}">${item.name}</option>`;
+            select.innerHTML += `<option value="${sanitizeInput(item._id)}">${sanitizeInput(item.name)}</option>`;
           });
         }
       } catch (error) {
@@ -960,6 +989,10 @@
     }
 
     async function openMenuModal(mode, id = '') {
+      if (mode === 'edit' && !id) {
+        showError('Invalid menu item ID');
+        return;
+      }
       const modal = document.getElementById('menu-modal');
       const form = document.getElementById('menu-form');
       const title = document.getElementById('menu-modal-title');
@@ -974,14 +1007,16 @@
         try {
           const response = await fetch(`${API_BASE_URL}/api/menu/${id}`, { credentials: 'include' });
           const result = await response.json();
-          if (!result.success) throw new Error(result.message || 'Failed to load menu item');
+          if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Failed to load menu item');
+          }
           const item = result.data;
-          document.getElementById('menu-name').value = item.name || '';
-          document.getElementById('menu-description').value = item.description || '';
-          document.getElementById('menu-category').value = item.category || '';
+          document.getElementById('menu-name').value = sanitizeInput(item.name || '');
+          document.getElementById('menu-description').value = sanitizeInput(item.description || '');
+          document.getElementById('menu-category').value = sanitizeInput(item.category || '');
           document.getElementById('menu-price').value = Number(item.price).toFixed(2) || '';
           document.getElementById('menu-saved-amount').value = item.savedAmount !== null ? Number(item.savedAmount).toFixed(2) : '';
-          document.getElementById('menu-existing-image').value = item.image || '';
+          document.getElementById('menu-existing-image').value = sanitizeInput(item.image || '');
           modal.style.display = 'flex';
         } catch (error) {
           showError(error.message);
@@ -994,6 +1029,10 @@
     }
 
     async function openCouponModal(mode, id = '') {
+      if (mode === 'edit' && !id) {
+        showError('Invalid coupon ID');
+        return;
+      }
       const modal = document.getElementById('coupon-modal');
       const form = document.getElementById('coupon-form');
       const title = document.getElementById('coupon-modal-title');
@@ -1008,16 +1047,18 @@
         try {
           const response = await fetch(`${API_BASE_URL}/api/coupons/${id}`, { credentials: 'include' });
           const result = await response.json();
-          if (!result.success) throw new Error(result.message || 'Failed to load coupon');
+          if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Failed to load coupon');
+          }
           const coupon = result.data;
-          document.getElementById('coupon-code').value = coupon.code || '';
-          document.getElementById('coupon-description').value = coupon.description || '';
+          document.getElementById('coupon-code').value = sanitizeInput(coupon.code || '');
+          document.getElementById('coupon-description').value = sanitizeInput(coupon.description || '');
           document.getElementById('coupon-buy-x').value = coupon.buy_x || 1;
           document.getElementById('coupon-discount').value = coupon.discount !== null && !isNaN(coupon.discount) ? coupon.discount : '';
-          document.getElementById('coupon-category').value = coupon.category || '';
-          document.getElementById('coupon-valid-from').value = coupon.validFrom ? coupon.validFrom.split('T')[0] : '';
-          document.getElementById('coupon-valid-to').value = coupon.validTo ? coupon.validTo.split('T')[0] : '';
-          document.getElementById('coupon-existing-image').value = coupon.image || '';
+          document.getElementById('coupon-category').value = sanitizeInput(coupon.category || '');
+          document.getElementById('coupon-valid-from').value = coupon.validFrom ? new Date(coupon.validFrom).toISOString().split('T')[0] : '';
+          document.getElementById('coupon-valid-to').value = coupon.validTo ? new Date(coupon.validTo).toISOString().split('T')[0] : '';
+          document.getElementById('coupon-existing-image').value = sanitizeInput(coupon.image || '');
           modal.style.display = 'flex';
         } catch (error) {
           showError(error.message);
@@ -1029,7 +1070,11 @@
       }
     }
 
-    function openCategoryModal(mode, id = '') {
+    async function openCategoryModal(mode, id = '') {
+      if (mode === 'edit' && !id) {
+        showError('Invalid category ID');
+        return;
+      }
       const modal = document.getElementById('category-modal');
       const form = document.getElementById('category-form');
       const title = document.getElementById('category-modal-title');
@@ -1038,15 +1083,18 @@
       form.dataset.id = id;
 
       if (mode === 'edit') {
-        fetch(`${API_BASE_URL}/api/categories/${id}`, { credentials: 'include' })
-          .then(response => response.json())
-          .then(result => {
-            if (!result.success) throw new Error(result.message || 'Failed to load category');
-            const category = result.data;
-            document.getElementById('category-name').value = category.name || '';
-            modal.style.display = 'flex';
-          })
-          .catch(error => showError(error.message));
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, { credentials: 'include' });
+          const result = await response.json();
+          if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Failed to load category');
+          }
+          const category = result.data;
+          document.getElementById('category-name').value = sanitizeInput(category.name || '');
+          modal.style.display = 'flex';
+        } catch (error) {
+          showError(error.message);
+        }
       } else {
         form.reset();
         modal.style.display = 'flex';
@@ -1054,6 +1102,7 @@
     }
 
     function openTopPicksModal() {
+      document.getElementById('top-picks-form').reset();
       document.getElementById('top-picks-modal').style.display = 'flex';
     }
 
@@ -1063,6 +1112,10 @@
     }
 
     async function deleteMenuItem(id) {
+      if (!id) {
+        showError('Invalid menu item ID');
+        return;
+      }
       if (!confirm('Are you sure you want to delete this menu item?')) return;
       try {
         const response = await fetch(`${API_BASE_URL}/api/menu/${id}`, {
@@ -1081,8 +1134,18 @@
     }
 
     async function deleteCategory(id) {
-      if (!confirm('Are you sure you want to delete this category?')) return;
+      if (!id) {
+        showError('Invalid category ID');
+        return;
+      }
       try {
+        const menuResponse = await fetch(`${API_BASE_URL}/api/menu`, { credentials: 'include' });
+        const menuResult = await menuResponse.json();
+        if (menuResult.success && menuResult.data.some(item => item.category === document.getElementById('category-name').value)) {
+          showError('Cannot delete category with associated menu items');
+          return;
+        }
+        if (!confirm('Are you sure you want to delete this category?')) return;
         const response = await fetch(`${API_BASE_URL}/api/categories/${id}`, {
           method: 'DELETE',
           credentials: 'include',
@@ -1099,6 +1162,10 @@
     }
 
     async function deleteCoupon(id) {
+      if (!id) {
+        showError('Invalid coupon ID');
+        return;
+      }
       if (!confirm('Are you sure you want to delete this coupon?')) return;
       try {
         const response = await fetch(`${API_BASE_URL}/api/coupons/${id}`, {
@@ -1117,6 +1184,10 @@
     }
 
     async function deleteTopPick(id) {
+      if (!id) {
+        showError('Invalid top pick ID');
+        return;
+      }
       if (!confirm('Are you sure you want to remove this top pick?')) return;
       try {
         const response = await fetch(`${API_BASE_URL}/api/top-picks/${id}`, {
@@ -1135,7 +1206,14 @@
     }
 
     async function updateOrderStatus(orderId, status) {
+      if (!orderId) {
+        showError('Invalid order ID');
+        return;
+      }
       try {
+        const button = document.querySelector(`button[onclick="updateOrderStatus('${orderId}', 'Delivered')"]`);
+        button.dataset.originalText = button.innerHTML;
+        setLoading(button, true);
         const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -1150,6 +1228,9 @@
         fetchOrders();
       } catch (error) {
         showError(error.message);
+      } finally {
+        const button = document.querySelector(`button[onclick="updateOrderStatus('${orderId}', 'Delivered')"]`);
+        setLoading(button, false);
       }
     }
 
@@ -1158,19 +1239,36 @@
       const form = event.target;
       const mode = form.dataset.mode;
       const id = form.dataset.id;
-      const formData = new FormData();
-      formData.append('name', document.getElementById('menu-name').value);
-      formData.append('description', document.getElementById('menu-description').value);
-      formData.append('category', document.getElementById('menu-category').value);
-      formData.append('price', parseFloat(document.getElementById('menu-price').value));
+      const button = form.querySelector('button[type="submit"]');
+      button.dataset.originalText = button.innerHTML;
+      setLoading(button, true);
+
+      const name = document.getElementById('menu-name').value.trim();
+      const description = document.getElementById('menu-description').value.trim();
+      const category = document.getElementById('menu-category').value;
+      const price = parseFloat(document.getElementById('menu-price').value);
       const savedAmount = document.getElementById('menu-saved-amount').value;
-      if (savedAmount) formData.append('savedAmount', parseFloat(savedAmount));
+
+      if (!name || !description || !category || isNaN(price) || price < 0) {
+        showError('Please fill all required fields with valid values');
+        setLoading(button, false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('name', sanitizeInput(name));
+      formData.append('description', sanitizeInput(description));
+      formData.append('category', sanitizeInput(category));
+      formData.append('price', price);
+      if (savedAmount && !isNaN(parseFloat(savedAmount)) && parseFloat(savedAmount) >= 0) {
+        formData.append('savedAmount', parseFloat(savedAmount));
+      }
       const imageFile = document.getElementById('menu-image').files[0];
       const existingImage = document.getElementById('menu-existing-image').value;
       if (imageFile) {
         formData.append('image', imageFile);
       } else if (existingImage && mode === 'edit') {
-        formData.append('existingImage', existingImage);
+        formData.append('existingImage', sanitizeInput(existingImage));
       }
 
       try {
@@ -1184,10 +1282,13 @@
           throw new Error(result.message || `Failed to ${mode} menu item`);
         }
         showSuccess(`Menu item ${mode === 'add' ? 'added' : 'updated'} successfully`);
+        form.reset();
         closeModal('menu-modal');
         fetchMenu();
       } catch (error) {
         showError(error.message);
+      } finally {
+        setLoading(button, false);
       }
     }
 
@@ -1196,27 +1297,44 @@
       const form = event.target;
       const mode = form.dataset.mode;
       const id = form.dataset.id;
+      const button = form.querySelector('button[type="submit"]');
+      button.dataset.originalText = button.innerHTML;
+      setLoading(button, true);
+
+      const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+      const description = document.getElementById('coupon-description').value.trim();
+      const buyX = parseInt(document.getElementById('coupon-buy-x').value);
       const discount = parseInt(document.getElementById('coupon-discount').value);
-      
-      if (isNaN(discount) || discount < 1 || discount > 100) {
-        showError('Discount must be a number between 1 and 100');
+      const category = document.getElementById('coupon-category').value;
+      const validFrom = document.getElementById('coupon-valid-from').value;
+      const validTo = document.getElementById('coupon-valid-to').value;
+
+      if (!code || !description || !category || isNaN(buyX) || buyX < 1 || isNaN(discount) || discount < 1 || discount > 100 || !validFrom || !validTo) {
+        showError('Please fill all required fields with valid values');
+        setLoading(button, false);
+        return;
+      }
+
+      if (new Date(validFrom) > new Date(validTo)) {
+        showError('Valid From date cannot be after Valid To date');
+        setLoading(button, false);
         return;
       }
 
       const formData = new FormData();
-      formData.append('code', document.getElementById('coupon-code').value.toUpperCase());
-      formData.append('description', document.getElementById('coupon-description').value);
-      formData.append('buy_x', parseInt(document.getElementById('coupon-buy-x').value));
+      formData.append('code', sanitizeInput(code));
+      formData.append('description', sanitizeInput(description));
+      formData.append('buy_x', buyX);
       formData.append('discount', discount);
-      formData.append('category', document.getElementById('coupon-category').value);
-      formData.append('validFrom', document.getElementById('coupon-valid-from').value);
-      formData.append('validTo', document.getElementById('coupon-valid-to').value);
+      formData.append('category', sanitizeInput(category));
+      formData.append('validFrom', validFrom);
+      formData.append('validTo', validTo);
       const imageFile = document.getElementById('coupon-image').files[0];
       const existingImage = document.getElementById('coupon-existing-image').value;
       if (imageFile) {
         formData.append('image', imageFile);
       } else if (existingImage && mode === 'edit') {
-        formData.append('existingImage', existingImage);
+        formData.append('existingImage', sanitizeInput(existingImage));
       }
 
       try {
@@ -1230,10 +1348,13 @@
           throw new Error(result.message || `Failed to ${mode} coupon`);
         }
         showSuccess(`Coupon ${mode === 'add' ? 'added' : 'updated'} successfully`);
+        form.reset();
         closeModal('coupon-modal');
         fetchCoupons();
       } catch (error) {
         showError(error.message);
+      } finally {
+        setLoading(button, false);
       }
     }
 
@@ -1242,9 +1363,18 @@
       const form = event.target;
       const mode = form.dataset.mode;
       const id = form.dataset.id;
-      const data = {
-        name: document.getElementById('category-name').value,
-      };
+      const button = form.querySelector('button[type="submit"]');
+      button.dataset.originalText = button.innerHTML;
+      setLoading(button, true);
+
+      const name = document.getElementById('category-name').value.trim();
+      if (!name) {
+        showError('Category name is required');
+        setLoading(button, false);
+        return;
+      }
+
+      const data = { name: sanitizeInput(name) };
 
       try {
         const response = await fetch(`${API_BASE_URL}/api/categories${mode === 'edit' ? `/${id}` : ''}`, {
@@ -1258,21 +1388,34 @@
           throw new Error(result.message || `Failed to ${mode} category`);
         }
         showSuccess(`Category ${mode === 'add' ? 'added' : 'updated'} successfully`);
+        form.reset();
         closeModal('category-modal');
         fetchCategories();
       } catch (error) {
         showError(error.message);
+      } finally {
+        setLoading(button, false);
       }
     }
 
     async function handleTopPicksSubmit(event) {
       event.preventDefault();
       const itemId = document.getElementById('top-pick-item').value;
+      const button = event.target.querySelector('button[type="submit"]');
+      button.dataset.originalText = button.innerHTML;
+      setLoading(button, true);
+
+      if (!itemId) {
+        showError('Please select a menu item');
+        setLoading(button, false);
+        return;
+      }
+
       try {
         const response = await fetch(`${API_BASE_URL}/api/top-picks`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ itemId }),
+          body: JSON.stringify({ itemId: sanitizeInput(itemId) }),
           credentials: 'include',
         });
         const result = await response.json();
@@ -1280,10 +1423,13 @@
           throw new Error(result.message || 'Failed to add top pick');
         }
         showSuccess('Top pick added successfully');
+        event.target.reset();
         closeModal('top-picks-modal');
         fetchTopPicks();
       } catch (error) {
         showError(error.message);
+      } finally {
+        setLoading(button, false);
       }
     }
 

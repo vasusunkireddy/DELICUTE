@@ -1,4 +1,3 @@
-// server.js
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
@@ -90,14 +89,16 @@ pool.getConnection()
 try {
   const adminRoutes = require('./routes/admin');
   const dashboardRoutes = require('./routes/admindashboard');
-  const apiRoutes = require('./routes/menu'); // Public menu routes
+  const apiRoutes = require('./routes/menu');
+  const couponRoutes = require('./routes/coupon'); // Add coupon routes
 
   // Public routes (no authentication)
-  app.use('/api', apiRoutes); // Mount public routes first
+  app.use('/api', apiRoutes); // Menu routes
+  app.use('/api', couponRoutes); // Coupon routes
 
   // Authenticated routes
   app.use('/api/auth', adminRoutes);
-  app.use('/api', dashboardRoutes); // Other /api routes (may include auth)
+  app.use('/api', dashboardRoutes);
 
   console.log('🚀 Routes loaded successfully');
 } catch (err) {
