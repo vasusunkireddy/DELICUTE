@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const mysql = require('mysql2/promise');
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 
 const router = express.Router();

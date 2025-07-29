@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const fs = require('fs'); // Ensure this is at the top of server.js or route-loading file
+const fs = require('fs/promises');
 
 // Get all valid coupons
 router.get('/coupons', async (req, res, next) => {
