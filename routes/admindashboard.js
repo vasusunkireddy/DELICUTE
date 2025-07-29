@@ -10,70 +10,26 @@ const cloudinary = require('cloudinary').v2;
 const router = express.Router();
 
 // === Configure Cloudinary ===
-const configureCloudinary = () => {
-  const requiredEnvVars = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
-  for (const envVar of requiredEnvVars) {
-    if (!process.env[envVar]) {
-      throw new Error(`Environment variable ${envVar} is not set`);
-    }
-  }
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-};
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 // === MySQL Pool ===
-const initializePool = async () => {
-  try {
-    const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
-    for (const envVar of requiredEnvVars) {
-      if (!process.env[envVar]) {
-        throw new Error(`Environment variable ${envVar} is not set`);
-      }
-    }
-
-    const config = {
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      waitForConnections: true,
-      connectionLimit: 10,
-      queueLimit: 0,
-    };
-
-    if (process.env.NODE_ENV === 'production') {
-      try {
-        const caCert = await fs.readFile(path.join(__dirname, '../ca.pem'), 'utf8');
-        config.ssl = { ca: caCert };
-      } catch (err) {
-        console.error('Failed to read ca.pem for SSL:', { message: err.message });
-        throw new Error('Unable to load SSL certificate');
-      }
-    }
-
-    return mysql.createPool(config);
-  } catch (err) {
-    console.error('Failed to initialize MySQL pool:', { message: err.message });
-    throw err;
-  }
-};
-
-// Initialize Cloudinary and MySQL pool
-configureCloudinary();
-let pool;
-initializePool()
-  .then(createdPool => {
-    pool = createdPool;
-    console.log('MySQL connection pool initialized successfully');
-  })
-  .catch(err => {
-    console.error('Error initializing MySQL pool:', { message: err.message });
-    process.exit(1);
-  });
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  ssl: process.env.NODE_ENV === 'production'
+    ? { ca: fs.readFileSync(path.join(__dirname, '../ca.pem')) }
+    : undefined,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+});
 
 // === Multer Configuration ===
 const storage = multer.diskStorage({
@@ -81,10 +37,8 @@ const storage = multer.diskStorage({
     const uploadPath = path.join(__dirname, '../Uploads');
     try {
       await fs.mkdir(uploadPath, { recursive: true });
-      console.log('Created Uploads folder:', uploadPath);
       cb(null, uploadPath);
     } catch (err) {
-      console.error('Failed to create Uploads folder:', { message: err.message });
       cb(err);
     }
   },
@@ -115,14 +69,11 @@ const authenticate = async (req, res, next) => {
   }
 
   try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error('JWT_SECRET not set in environment');
-    }
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
   } catch (err) {
-    console.error('JWT Error:', { message: err.message, stack: err.stack });
+    console.error('JWT Error:', err.message);
     return res.status(401).json({ success: false, message: 'Unauthorized: Invalid token' });
   }
 };
@@ -144,11 +95,11 @@ const isValidId = (value, { req, location, path }) => {
   if (!value || value === 'undefined' || value === '') {
     throw new Error(`${path} cannot be undefined or empty`);
   }
-  const parsed = parseInt(value, 10);
-  if (isNaN(parsed) || parsed < 1) {
-    throw new Error(`${path} must be a valid positive integer`);
+  const parsed = Number(value);
+  if (isNaN(parsed) || parsed < 1 || !Number.isInteger(parsed)) {
+    throw new Error(`${path} must be a valid positive integer or a string representing one`);
   }
-  req.sanitizedId = parsed;
+  req.sanitizedId = parsed; // Store sanitized integer ID for use in queries
   return true;
 };
 
@@ -156,9 +107,8 @@ const isValidId = (value, { req, location, path }) => {
 const cleanupFile = async (filePath) => {
   try {
     await fs.unlink(filePath);
-    console.log('Cleaned up file:', filePath);
   } catch (err) {
-    console.error('File Cleanup Error:', { message: err.message });
+    console.error('File Cleanup Error:', err.message);
   }
 };
 
@@ -168,30 +118,23 @@ const destroyCloudinaryImage = async (imageUrl) => {
     const publicId = imageUrl.split('/').pop().split('.')[0];
     try {
       await cloudinary.uploader.destroy(`delicutee/${publicId}`);
-      console.log('Destroyed Cloudinary image:', `delicutee/${publicId}`);
     } catch (err) {
-      console.error('Cloudinary Destroy Error:', { message: err.message });
+      console.error('Cloudinary Destroy Error:', err.message);
     }
   }
 };
 
-// === Utility Function to Validate Cloudinary URL ===
-const isValidCloudinaryUrl = (url) => {
-  return url && url.startsWith(`https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/`);
-};
-
-// === ORDERS ===
+// ========== ORDERS ==========
 router.get('/orders', authenticate, async (req, res) => {
   let connection;
   try {
-    if (!pool) throw new Error('Database pool not initialized');
     connection = await pool.getConnection();
     const [orders] = await connection.query(`
       SELECT o.id AS order_id, o.customer_name, o.table_number, o.special_instructions, o.status, o.created_at,
              GROUP_CONCAT(CONCAT(m.name, ' (x', oi.quantity, ')', ' - ₹', oi.price)) AS items
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
-      LEFT JOIN menu_items m ON oi.menu_item_id = m.id
+      LEFT JOIN menu m ON oi.menu_item_id = m.id
       GROUP BY o.id
       ORDER BY o.created_at DESC
     `);
@@ -216,7 +159,7 @@ router.get('/orders', authenticate, async (req, res) => {
       })),
     });
   } catch (err) {
-    console.error('Orders Fetch Error:', { message: err.message, stack: err.stack });
+    console.error('Orders Fetch Error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch orders', error: err.message });
   } finally {
     if (connection) connection.release();
@@ -230,14 +173,13 @@ router.get(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
       const [orders] = await connection.query(`
         SELECT o.id AS order_id, o.customer_name, o.table_number, o.special_instructions, o.status, o.created_at,
                m.name AS item_name, oi.quantity, oi.price
         FROM orders o
         LEFT JOIN order_items oi ON o.id = oi.order_id
-        LEFT JOIN menu_items m ON oi.menu_item_id = m.id
+        LEFT JOIN menu m ON oi.menu_item_id = m.id
         WHERE o.id = ?
       `, [req.sanitizedId]);
 
@@ -263,7 +205,7 @@ router.get(
         },
       });
     } catch (err) {
-      console.error('Order Details Fetch Error:', { message: err.message, stack: err.stack });
+      console.error('Order Details Fetch Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to fetch order details', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -281,7 +223,6 @@ router.patch(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
       const { status } = req.body;
       const [result] = await connection.query(
@@ -295,7 +236,7 @@ router.patch(
 
       res.json({ success: true, message: 'Order status updated successfully' });
     } catch (err) {
-      console.error('Order Update Error:', { message: err.message, stack: err.stack });
+      console.error('Order Update Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to update order status', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -303,19 +244,17 @@ router.patch(
   }
 );
 
-// === MENU ===
+// ========== MENU ==========
 router.get('/menu', authenticate, async (req, res) => {
   let connection;
   try {
-    if (!pool) throw new Error('Database pool not initialized');
     connection = await pool.getConnection();
     const [menu] = await connection.query(`
       SELECT id AS _id, name, description, category, 
              CAST(price AS DECIMAL(10,2)) AS price, 
              CAST(saved_amount AS DECIMAL(10,2)) AS savedAmount, 
-             image, is_top_pick AS isTopPick
-      FROM menu_items
-      WHERE is_active = 1
+             image 
+      FROM menu
       ORDER BY name ASC
     `);
     res.json({
@@ -325,12 +264,10 @@ router.get('/menu', authenticate, async (req, res) => {
         _id: String(item._id),
         price: parseFloat(item.price),
         savedAmount: item.savedAmount ? parseFloat(item.savedAmount) : null,
-        isTopPick: Boolean(item.isTopPick),
-        image: isValidCloudinaryUrl(item.image) ? item.image : null,
       })),
     });
   } catch (err) {
-    console.error('Menu Fetch Error:', { message: err.message, stack: err.stack });
+    console.error('Menu Fetch Error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch menu', error: err.message });
   } finally {
     if (connection) connection.release();
@@ -344,15 +281,14 @@ router.get(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
       const [items] = await connection.query(`
         SELECT id AS _id, name, description, category, 
                CAST(price AS DECIMAL(10,2)) AS price, 
                CAST(saved_amount AS DECIMAL(10,2)) AS savedAmount, 
-               image, is_top_pick AS isTopPick
-        FROM menu_items 
-        WHERE id = ? AND is_active = 1
+               image 
+        FROM menu 
+        WHERE id = ?
       `, [req.sanitizedId]);
 
       if (!items.length) {
@@ -367,12 +303,10 @@ router.get(
           _id: String(item._id),
           price: parseFloat(item.price),
           savedAmount: item.savedAmount ? parseFloat(item.savedAmount) : null,
-          isTopPick: Boolean(item.isTopPick),
-          image: isValidCloudinaryUrl(item.image) ? item.image : null,
         },
       });
     } catch (err) {
-      console.error('Menu Item Fetch Error:', { message: err.message, stack: err.stack });
+      console.error('Menu Item Fetch Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to fetch menu item', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -390,20 +324,12 @@ router.post(
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
     body('savedAmount').optional().isFloat({ min: 0 }).withMessage('Saved amount must be a positive number'),
-    body('isTopPick').optional().isBoolean().withMessage('isTopPick must be a boolean'),
   ]),
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { name, description, category, price, savedAmount, isTopPick } = req.body;
-
-      // Validate category exists
-      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
-      if (!categories.length) {
-        return res.status(400).json({ success: false, message: 'Invalid category' });
-      }
+      const { name, description, category, price, savedAmount } = req.body;
 
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'Image is required for new menu items' });
@@ -411,27 +337,16 @@ router.post(
 
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'delicutee/menu',
-        width: 300,
-        height: 300,
-        crop: 'fill',
       });
-
-      if (!isValidCloudinaryUrl(result.secure_url)) {
-        throw new Error('Invalid Cloudinary URL returned');
-      }
 
       await cleanupFile(req.file.path);
 
       const imageUrl = result.secure_url;
 
       const [resultDb] = await connection.query(
-        'INSERT INTO menu_items (name, description, category, price, saved_amount, image, is_top_pick, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, imageUrl, isTopPick ? 1 : 0, 1]
+        'INSERT INTO menu (name, description, category, price, saved_amount, image) VALUES (?, ?, ?, ?, ?, ?)',
+        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, imageUrl]
       );
-
-      if (isTopPick) {
-        await connection.query('INSERT INTO top_picks (item_id) VALUES (?)', [resultDb.insertId]);
-      }
 
       res.status(201).json({
         success: true,
@@ -443,12 +358,11 @@ router.post(
           price: parseFloat(price),
           savedAmount: savedAmount ? parseFloat(savedAmount) : null,
           image: imageUrl,
-          isTopPick: Boolean(isTopPick),
         },
       });
     } catch (err) {
       if (req.file) await cleanupFile(req.file.path);
-      console.error('Menu Add Error:', { message: err.message, stack: err.stack });
+      console.error('Menu Add Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to add menu item', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -467,57 +381,36 @@ router.put(
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('price').isFloat({ min: 0 }).withMessage('Price must be a positive number'),
     body('savedAmount').optional().isFloat({ min: 0 }).withMessage('Saved amount must be a positive number'),
-    body('isTopPick').optional().isBoolean().withMessage('isTopPick must be a boolean'),
     body('existingImage').optional().isString().withMessage('Existing image must be a valid URL'),
   ]),
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { name, description, category, price, savedAmount, isTopPick, existingImage } = req.body;
+      const { name, description, category, price, savedAmount, existingImage } = req.body;
       let image = existingImage;
-
-      // Validate category exists
-      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
-      if (!categories.length) {
-        return res.status(400).json({ success: false, message: 'Invalid category' });
-      }
 
       if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'delicutee/menu',
-          width: 300,
-          height: 300,
-          crop: 'fill',
         });
-        if (!isValidCloudinaryUrl(result.secure_url)) {
-          throw new Error('Invalid Cloudinary URL returned');
-        }
         image = result.secure_url;
         await cleanupFile(req.file.path);
 
-        if (existingImage && isValidCloudinaryUrl(existingImage)) {
+        if (existingImage) {
           await destroyCloudinaryImage(existingImage);
         }
-      } else if (!image || !isValidCloudinaryUrl(image)) {
-        return res.status(400).json({ success: false, message: 'Valid image URL is required' });
+      } else if (!image) {
+        return res.status(400).json({ success: false, message: 'Image is required' });
       }
 
       const [result] = await connection.query(
-        'UPDATE menu_items SET name = ?, description = ?, category = ?, price = ?, saved_amount = ?, image = ?, is_top_pick = ? WHERE id = ? AND is_active = 1',
-        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, image, isTopPick ? 1 : 0, req.sanitizedId]
+        'UPDATE menu SET name = ?, description = ?, category = ?, price = ?, saved_amount = ?, image = ? WHERE id = ?',
+        [name, description, category, parseFloat(price), savedAmount ? parseFloat(savedAmount) : null, image, req.sanitizedId]
       );
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ success: false, message: 'Menu item not found or inactive' });
-      }
-
-      const [existingTopPick] = await connection.query('SELECT id FROM top_picks WHERE item_id = ?', [req.sanitizedId]);
-      if (isTopPick && !existingTopPick.length) {
-        await connection.query('INSERT INTO top_picks (item_id) VALUES (?)', [req.sanitizedId]);
-      } else if (!isTopPick && existingTopPick.length) {
-        await connection.query('DELETE FROM top_picks WHERE item_id = ?', [req.sanitizedId]);
+        return res.status(404).json({ success: false, message: 'Menu item not found' });
       }
 
       res.json({
@@ -530,12 +423,11 @@ router.put(
           price: parseFloat(price),
           savedAmount: savedAmount ? parseFloat(savedAmount) : null,
           image,
-          isTopPick: Boolean(isTopPick),
         },
       });
     } catch (err) {
       if (req.file) await cleanupFile(req.file.path);
-      console.error('Menu Update Error:', { message: err.message, stack: err.stack });
+      console.error('Menu Update Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to update menu item', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -550,27 +442,22 @@ router.delete(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [item] = await connection.query('SELECT image FROM menu_items WHERE id = ? AND is_active = 1', [req.sanitizedId]);
+      const [item] = await connection.query('SELECT image FROM menu WHERE id = ?', [req.sanitizedId]);
       if (!item.length) {
-        return res.status(404).json({ success: false, message: 'Menu item not found or inactive' });
+        return res.status(404).json({ success: false, message: 'Menu item not found' });
       }
 
-      if (isValidCloudinaryUrl(item[0].image)) {
-        await destroyCloudinaryImage(item[0].image);
-      }
+      await destroyCloudinaryImage(item[0].image);
 
-      const [result] = await connection.query('UPDATE menu_items SET is_active = 0 WHERE id = ?', [req.sanitizedId]);
+      const [result] = await connection.query('DELETE FROM menu WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Menu item not found' });
       }
 
-      await connection.query('DELETE FROM top_picks WHERE item_id = ?', [req.sanitizedId]);
-
       res.json({ success: true, message: 'Menu item deleted successfully' });
     } catch (err) {
-      console.error('Menu Delete Error:', { message: err.message, stack: err.stack });
+      console.error('Menu Delete Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to delete menu item', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -578,19 +465,18 @@ router.delete(
   }
 );
 
-// === CATEGORIES ===
+// ========== CATEGORIES ==========
 router.get('/categories', authenticate, async (req, res) => {
   let connection;
   try {
-    if (!pool) throw new Error('Database pool not initialized');
     connection = await pool.getConnection();
-    const [categories] = await connection.query('SELECT id AS _id, name, is_active AS isActive FROM categories WHERE is_active = 1 ORDER BY name ASC');
+    const [categories] = await connection.query('SELECT id AS _id, name FROM categories ORDER BY name ASC');
     res.json({
       success: true,
-      data: categories.map(category => ({ ...category, _id: String(category._id), isActive: Boolean(category.isActive) })),
+      data: categories.map(category => ({ ...category, _id: String(category._id) })),
     });
   } catch (err) {
-    console.error('Categories Fetch Error:', { message: err.message, stack: err.stack });
+    console.error('Categories Fetch Error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch categories', error: err.message });
   } finally {
     if (connection) connection.release();
@@ -604,19 +490,18 @@ router.get(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [categories] = await connection.query('SELECT id AS _id, name, is_active AS isActive FROM categories WHERE id = ? AND is_active = 1', [req.sanitizedId]);
+      const [categories] = await connection.query('SELECT id AS _id, name FROM categories WHERE id = ?', [req.sanitizedId]);
       if (!categories.length) {
-        return res.status(404).json({ success: false, message: 'Category not found or inactive' });
+        return res.status(404).json({ success: false, message: 'Category not found' });
       }
 
       res.json({
         success: true,
-        data: { ...categories[0], _id: String(categories[0]._id), isActive: Boolean(categories[0].isActive) },
+        data: { ...categories[0], _id: String(categories[0]._id) },
       });
     } catch (err) {
-      console.error('Category Fetch Error:', { message: err.message, stack: err.stack });
+      console.error('Category Fetch Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to fetch category', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -631,17 +516,16 @@ router.post(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
       const { name } = req.body;
 
-      const [result] = await connection.query('INSERT INTO categories (name, is_active) VALUES (?, ?)', [name, 1]);
+      const [result] = await connection.query('INSERT INTO categories (name) VALUES (?)', [name]);
       res.status(201).json({
         success: true,
-        data: { _id: String(result.insertId), name, isActive: true },
+        data: { _id: String(result.insertId), name },
       });
     } catch (err) {
-      console.error('Category Add Error:', { message: err.message, stack: err.stack });
+      console.error('Category Add Error:', err.message);
       res.status(400).json({
         success: false,
         message: err.code === 'ER_DUP_ENTRY' ? 'Category name already exists' : 'Failed to add category',
@@ -663,21 +547,20 @@ router.put(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
       const { name } = req.body;
 
-      const [result] = await connection.query('UPDATE categories SET name = ? WHERE id = ? AND is_active = 1', [name, req.sanitizedId]);
+      const [result] = await connection.query('UPDATE categories SET name = ? WHERE id = ?', [name, req.sanitizedId]);
       if (result.affectedRows === 0) {
-        return res.status(404).json({ success: false, message: 'Category not found or inactive' });
+        return res.status(404).json({ success: false, message: 'Category not found' });
       }
 
       res.json({
         success: true,
-        data: { _id: String(req.sanitizedId), name, isActive: true },
+        data: { _id: String(req.sanitizedId), name },
       });
     } catch (err) {
-      console.error('Category Update Error:', { message: err.message, stack: err.stack });
+      console.error('Category Update Error:', err.message);
       res.status(400).json({
         success: false,
         message: err.code === 'ER_DUP_ENTRY' ? 'Category name already exists' : 'Failed to update category',
@@ -696,15 +579,9 @@ router.delete(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [category] = await connection.query('SELECT name FROM categories WHERE id = ? AND is_active = 1', [req.sanitizedId]);
-      if (!category.length) {
-        return res.status(404).json({ success: false, message: 'Category not found or inactive' });
-      }
-
-      const [menuItems] = await connection.query('SELECT id FROM menu_items WHERE category = ? AND is_active = 1', [category[0].name]);
-      const [coupons] = await connection.query('SELECT id FROM coupons WHERE category = ? AND isActive = 1', [category[0].name]);
+      const [menuItems] = await connection.query('SELECT id FROM menu WHERE category = (SELECT name FROM categories WHERE id = ?)', [req.sanitizedId]);
+      const [coupons] = await connection.query('SELECT id FROM coupons WHERE category = (SELECT name FROM categories WHERE id = ?)', [req.sanitizedId]);
 
       if (menuItems.length > 0 || coupons.length > 0) {
         return res.status(400).json({
@@ -713,14 +590,14 @@ router.delete(
         });
       }
 
-      const [result] = await connection.query('UPDATE categories SET is_active = 0 WHERE id = ?', [req.sanitizedId]);
+      const [result] = await connection.query('DELETE FROM categories WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Category not found' });
       }
 
       res.json({ success: true, message: 'Category deleted successfully' });
     } catch (err) {
-      console.error('Category Delete Error:', { message: err.message, stack: err.stack });
+      console.error('Category Delete Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to delete category', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -728,17 +605,15 @@ router.delete(
   }
 );
 
-// === COUPONS ===
+// ========== COUPONS ==========
 router.get('/coupons', authenticate, async (req, res) => {
   let connection;
   try {
-    if (!pool) throw new Error('Database pool not initialized');
     connection = await pool.getConnection();
     const [coupons] = await connection.query(`
       SELECT id AS _id, code, description, buy_x, discount, category, 
-             valid_from AS validFrom, valid_to AS validTo, image, isActive, type
+             valid_from AS validFrom, valid_to AS validTo, image 
       FROM coupons 
-      WHERE isActive = 1
       ORDER BY valid_from DESC
     `);
     res.json({
@@ -747,15 +622,13 @@ router.get('/coupons', authenticate, async (req, res) => {
         ...coupon,
         _id: String(coupon._id),
         buy_x: parseInt(coupon.buy_x),
-        discount: coupon.discount ? parseFloat(coupon.discount) : null,
+        discount: coupon.discount ? parseInt(coupon.discount) : null,
         validFrom: coupon.validFrom.toISOString().split('T')[0],
         validTo: coupon.validTo.toISOString().split('T')[0],
-        isActive: Boolean(coupon.isActive),
-        image: isValidCloudinaryUrl(coupon.image) ? coupon.image : null,
       })),
     });
   } catch (err) {
-    console.error('Coupons Fetch Error:', { message: err.message, stack: err.stack });
+    console.error('Coupons Fetch Error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch coupons', error: err.message });
   } finally {
     if (connection) connection.release();
@@ -769,17 +642,16 @@ router.get(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
       const [coupons] = await connection.query(`
         SELECT id AS _id, code, description, buy_x, discount, category, 
-               valid_from AS validFrom, valid_to AS validTo, image, isActive, type
+               valid_from AS validFrom, valid_to AS validTo, image 
         FROM coupons 
-        WHERE id = ? AND isActive = 1
+        WHERE id = ?
       `, [req.sanitizedId]);
 
       if (!coupons.length) {
-        return res.status(404).json({ success: false, message: 'Coupon not found or inactive' });
+        return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
 
       const coupon = coupons[0];
@@ -789,15 +661,13 @@ router.get(
           ...coupon,
           _id: String(coupon._id),
           buy_x: parseInt(coupon.buy_x),
-          discount: coupon.discount ? parseFloat(coupon.discount) : null,
+          discount: coupon.discount ? parseInt(coupon.discount) : null,
           validFrom: coupon.validFrom.toISOString().split('T')[0],
           validTo: coupon.validTo.toISOString().split('T')[0],
-          isActive: Boolean(coupon.isActive),
-          image: isValidCloudinaryUrl(coupon.image) ? coupon.image : null,
         },
       });
     } catch (err) {
-      console.error('Coupon Fetch Error:', { message: err.message, stack: err.stack });
+      console.error('Coupon Fetch Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to fetch coupon', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -813,24 +683,16 @@ router.post(
     body('code').trim().notEmpty().withMessage('Coupon code is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
     body('buy_x').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
-    body('discount').isFloat({ min: 0 }).withMessage('Discount must be a positive number'),
+    body('discount').isInt({ min: 1, max: 100 }).withMessage('Discount must be an integer between 1 and 100'),
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('validFrom').isISO8601().withMessage('Valid from date is invalid'),
     body('validTo').isISO8601().withMessage('Valid to date is invalid'),
-    body('type').isIn(['percentage', 'flat', 'buy_x']).withMessage('Invalid coupon type'),
   ]),
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { code, description, buy_x, discount, category, validFrom, validTo, type } = req.body;
-
-      // Validate category exists
-      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
-      if (!categories.length) {
-        return res.status(400).json({ success: false, message: 'Invalid category' });
-      }
+      const { code, description, buy_x, discount, category, validFrom, validTo } = req.body;
 
       if (!req.file) {
         return res.status(400).json({ success: false, message: 'Image is required for new coupons' });
@@ -842,22 +704,15 @@ router.post(
 
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: 'delicutee/coupons',
-        width: 300,
-        height: 300,
-        crop: 'fill',
       });
-
-      if (!isValidCloudinaryUrl(result.secure_url)) {
-        throw new Error('Invalid Cloudinary URL returned');
-      }
 
       await cleanupFile(req.file.path);
 
       const imageUrl = result.secure_url;
 
       const [resultDb] = await connection.query(
-        'INSERT INTO coupons (code, description, buy_x, discount, category, valid_from, valid_to, image, type, isActive) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [code.toUpperCase(), description, parseInt(buy_x), parseFloat(discount), category, validFrom, validTo, imageUrl, type, 1]
+        'INSERT INTO coupons (code, description, buy_x, discount, category, valid_from, valid_to, image) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+        [code.toUpperCase(), description, parseInt(buy_x), parseInt(discount), category, validFrom, validTo, imageUrl]
       );
 
       res.status(201).json({
@@ -867,18 +722,16 @@ router.post(
           code: code.toUpperCase(),
           description,
           buy_x: parseInt(buy_x),
-          discount: parseFloat(discount),
+          discount: parseInt(discount),
           category,
           validFrom: new Date(validFrom).toISOString().split('T')[0],
           validTo: new Date(validTo).toISOString().split('T')[0],
           image: imageUrl,
-          type,
-          isActive: true,
         },
       });
     } catch (err) {
       if (req.file) await cleanupFile(req.file.path);
-      console.error('Coupon Add Error:', { message: err.message, stack: err.stack });
+      console.error('Coupon Add Error:', err.message);
       res.status(400).json({
         success: false,
         message: err.code === 'ER_DUP_ENTRY' ? 'Coupon code already exists' : 'Failed to add coupon',
@@ -899,26 +752,18 @@ router.put(
     body('code').trim().notEmpty().withMessage('Coupon code is required'),
     body('description').trim().notEmpty().withMessage('Description is required'),
     body('buy_x').isInt({ min: 1 }).withMessage('Quantity must be a positive integer'),
-    body('discount').isFloat({ min: 0 }).withMessage('Discount must be a positive number'),
+    body('discount').isInt({ min: 1, max: 100 }).withMessage('Discount must be an integer between 1 and 100'),
     body('category').trim().notEmpty().withMessage('Category is required'),
     body('validFrom').isISO8601().withMessage('Valid from date is invalid'),
     body('validTo').isISO8601().withMessage('Valid to date is invalid'),
-    body('type').isIn(['percentage', 'flat', 'buy_x']).withMessage('Invalid coupon type'),
     body('existingImage').optional().isString().withMessage('Existing image must be a valid URL'),
   ]),
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const { code, description, buy_x, discount, category, validFrom, validTo, type, existingImage } = req.body;
+      const { code, description, buy_x, discount, category, validFrom, validTo, existingImage } = req.body;
       let image = existingImage;
-
-      // Validate category exists
-      const [categories] = await connection.query('SELECT name FROM categories WHERE name = ? AND is_active = 1', [category]);
-      if (!categories.length) {
-        return res.status(400).json({ success: false, message: 'Invalid category' });
-      }
 
       if (new Date(validFrom) > new Date(validTo)) {
         return res.status(400).json({ success: false, message: 'Valid from date cannot be after valid to date' });
@@ -927,30 +772,24 @@ router.put(
       if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path, {
           folder: 'delicutee/coupons',
-          width: 300,
-          height: 300,
-          crop: 'fill',
         });
-        if (!isValidCloudinaryUrl(result.secure_url)) {
-          throw new Error('Invalid Cloudinary URL returned');
-        }
         image = result.secure_url;
         await cleanupFile(req.file.path);
 
-        if (existingImage && isValidCloudinaryUrl(existingImage)) {
+        if (existingImage) {
           await destroyCloudinaryImage(existingImage);
         }
-      } else if (!image || !isValidCloudinaryUrl(image)) {
-        return res.status(400).json({ success: false, message: 'Valid image URL is required' });
+      } else if (!image) {
+        return res.status(400).json({ success: false, message: 'Image is required' });
       }
 
       const [result] = await connection.query(
-        'UPDATE coupons SET code = ?, description = ?, buy_x = ?, discount = ?, category = ?, valid_from = ?, valid_to = ?, image = ?, type = ? WHERE id = ? AND isActive = 1',
-        [code.toUpperCase(), description, parseInt(buy_x), parseFloat(discount), category, validFrom, validTo, image, type, req.sanitizedId]
+        'UPDATE coupons SET code = ?, description = ?, buy_x = ?, discount = ?, category = ?, valid_from = ?, valid_to = ?, image = ? WHERE id = ?',
+        [code.toUpperCase(), description, parseInt(buy_x), parseInt(discount), category, validFrom, validTo, image, req.sanitizedId]
       );
 
       if (result.affectedRows === 0) {
-        return res.status(404).json({ success: false, message: 'Coupon not found or inactive' });
+        return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
 
       res.json({
@@ -960,18 +799,16 @@ router.put(
           code: code.toUpperCase(),
           description,
           buy_x: parseInt(buy_x),
-          discount: parseFloat(discount),
+          discount: parseInt(discount),
           category,
           validFrom: new Date(validFrom).toISOString().split('T')[0],
           validTo: new Date(validTo).toISOString().split('T')[0],
           image,
-          type,
-          isActive: true,
         },
       });
     } catch (err) {
       if (req.file) await cleanupFile(req.file.path);
-      console.error('Coupon Update Error:', { message: err.message, stack: err.stack });
+      console.error('Coupon Update Error:', err.message);
       res.status(400).json({
         success: false,
         message: err.code === 'ER_DUP_ENTRY' ? 'Coupon code already exists' : 'Failed to update coupon',
@@ -990,25 +827,22 @@ router.delete(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [coupon] = await connection.query('SELECT image FROM coupons WHERE id = ? AND isActive = 1', [req.sanitizedId]);
+      const [coupon] = await connection.query('SELECT image FROM coupons WHERE id = ?', [req.sanitizedId]);
       if (!coupon.length) {
-        return res.status(404).json({ success: false, message: 'Coupon not found or inactive' });
+        return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
 
-      if (isValidCloudinaryUrl(coupon[0].image)) {
-        await destroyCloudinaryImage(coupon[0].image);
-      }
+      await destroyCloudinaryImage(coupon[0].image);
 
-      const [result] = await connection.query('UPDATE coupons SET isActive = 0 WHERE id = ?', [req.sanitizedId]);
+      const [result] = await connection.query('DELETE FROM coupons WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Coupon not found' });
       }
 
       res.json({ success: true, message: 'Coupon deleted successfully' });
     } catch (err) {
-      console.error('Coupon Delete Error:', { message: err.message, stack: err.stack });
+      console.error('Coupon Delete Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to delete coupon', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -1016,11 +850,10 @@ router.delete(
   }
 );
 
-// === TOP PICKS ===
+// ========== TOP PICKS ==========
 router.get('/top-picks', authenticate, async (req, res) => {
   let connection;
   try {
-    if (!pool) throw new Error('Database pool not initialized');
     connection = await pool.getConnection();
     const [topPicks] = await connection.query(`
       SELECT t.id AS _id, m.id AS item_id, m.name AS name, m.description, m.category, 
@@ -1028,8 +861,7 @@ router.get('/top-picks', authenticate, async (req, res) => {
              CAST(m.saved_amount AS DECIMAL(10,2)) AS savedAmount, 
              m.image
       FROM top_picks t
-      JOIN menu_items m ON t.item_id = m.id
-      WHERE m.is_active = 1
+      JOIN menu m ON t.item_id = m.id
       ORDER BY m.name ASC
     `);
     res.json({
@@ -1040,11 +872,10 @@ router.get('/top-picks', authenticate, async (req, res) => {
         item_id: String(item.item_id),
         price: parseFloat(item.price),
         savedAmount: item.savedAmount ? parseFloat(item.savedAmount) : null,
-        image: isValidCloudinaryUrl(item.image) ? item.image : null,
       })),
     });
   } catch (err) {
-    console.error('Top Picks Fetch Error:', { message: err.message, stack: err.stack });
+    console.error('Top Picks Fetch Error:', err.message);
     res.status(500).json({ success: false, message: 'Failed to fetch top picks', error: err.message });
   } finally {
     if (connection) connection.release();
@@ -1058,14 +889,13 @@ router.post(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
       const { itemId } = req.body;
       const parsedItemId = req.sanitizedId;
 
-      const [items] = await connection.query('SELECT id FROM menu_items WHERE id = ? AND is_active = 1', [parsedItemId]);
+      const [items] = await connection.query('SELECT id FROM menu WHERE id = ?', [parsedItemId]);
       if (!items.length) {
-        return res.status(404).json({ success: false, message: 'Menu item not found or inactive' });
+        return res.status(404).json({ success: false, message: 'Menu item not found' });
       }
 
       const [existing] = await connection.query('SELECT id FROM top_picks WHERE item_id = ?', [parsedItemId]);
@@ -1074,14 +904,12 @@ router.post(
       }
 
       const [result] = await connection.query('INSERT INTO top_picks (item_id) VALUES (?)', [parsedItemId]);
-      await connection.query('UPDATE menu_items SET is_top_pick = 1 WHERE id = ?', [parsedItemId]);
-
       res.status(201).json({
         success: true,
         data: { _id: String(result.insertId), itemId: String(parsedItemId) },
       });
     } catch (err) {
-      console.error('Top Pick Add Error:', { message: err.message, stack: err.stack });
+      console.error('Top Pick Add Error:', err.message);
       res.status(400).json({ success: false, message: 'Failed to add top pick', error: err.message });
     } finally {
       if (connection) connection.release();
@@ -1096,23 +924,15 @@ router.delete(
   async (req, res) => {
     let connection;
     try {
-      if (!pool) throw new Error('Database pool not initialized');
       connection = await pool.getConnection();
-      const [topPick] = await connection.query('SELECT item_id FROM top_picks WHERE id = ?', [req.sanitizedId]);
-      if (!topPick.length) {
-        return res.status(404).json({ success: false, message: 'Top pick not found' });
-      }
-
       const [result] = await connection.query('DELETE FROM top_picks WHERE id = ?', [req.sanitizedId]);
       if (result.affectedRows === 0) {
         return res.status(404).json({ success: false, message: 'Top pick not found' });
       }
 
-      await connection.query('UPDATE menu_items SET is_top_pick = 0 WHERE id = ?', [topPick[0].item_id]);
-
       res.json({ success: true, message: 'Top pick removed successfully' });
     } catch (err) {
-      console.error('Top Pick Delete Error:', { message: err.message, stack: err.stack });
+      console.error('Top Pick Delete Error:', err.message);
       res.status(500).json({ success: false, message: 'Failed to remove top pick', error: err.message });
     } finally {
       if (connection) connection.release();
