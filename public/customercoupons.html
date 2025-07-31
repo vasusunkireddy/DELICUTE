@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Available Coupons</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background: #f9f9f9; }
+    header { background: #333; color: #fff; padding: 15px; text-align: center; }
+    .container { max-width: 900px; margin: 20px auto; padding: 15px; }
+    .coupon-card {
+      border: 1px solid #ddd; background: #fff; padding: 15px;
+      border-radius: 10px; margin-bottom: 15px;
+      display: flex; gap: 15px; align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    .coupon-card img {
+      width: 120px; height: 100px; object-fit: cover; border-radius: 6px;
+    }
+    .coupon-info { flex: 1; }
+    .coupon-info b { font-size: 1.2rem; color: #333; }
+    .coupon-info p { margin: 5px 0; color: #555; }
+    .apply-btn {
+      background: #007bff; color: #fff; border: none;
+      padding: 8px 14px; border-radius: 6px; cursor: pointer;
+    }
+    .apply-btn:hover { background: #0056b3; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🎟️ Available Coupons</h1>
+</header>
+<div class="container" id="couponList"></div>
+
+<script>
+  async function loadCoupons() {
+    try {
+      const res = await fetch("/api/coupons");
+      const data = await res.json();
+      const list = document.getElementById("couponList");
+
+      if (data.success && data.data.length > 0) {
+        data.data.forEach(coupon => {
+          list.innerHTML += `
+            <div class="coupon-card">
+              <img src="${coupon.image}" alt="${coupon.code}">
+              <div class="coupon-info">
+                <b>${coupon.code}</b>
+                <p>${coupon.description}</p>
+              </div>
+              <button class="apply-btn" onclick="applyCoupon('${coupon.code}')">Apply</button>
+            </div>
+          `;
+        });
+      } else {
+        list.innerHTML = "<p>No coupons available right now.</p>";
+      }
+    } catch (err) {
+      console.error("Coupon Error:", err);
+    }
+  }
+
+  function applyCoupon(code) {
+    // Save coupon code to localStorage (so cart page can use it)
+    localStorage.setItem("appliedCoupon", code);
+    alert(`Coupon ${code} applied! Returning to cart...`);
+    window.location.href = "customermenu.html";
+  }
+
+  loadCoupons();
+</script>
+</body>
+</html>

@@ -1,169 +1,63 @@
-const express = require('express');
-const mysql = require('mysql2/promise');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const cookieParser = require('cookie-parser');
-const path = require('path');
-const fs = require('fs/promises');
-
-dotenv.config();
+// server.js
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const cors = require("cors");
+const path = require("path");
+require("dotenv").config();
 
 const app = express();
-const isProduction = process.env.NODE_ENV === 'production';
 
-// CORS configuration
-const allowedOrigins = [
-  'http://localhost:3000',
-  'https://delicute-3bf1.onrender.com',
-  process.env.FRONTEND_URL || 'https://your-frontend-url.com'
-].filter(origin => origin); // Remove undefined origins
-
+// ================== CORE MIDDLEWARE ==================
 app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: [
+    process.env.FRONTEND_URL || "http://localhost:3000",
+    "https://delicute-3bf1.onrender.com" // ✅ allow Render domain
+  ],
+  credentials: true
 }));
-
-// Middleware
 app.use(express.json());
 app.use(cookieParser());
-app.use(express.urlencoded({ extended: true }));
 
-// Serve static files for the 'public' folder (e.g., frontend assets)
-app.use(express.static(path.join(__dirname, 'public')));
+// ================== ROUTES ==================
+const authRoutes = require("./routes/auth");
+const menuRoutes = require("./routes/menu");
+const categoriesRoutes = require("./routes/categories");
+const ordersRoutes = require("./routes/orders");
+const couponsRoutes = require("./routes/coupons");
+const customerMenuRoutes = require("./routes/customermenu");
 
-// Note: Removed /Uploads static middleware since coupon images are on Cloudinary
-// If you need /Uploads for other local files, add conditional logic to skip Cloudinary URLs
-// app.use('/Uploads', express.static(path.join(__dirname, 'Uploads'), {
-//   fallthrough: false,
-//   setHeaders: (res) => {
-//     res.set('Cache-Control', 'public, max-age=31536000');
-//   }
-// }));
+// ================== API ROUTES ==================
+app.use("/api/auth", authRoutes);
+app.use("/api/menu", menuRoutes);
+app.use("/api/categories", categoriesRoutes);
+app.use("/api/orders", ordersRoutes);
+app.use("/api/coupons", couponsRoutes);
+app.use("/api", customerMenuRoutes);
 
-// Ensure 'Uploads' folder exists (only if needed for other local files)
-const initializeUploadsFolder = async () => {
-  const uploadPath = path.join(__dirname, 'Uploads');
-  try {
-    await fs.mkdir(uploadPath, { recursive: true });
-    console.log('✅ Created Uploads folder:', uploadPath);
-  } catch (err) {
-    console.error('❌ Failed to create Uploads folder:', { message: err.message });
-    process.exit(1);
-  }
-};
+// ================== FRONTEND PAGES ==================
+app.get("/admin", (_, res) => res.redirect("/admin.html"));
+app.get("/admindashboard", (_, res) => res.redirect("/admindashboard.html"));
+app.get("/orders", (_, res) => res.redirect("/adminorders.html"));
+app.get("/coupons", (_, res) => res.redirect("/admincoupons.html"));
 
-// MySQL connection pool
-const initializePool = async () => {
-  try {
-    const requiredEnvVars = ['DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
-    for (const envVar of requiredEnvVars) {
-      if (!process.env[envVar]) {
-        throw new Error(`Environment variable ${envVar} is not set`);
-      }
-    }
+// ================== STATIC FILES ==================
+app.use(express.static(path.join(__dirname, "public")));
 
-    const config = {
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      connectionLimit: 10,
-      waitForConnections: true,
-      queueLimit: 0,
-      connectTimeout: 30000
-    };
-
-    if (isProduction) {
-      try {
-        const caCert = await fs.readFile(path.join(__dirname, 'ca.pem'), 'utf8');
-        config.ssl = { ca: caCert };
-      } catch (err) {
-        console.error('❌ Failed to read ca.pem for SSL:', { message: err.message });
-        throw new Error('Unable to load SSL certificate');
-      }
-    }
-
-    return mysql.createPool(config);
-  } catch (err) {
-    console.error('❌ Failed to initialize MySQL pool:', { message: err.message });
-    throw err;
-  }
-};
-
-// Initialize pool and store it globally
-let pool;
-const initializeServer = async () => {
-  try {
-    // Only initialize Uploads folder if needed for other local files
-    // await initializeUploadsFolder();
-    pool = await initializePool();
-    app.locals.db = pool;
-
-    // Verify MySQL connection
-    const conn = await pool.getConnection();
-    console.log('✅ Connected to MySQL');
-    conn.release();
-
-    // Load routes
-    try {
-      const adminRoutes = require('./routes/admin');
-      const dashboardRoutes = require('./routes/admindashboard');
-      const apiRoutes = require('./routes/menu');
-      const couponRoutes = require('./routes/coupon');
-
-      // Public routes (no authentication)
-      app.use('/api', apiRoutes);
-      app.use('/api', couponRoutes);
-
-      // Authenticated routes
-      app.use('/api/auth', adminRoutes);
-      app.use('/api', dashboardRoutes);
-
-      console.log('🚀 Routes loaded successfully');
-    } catch (err) {
-      console.error('❌ Failed to load routes:', { message: err.message, stack: err.stack });
-      process.exit(1);
-    }
-  } catch (err) {
-    console.error('❌ Server initialization failed:', { message: err.message, stack: err.stack });
-    process.exit(1);
-  }
-};
-
-// Health check endpoint
-app.get('/health', async (req, res) => {
-  try {
-    if (!pool) throw new Error('Database pool not initialized');
-    await pool.query('SELECT 1');
-    res.json({ status: 'OK', timestamp: new Date().toISOString() });
-  } catch (error) {
-    console.error('Health check failed:', { message: error.message, stack: error.stack });
-    res.status(500).json({ status: 'ERROR', message: 'Database unavailable', error: error.message });
-  }
+// ================== ROOT ==================
+app.get("/", (_, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error('Server Error:', { message: err.message, stack: err.stack, path: req.path });
-  res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+// ================== 404 HANDLER ==================
+app.use((req, res) => {
+  if (req.path.startsWith("/api")) {
+    return res.status(404).json({ success: false, message: "API route not found" });
+  }
+  res.status(404).sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// Start server
+// ================== START SERVER ==================
 const PORT = process.env.PORT || 3000;
-initializeServer().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running at http${isProduction ? 's' : ''}://localhost:${PORT}`);
-  });
-}).catch(err => {
-  console.error('❌ Failed to start server:', { message: err.message, stack: err.stack });
-  process.exit(1);
+app.listen(PORT, "0.0.0.0", () => {   // ✅ important for Render
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

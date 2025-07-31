@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin | Manage Coupons</title>
+  <link rel="icon" href="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Playfair Display', serif;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: #1a1a1a;
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    header {
+      background: linear-gradient(90deg, #26a69a, #4dd0e1);
+      color: #fff;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+      animation: shine 3s infinite;
+    }
+    header img {
+      height: 60px;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
+      animation: fadeInScale 0.8s ease-out;
+      transition: transform 0.3s ease;
+    }
+    header img:hover {
+      transform: scale(1.15);
+    }
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-top: 0.5rem;
+      text-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
+      animation: fadeInUp 0.6s ease-out 0.2s forwards;
+    }
+    header span {
+      font-size: 0.9rem;
+      font-weight: 600;
+      opacity: 0.9;
+      color: #fff3cd;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      animation: fadeInUp 0.6s ease-out 0.4s forwards;
+    }
+    nav {
+      background: #1a1a1a;
+      display: flex;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    nav a {
+      flex: 0 1 150px;
+      padding: 1rem;
+      text-align: center;
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: 600;
+      transition: background 0.3s ease, transform 0.2s ease, color 0.3s ease;
+    }
+    nav a:hover {
+      background: #26a69a;
+      color: #fff3cd;
+      transform: translateY(-3px);
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    }
+    .logout {
+      background: linear-gradient(45deg, #ffd700, #ffca28);
+      border: none;
+      padding: 0.6rem 1.5rem;
+      color: #1a1a1a;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 10px;
+      cursor: pointer;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+    .logout:hover {
+      background: linear-gradient(45deg, #ffca28, #ffb300);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1.5rem;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      animation: slideUp 0.6s ease-out;
+    }
+    .container h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #26a69a;
+      margin-bottom: 1rem;
+      text-align: center;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    form {
+      display: grid;
+      gap: 0.8rem;
+      background: #fff;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1.5rem;
+    }
+    label {
+      font-size: 1rem;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+    input, textarea, select {
+      padding: 0.8rem;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem;
+      background: rgba(255, 255, 255, 0.9);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #26a69a;
+      box-shadow: 0 0 0 2px rgba(38, 166, 154, 0.2);
+      outline: none;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+    button {
+      background: linear-gradient(45deg, #ffd700, #ffca28);
+      border: none;
+      padding: 0.8rem 1.5rem;
+      color: #1a1a1a;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+    button:hover {
+      background: linear-gradient(45deg, #ffca28, #ffb300);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-top: 1rem;
+    }
+    th, td {
+      padding: 0.8rem;
+      text-align: center;
+      vertical-align: middle;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+    th {
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    td {
+      font-size: 1rem;
+      color: #1a1a1a;
+    }
+    img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      transition: transform 0.3s ease;
+    }
+    img:hover {
+      transform: scale(1.1);
+    }
+    table tr:hover {
+      background: rgba(38, 166, 154, 0.05);
+    }
+    .btn-edit {
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      margin-right: 0.5rem;
+    }
+    .btn-edit:hover {
+      background: linear-gradient(45deg, #1e8578, #26a69a);
+      transform: translateY(-2px);
+    }
+    .btn-delete {
+      background: linear-gradient(45deg, #ef5350, #e53935);
+      color: #fff;
+    }
+    .btn-delete:hover {
+      background: linear-gradient(45deg, #d32f2f, #ef5350);
+      transform: translateY(-2px);
+    }
+    .no-coupons {
+      font-size: 1.1rem;
+      color: #4b5e8e;
+      text-align: center;
+      padding: 2rem;
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      text-align: center;
+      border-radius: 12px;
+      padding: 1rem;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    #toast.show {
+      visibility: visible;
+      animation: slideDown 0.5s ease-out, slideUp 0.5s ease-in 2.5s forwards;
+    }
+    @keyframes shine {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translate(-50%, -100%); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @media (max-width: 480px) {
+      header img { height: 45px; }
+      header h1 { font-size: 1.8rem; }
+      header span { font-size: 0.8rem; }
+      nav a { font-size: 0.9rem; padding: 0.8rem; flex: 0 1 100px; }
+      .logout { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      .container { margin: 1rem; padding: 1rem; }
+      .container h2 { font-size: 1.6rem; }
+      th, td { font-size: 0.9rem; padding: 0.6rem; }
+      img { width: 40px; height: 40px; }
+      label, input, textarea, select, button { font-size: 0.9rem; padding: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo">
+    <div>
+      <h1>DELICUTE</h1>
+      <span>Every Bite Tells A Story</span>
+    </div>
+    <button class="logout" onclick="logout()">Logout</button>
+  </header>
+
+  <nav>
+    <a href="adminorders.html">Orders</a>
+    <a href="adminmenu.html">Menu</a>
+    <a href="admincoupons.html">Coupons</a>
+    <a href="admincategories.html">Categories</a>
+    <a href="admintoppicks.html">Top Picks</a>
+  </nav>
+
+  <div class="container">
+    <h2>Manage Coupons 🎟️</h2>
+    <form id="couponForm">
+      <input type="hidden" id="couponId">
+      <label>Coupon Code</label>
+      <input type="text" id="code" required>
+      <label>Description</label>
+      <textarea id="description" required></textarea>
+      <label>Image</label>
+      <input type="file" id="image" accept="image/*">
+      <label>Discount Amount (₹)</label>
+      <input type="number" id="discount" min="1" required>
+      <label>Quantity</label>
+      <input type="number" id="quantity" min="1" required>
+      <label>Category</label>
+      <select id="category" required></select>
+      <label>Type</label>
+      <select id="type" required>
+        <option value="buy_x">Buy_X</option>
+        <option value="date_range">Date Range</option>
+      </select>
+      <div id="buyXFields" style="display:none;">
+        <label>Buy_X (Minimum Quantity)</label>
+        <input type="number" id="buy_x" min="1">
+      </div>
+      <div id="dateFields" style="display:none;">
+        <label>Valid From</label>
+        <input type="date" id="valid_from">
+        <label>Valid To</label>
+        <input type="date" id="valid_to">
+      </div>
+      <button type="submit">Save Coupon</button>
+    </form>
+
+    <h2>Coupons List</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Discount</th>
+          <th>Quantity</th>
+          <th>Category</th>
+          <th>Type</th>
+          <th>Validity</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="couponTable"></tbody>
+    </table>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+  <script>
+    const API_URL = "/api/coupons";
+
+    function showToast(msg, success = true) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.background = success ? "linear-gradient(45deg, #26a69a, #4dd0e1)" : "linear-gradient(45deg, #ef5350, #e53935)";
+      toast.className = "show";
+      setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
+    }
+
+    // ✅ Auth check
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const res = await fetch("/api/auth/check", { credentials: "include" });
+        if (!res.ok) {
+          window.location.href = "/admin.html";
+          return;
+        }
+        await loadCategories();
+        await fetchCoupons();
+      } catch (err) {
+        window.location.href = "/admin.html";
+      }
+    });
+
+    document.getElementById("type").addEventListener("change", (e) => {
+      document.getElementById("buyXFields").style.display = e.target.value === "buy_x" ? "block" : "none";
+      document.getElementById("dateFields").style.display = e.target.value === "date_range" ? "block" : "none";
+    });
+
+    async function loadCategories() {
+      try {
+        const res = await fetch("/api/categories");
+        const data = await res.json();
+        const categorySelect = document.getElementById("category");
+        categorySelect.innerHTML = "";
+        if (data.success && data.data.length > 0) {
+          data.data.forEach(cat => {
+            categorySelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+          });
+        } else {
+          categorySelect.innerHTML = `<option value="" disabled>No categories available</option>`;
+        }
+      } catch (err) {
+        showToast("Error loading categories", false);
+        console.error("Category Load Error:", err);
+      }
+    }
+
+    async function fetchCoupons() {
+      try {
+        const res = await fetch(API_URL);
+        const data = await res.json();
+        const table = document.getElementById("couponTable");
+        table.innerHTML = "";
+
+        if (!data.success || data.data.length === 0) {
+          table.innerHTML = "<tr><td colspan='9' class='no-coupons'>No coupons found</td></tr>";
+          return;
+        }
+
+        data.data.forEach(coupon => {
+          table.innerHTML += `
+            <tr>
+              <td><img src="${coupon.image}" alt="${coupon.code}"></td>
+              <td>${coupon.code}</td>
+              <td>${coupon.description}</td>
+              <td>₹${coupon.discount}</td>
+              <td>${coupon.quantity}</td>
+              <td>${coupon.category}</td>
+              <td>${coupon.type}</td>
+              <td>${coupon.valid_from ? coupon.valid_from.split("T")[0] : "-"} → ${coupon.valid_to ? coupon.valid_to.split("T")[0] : "-"}</td>
+              <td>
+                <button class="btn-edit" onclick="editCoupon(${coupon.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteCoupon(${coupon.id})">Delete</button>
+              </td>
+            </tr>
+          `;
+        });
+      } catch (err) {
+        showToast("Error loading coupons", false);
+        console.error("Coupon Load Error:", err);
+      }
+    }
+
+    document.getElementById("couponForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      formData.append("code", document.getElementById("code").value);
+      formData.append("description", document.getElementById("description").value);
+      formData.append("discount", document.getElementById("discount").value);
+      formData.append("quantity", document.getElementById("quantity").value);
+      formData.append("category", document.getElementById("category").value);
+      formData.append("type", document.getElementById("type").value);
+      formData.append("buy_x", document.getElementById("buy_x").value);
+      formData.append("valid_from", document.getElementById("valid_from").value);
+      formData.append("valid_to", document.getElementById("valid_to").value);
+
+      const imageFile = document.getElementById("image").files[0];
+      if (imageFile) {
+        formData.append("image", imageFile);
+      }
+
+      const id = document.getElementById("couponId").value;
+      const method = id ? "PUT" : "POST";
+      const url = id ? `${API_URL}/${id}` : API_URL;
+
+      try {
+        const res = await fetch(url, { method, body: formData });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || (id ? "Coupon updated!" : "Coupon added!"));
+          document.getElementById("couponForm").reset();
+          document.getElementById("buyXFields").style.display = "none";
+          document.getElementById("dateFields").style.display = "none";
+          fetchCoupons();
+        } else {
+          showToast(data.message || "Error saving coupon", false);
+        }
+      } catch (err) {
+        showToast("Error saving coupon", false);
+        console.error("Save Error:", err);
+      }
+    });
+
+    async function editCoupon(id) {
+      try {
+        const res = await fetch(`${API_URL}/${id}`);
+        const data = await res.json();
+        if (data.success) {
+          const c = data.data;
+          document.getElementById("couponId").value = c.id;
+          document.getElementById("code").value = c.code;
+          document.getElementById("description").value = c.description;
+          document.getElementById("discount").value = c.discount;
+          document.getElementById("quantity").value = c.quantity;
+          document.getElementById("category").value = c.category;
+          document.getElementById("type").value = c.type;
+
+          if (c.type === "buy_x") {
+            document.getElementById("buy_x").value = c.buy_x;
+            document.getElementById("buyXFields").style.display = "block";
+            document.getElementById("dateFields").style.display = "none";
+          } else {
+            document.getElementById("valid_from").value = c.valid_from?.split("T")[0] || "";
+            document.getElementById("valid_to").value = c.valid_to?.split("T")[0] || "";
+            document.getElementById("buyXFields").style.display = "none";
+            document.getElementById("dateFields").style.display = "block";
+          }
+        } else {
+          showToast("Error loading coupon data", false);
+        }
+      } catch (err) {
+        showToast("Error loading coupon data", false);
+        console.error("Edit Error:", err);
+      }
+    }
+
+    async function deleteCoupon(id) {
+      if (!confirm("Delete this coupon?")) return;
+      try {
+        const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+        const data = await res.json();
+        if (res.ok) {
+          showToast(data.message || "Coupon deleted!");
+          fetchCoupons();
+        } else {
+          showToast(data.message || "Error deleting coupon", false);
+        }
+      } catch (err) {
+        showToast("Error deleting coupon", false);
+        console.error("Delete Error:", err);
+      }
+    }
+
+    async function logout() {
+      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+      window.location.href = "/admin.html";
+    }
+  </script>
+</body>
+</html>

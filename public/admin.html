@@ -1,348 +1,359 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Delicute | Admin Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DELICUTE | Admin Portal</title>
+  <link rel="icon" href="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-
     body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, #fff7f0 0%, #ffe8e0 100%);
-      color: #2c2c2c;
+      font-family: 'Playfair Display', serif;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: #1a1a1a;
       min-height: 100vh;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       overflow-x: hidden;
-      line-height: 1.6;
     }
-
     .container {
-      max-width: 400px;
-      width: 100%;
+      background: rgba(255, 255, 255, 0.95);
       padding: 2rem;
-      background: rgba(255, 255, 255, 0.1);
       border-radius: 16px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 450px;
       text-align: center;
-      margin: 1rem;
+      animation: slideUp 0.8s ease-out;
       position: relative;
+      overflow: hidden;
     }
-
     .container::before {
       content: '';
       position: absolute;
       top: 0;
-      left: 0;
+      left: -100%;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle, rgba(255, 231, 224, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
-      z-index: -1;
-      border-radius: 16px;
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+      animation: shine 4s infinite;
     }
-
-    .logo img {
-      width: 120px;
+    .logo-section {
       margin-bottom: 1.5rem;
-      opacity: 0;
-      transform: scale(0.8);
-      animation: fadeInScale 1s ease-out forwards;
     }
-
-    h1 {
-      font-family: 'Playfair Display', serif;
+    .logo {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 0.5rem auto;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
+      animation: fadeInScale 0.8s ease-out;
+      transition: transform 0.3s ease;
+    }
+    .logo:hover {
+      transform: scale(1.15);
+    }
+    .logo-section h1 {
       font-size: 2.5rem;
-      font-weight: 700;
+      font-weight: 800;
       color: #1a1a1a;
-      margin-bottom: 0.5rem;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.8s ease-out 0.2s forwards;
+      text-shadow: 0 2px 6px rgba(255, 215, 0, 0.3);
+      animation: fadeInUp 0.6s ease-out 0.2s forwards;
     }
-
-    p {
-      font-size: 1.1rem;
-      color: #555;
-      margin-bottom: 1.5rem;
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.8s ease-out 0.4s forwards;
-    }
-
-    .error-message {
-      color: #e53935;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-      display: none;
-    }
-
-    .form-toggle {
-      display: flex;
-      justify-content: center;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .form-toggle button {
-      background: none;
-      border: none;
-      font-family: 'Montserrat', sans-serif;
+    .tagline {
       font-size: 1rem;
       font-weight: 600;
-      color: #555;
+      color: #4b5e8e;
+      font-style: italic;
+      animation: fadeInUp 0.6s ease-out 0.4s forwards;
+    }
+    .tab-buttons {
+      display: flex;
+      justify-content: center;
+      margin: 1.5rem 0;
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 0.3rem;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+    .tab-button {
+      flex: 1;
+      padding: 0.8rem;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.1rem;
+      font-weight: 600;
       cursor: pointer;
-      padding: 0.5rem 1rem;
-      transition: color 0.3s ease;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
     }
-
-    .form-toggle button.active {
-      color: #fc8019;
-      border-bottom: 2px solid #fc8019;
+    .tab-button:hover {
+      background: #26a69a;
+      color: #fff3cd;
+      transform: translateY(-2px);
     }
-
-    .form-toggle button:hover {
-      color: #e56c12;
+    .tab-button.active {
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
     }
-
-    .form-container {
+    .form {
       display: none;
+      flex-direction: column;
       opacity: 0;
       transform: translateY(20px);
-      animation: fadeInUp 0.6s ease-out forwards;
+      animation: formFadeIn 0.5s ease-out forwards;
     }
-
-    .form-container.active {
-      display: block;
+    .form.active {
+      display: flex;
     }
-
-    .form-group {
-      margin-bottom: 1.2rem;
-      text-align: left;
+    .form h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #26a69a;
+      margin-bottom: 1rem;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-
-    .form-group label {
-      display: block;
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 0.5rem;
-    }
-
-    .form-group input {
-      width: 100%;
+    .form input {
+      margin: 0.6rem 0;
       padding: 0.8rem;
       border: 1px solid rgba(0, 0, 0, 0.1);
       border-radius: 8px;
+      font-family: 'Playfair Display', serif;
       font-size: 1rem;
-      background: rgba(255, 255, 255, 0.5);
-      transition: all 0.3s ease;
+      background: rgba(255, 255, 255, 0.9);
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
-
-    .form-group input:focus {
+    .form input:focus {
+      border-color: #26a69a;
+      box-shadow: 0 0 0 2px rgba(38, 166, 154, 0.2);
       outline: none;
-      border-color: #fc8019;
-      box-shadow: 0 0 8px rgba(252, 128, 25, 0.3);
     }
-
-    .btn {
-      background: linear-gradient(45deg, #fc8019, #ff9a44);
-      color: white;
-      padding: 0.9rem;
-      font-size: 1.1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      width: 100%;
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(252, 128, 25, 0.4);
-      opacity: 0;
-      transform: translateY(20px);
-      animation: fadeInUp 0.8s ease-out 0.6s forwards;
-    }
-
-    .btn:hover {
-      background: linear-gradient(45deg, #e56c12, #fc8019);
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(252, 128, 25, 0.5);
-    }
-
-    .forgot-password, .back-to-login {
-      display: block;
-      font-size: 0.9rem;
-      color: #fc8019;
-      text-decoration: none;
+    .form button {
       margin-top: 1rem;
-      transition: color 0.3s ease;
+      padding: 0.8rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(45deg, #ffd700, #ffca28);
+      color: #1a1a1a;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     }
-
-    .forgot-password:hover, .back-to-login:hover {
-      color: #e56c12;
+    .form button:hover {
+      background: linear-gradient(45deg, #ffca28, #ffb300);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
     }
-
+    .message {
+      margin-top: 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+    .error {
+      color: #e53935;
+      background: rgba(239, 83, 80, 0.1);
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+    .success {
+      color: #28a745;
+      background: rgba(40, 167, 69, 0.1);
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      text-align: center;
+      border-radius: 12px;
+      padding: 1rem;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 0.95rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    #toast.show {
+      visibility: visible;
+      animation: slideDown 0.5s ease-out, slideUp 0.5s ease-in 2.5s forwards;
+    }
+    @keyframes shine {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
     @keyframes fadeInScale {
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
     }
-
     @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translate(-50%, -100%); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @keyframes formFadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
     @media (max-width: 480px) {
-      .container {
-        padding: 1.5rem;
-        margin: 0.5rem;
-      }
-
-      h1 {
-        font-size: 2rem;
-      }
-
-      p {
-        font-size: 1rem;
-      }
-
-      .logo img {
-        width: 100px;
-      }
-
-      .form-group input {
-        padding: 0.7rem;
-      }
-
-      .btn {
-        padding: 0.8rem;
-        font-size: 1rem;
-      }
+      .container { margin: 1rem; padding: 1.5rem; max-width: 90%; }
+      .logo { width: 80px; height: 80px; }
+      .logo-section h1 { font-size: 2rem; }
+      .tagline { font-size: 0.9rem; }
+      .tab-button { font-size: 1rem; padding: 0.6rem; }
+      .form h2 { font-size: 1.6rem; }
+      .form input, .form button { font-size: 0.9rem; padding: 0.7rem; }
+      .message { font-size: 0.85rem; }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">
-      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo" />
+    <!-- Logo & Branding -->
+    <div class="logo-section">
+      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo" class="logo">
+      <h1>DELICUTE</h1>
+      <p class="tagline">Every Bite Tells A Story</p>
     </div>
-    <h1>Delicute Admin</h1>
-    <p>Manage your cloud kitchen with ease</p>
-    <div id="error-message" class="error-message"></div>
-    <div class="form-toggle">
-      <button class="active" onclick="showForm('login')">Login</button>
-      <button onclick="showForm('signup')">Sign Up</button>
+
+    <!-- Tabs -->
+    <div class="tab-buttons">
+      <button class="tab-button active" onclick="showForm('login')">Login</button>
+      <button class="tab-button" onclick="showForm('signup')">Signup</button>
     </div>
-    <div id="login-form" class="form-container active">
-      <form id="login-form-element">
-        <div class="form-group">
-          <label for="login-email">Email</label>
-          <input type="email" id="login-email" placeholder="Enter your email" required />
-        </div>
-        <div class="form-group">
-          <label for="login-password">Password</label>
-          <input type="password" id="login-password" placeholder="Enter your password" required />
-        </div>
-        <button type="submit" class="btn">Login</button>
-        <a href="#" class="forgot-password">Forgot Password?</a>
-      </form>
-    </div>
-    <div id="signup-form" class="form-container">
-      <form id="signup-form-element">
-        <div class="form-group">
-          <label for="signup-name">Full Name</label>
-          <input type="text" id="signup-name" placeholder="Enter your full name" required />
-        </div>
-        <div class="form-group">
-          <label for="signup-email">Email</label>
-          <input type="email" id="signup-email" placeholder="Enter your email" required />
-        </div>
-        <div class="form-group">
-          <label for="signup-password">Password</label>
-          <input type="password" id="signup-password" placeholder="Enter your password" required />
-        </div>
-        <button type="submit" class="btn">Sign Up</button>
-        <a href="#" class="back-to-login" onclick="showForm('login')">Back to Login</a>
-      </form>
-    </div>
+
+    <!-- Login -->
+    <form id="loginForm" class="form active">
+      <h2>Admin Login</h2>
+      <input type="email" id="loginEmail" placeholder="Email" required>
+      <input type="password" id="loginPassword" placeholder="Password" required>
+      <button type="submit">Login</button>
+      <p id="loginMsg" class="message"></p>
+    </form>
+
+    <!-- Signup -->
+    <form id="signupForm" class="form">
+      <h2>Create Account</h2>
+      <input type="text" id="signupName" placeholder="Full Name" required>
+      <input type="email" id="signupEmail" placeholder="Email" required>
+      <input type="password" id="signupPassword" placeholder="Password" required>
+      <button type="submit">Signup</button>
+      <p id="signupMsg" class="message"></p>
+    </form>
+
+    <!-- Toast -->
+    <div id="toast"></div>
   </div>
+
   <script>
-    const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
-
-    function showForm(formType) {
-      const loginForm = document.getElementById('login-form');
-      const signupForm = document.getElementById('signup-form');
-      const loginBtn = document.querySelector('.form-toggle button:first-child');
-      const signupBtn = document.querySelector('.form-toggle button:last-child');
-      const errorMessage = document.getElementById('error-message');
-
-      errorMessage.style.display = 'none';
-      if (formType === 'login') {
-        loginForm.classList.add('active');
-        signupForm.classList.remove('active');
-        loginBtn.classList.add('active');
-        signupBtn.classList.remove('active');
-      } else {
-        signupForm.classList.add('active');
-        loginForm.classList.remove('active');
-        signupBtn.classList.add('active');
-        loginBtn.classList.remove('active');
-      }
+    function showToast(msg, success = true) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.background = success ? "linear-gradient(45deg, #26a69a, #4dd0e1)" : "linear-gradient(45deg, #ef5350, #e53935)";
+      toast.className = "show";
+      setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
 
-    async function handleFormSubmit(event, endpoint) {
-      event.preventDefault();
-      const form = event.target;
-      const errorMessage = document.getElementById('error-message');
-      errorMessage.style.display = 'none';
-
-      const data = {};
-      form.querySelectorAll('input').forEach(input => {
-        data[input.id.split('-')[1]] = input.value.trim();
+    function showForm(formId) {
+      document.querySelectorAll(".form").forEach(form => {
+        form.classList.remove("active");
+        form.style.animation = "none";
       });
+      document.querySelectorAll(".tab-button").forEach(btn => btn.classList.remove("active"));
+
+      const selectedForm = document.getElementById(`${formId}Form`);
+      selectedForm.classList.add("active");
+      selectedForm.style.animation = "formFadeIn 0.5s ease-out forwards";
+
+      document.querySelector(`button[onclick="showForm('${formId}')"]`).classList.add("active");
+    }
+
+    // Handle Login
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("loginEmail").value;
+      const password = document.getElementById("loginPassword").value;
+      const loginMsg = document.getElementById("loginMsg");
 
       try {
-        const response = await fetch(`${API_BASE_URL}/api/auth/${endpoint}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(data),
-          credentials: 'include',
+        const res = await fetch("/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+          credentials: "include"
         });
 
-        const result = await response.json();
-        if (!response.ok) {
-          throw new Error(result.message || 'An error occurred');
-        }
+        const data = await res.json();
 
-        alert(result.message || `${endpoint.charAt(0).toUpperCase() + endpoint.slice(1)} successful!`);
-        form.reset();
-        if (endpoint === 'login') {
-          window.location.href = '/admindashboard.html'; // Updated to match your dashboard file
+        if (res.ok) {
+          showToast("Login successful!", true);
+          setTimeout(() => {
+            window.location.href = "/admindashboard.html";
+          }, 1000);
         } else {
-          showForm('login'); // Switch to login after signup
+          loginMsg.className = "message error";
+          loginMsg.innerText = data.message || "Invalid login credentials";
+          showToast(data.message || "Invalid login credentials", false);
         }
-      } catch (error) {
-        errorMessage.textContent = error.message;
-        errorMessage.style.display = 'block';
+      } catch (err) {
+        loginMsg.className = "message error";
+        loginMsg.innerText = "Server error. Please try again.";
+        showToast("Server error. Please try again.", false);
       }
-    }
+    });
 
-    document.getElementById('login-form-element').addEventListener('submit', (e) => handleFormSubmit(e, 'login'));
-    document.getElementById('signup-form-element').addEventListener('submit', (e) => handleFormSubmit(e, 'signup'));
+    // Handle Signup
+    document.getElementById("signupForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const name = document.getElementById("signupName").value;
+      const email = document.getElementById("signupEmail").value;
+      const password = document.getElementById("signupPassword").value;
+      const signupMsg = document.getElementById("signupMsg");
+
+      try {
+        const res = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+
+        signupMsg.className = data.success ? "message success" : "message error";
+        signupMsg.innerText = data.message || (data.success ? "Account created!" : "Signup failed");
+        showToast(data.message || (data.success ? "Account created!" : "Signup failed"), data.success);
+
+        if (data.success) {
+          document.getElementById("signupForm").reset();
+          setTimeout(() => showForm("login"), 1000);
+        }
+      } catch (err) {
+        signupMsg.className = "message error";
+        signupMsg.innerText = "Server error. Please try again.";
+        showToast("Server error. Please try again.", false);
+      }
+    });
   </script>
 </body>
 </html>

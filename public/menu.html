@@ -16,7 +16,7 @@
 
     body {
       font-family: 'Roboto', sans-serif;
-      background: linear-gradient(135deg, #fef7f2 0%, #ffece5 100%);
+      background: linear-gradient(135deg, hsla(78, 40%, 51%, 0.791) 0%, #ffece5 100%);
       color: #1a1a1a;
       min-height: 100vh;
       line-height: 1.6;
@@ -32,9 +32,9 @@
     .header {
       text-align: center;
       padding: 2rem 0;
-      background: rgba(255, 255, 255, 0.98);
+      background: hsla(70, 77%, 56%, 0.98);
       border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 16px #376916e0;
       backdrop-filter: blur(10px);
       margin-bottom: 1.5rem;
       position: relative;
@@ -191,7 +191,7 @@
       font-size: 1rem;
     }
 
-    .filter-btn {
+    .filter-btn, .coupon-btn {
       background: linear-gradient(45deg, #ff6200, #ff8c00);
       color: #ffffff;
       border: none;
@@ -208,7 +208,7 @@
       will-change: transform;
     }
 
-    .filter-btn:hover {
+    .filter-btn:hover, .coupon-btn:hover {
       background: linear-gradient(45deg, #d45200, #ff6200);
       transform: translateY(-2px);
       box-shadow: 0 5px 14px rgba(255, 98, 0, 0.4);
@@ -319,7 +319,7 @@
       font-weight: 600;
     }
 
-    .top-pick-item .saved-amount {
+    .top-pick-item .saved-price {
       position: absolute;
       top: 0.8rem;
       right: 0.8rem;
@@ -436,7 +436,7 @@
       margin: 0.6rem 0;
     }
 
-    .saved-amount {
+    .saved-price {
       position: absolute;
       top: 0.8rem;
       right: 0.8rem;
@@ -482,7 +482,7 @@
     }
 
     .remove-btn {
-      background: linear-gradient(45deg, #ff6200, #ff8c00);
+      background: linear-gradient(45deg, #ef5350, #e53935);
       padding: 0.6rem 1rem;
       font-size: 0.9rem;
       border-radius: 8px;
@@ -491,14 +491,14 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      color: hsl(33, 85%, 43%);
+      color: #ffffff;
       border: none;
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
     .remove-btn:hover {
-      background: linear-gradient(45deg, #d45200, #ff6200);
+      background: linear-gradient(45deg, #d32f2f, #ef5350);
       box-shadow: 0 5px 12px rgba(255, 98, 0, 0.3);
       transform: translateY(-2px);
     }
@@ -710,16 +710,52 @@
       color: #d32f2f;
     }
 
+    .coupon-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+
+    .coupon-item {
+      display: flex;
+      align-items: center;
+      padding: 0.8rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .coupon-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 1rem;
+    }
+
+    .coupon-item-details p:first-child {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .coupon-item-details p:last-child {
+      font-size: 0.85rem;
+      color: #4a4a4a;
+    }
+
     .toast {
       position: fixed;
-      top: 4.5rem; /* Below header */
+      top: 4.5rem;
       left: 50%;
       transform: translateX(-50%);
       background: linear-gradient(45deg, #ff6200, #ff8c00);
       color: #ffffff;
       border-radius: 12px;
       padding: 0.8rem 1.2rem;
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3), 0 0 10px hwb(259 10% 28% / 0.4);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
       backdrop-filter: blur(8px);
       display: none;
       z-index: 2000;
@@ -751,7 +787,7 @@
       width: 100%;
       height: 3px;
       background: #ffffff;
-      animation: progress  1s linear forwards;
+      animation: progress 3s linear forwards;
     }
 
     .filter-modal .form-group label {
@@ -885,7 +921,7 @@
         font-size: 1rem;
       }
 
-      .btn {
+      .btn, .coupon-btn {
         padding: 0.6rem 0.9rem;
         font-size: 0.85rem;
         min-width: 80px;
@@ -914,7 +950,7 @@
         font-size: 0.85rem;
       }
 
-      .filter-btn {
+      .filter-btn, .coupon-btn {
         padding: 0.7rem 1rem;
         font-size: 0.85rem;
       }
@@ -950,6 +986,11 @@
         font-size: 0.85rem;
         border-radius: 10px;
       }
+
+      .coupon-item img {
+        width: 40px;
+        height: 40px;
+      }
     }
   </style>
 </head>
@@ -978,6 +1019,7 @@
         <input type="text" id="search-input" placeholder="Search menu items..." aria-label="Search menu items">
       </div>
       <button class="filter-btn" onclick="openFilterModal()" aria-label="Open filters"><i class="fas fa-filter"></i> Filter</button>
+      <button class="coupon-btn" onclick="openCouponModal()" aria-label="View coupons"><i class="fas fa-ticket-alt"></i> Coupons</button>
     </div>
 
     <div id="filter-modal" class="modal filter-modal">
@@ -997,7 +1039,18 @@
       </div>
     </div>
 
-    <div id="menu"></div>
+    <div id="coupon-modal" class="modal">
+      <div class="modal-content">
+        <span class="close-btn" onclick="closeModal('coupon-modal')" aria-label="Close coupon modal">&times;</span>
+        <h2>Available Coupons</h2>
+        <div id="coupon-list" class="coupon-list">
+          <div class="loading">Loading coupons...</div>
+        </div>
+        <div class="form-group">
+          <button type="button" class="btn remove-btn" onclick="closeModal('coupon-modal')" aria-label="Close coupon modal"><i class="fas fa-times"></i> Close</button>
+        </div>
+      </div>
+    </div>
 
     <div id="cart-modal" class="modal">
       <div class="modal-content">
@@ -1010,7 +1063,6 @@
           <p>Total: ₹<span id="cart-total">0.00</span></p>
         </div>
         <div class="form-group">
-          <button class="btn" onclick="window.location.href='coupons.html'" aria-label="View available coupons"><i class="fas fa-ticket-alt"></i> View Coupons</button>
           <p id="coupon-applied" class="coupon-applied" style="display: none;"></p>
         </div>
         <div class="cart-footer">
@@ -1044,23 +1096,26 @@
         </form>
       </div>
     </div>
+
+    <div id="menu"></div>
   </div>
 
   <script>
     const API_BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://delicute-3bf1.onrender.com';
     const PLACEHOLDER_IMAGE = 'https://via.placeholder.com/300x300.png?text=Image+Not+Found';
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
     let cart = [];
     let appliedCoupon = null;
     let allMenuItems = [];
+    let allCoupons = [];
     let selectedCategories = new Set(['all']);
     let searchQuery = '';
     let toastTimeout = null;
 
-    function showToast(message, type = 'info') {
+    function showToast(message) {
       const toastContainer = document.getElementById('toast-container');
       if (!toastContainer) return;
 
-      // Clear any existing toast
       if (toastTimeout) {
         clearTimeout(toastTimeout);
         toastContainer.innerHTML = '';
@@ -1085,7 +1140,7 @@
         const storedCart = sessionStorage.getItem('cart');
         if (storedCart) {
           cart = JSON.parse(storedCart).filter(item => {
-            if (!item || !item.id || !item._id || !item.category || !Number.isInteger(item.quantity) || item.quantity < 1 || !item.name || isNaN(Number(item.price))) {
+            if (!item || !item._id || !item.category || !Number.isInteger(item.quantity) || item.quantity < 1 || !item.name || isNaN(Number(item.price))) {
               return false;
             }
             return true;
@@ -1095,6 +1150,10 @@
         const storedCoupon = sessionStorage.getItem('appliedCoupon');
         if (storedCoupon) {
           appliedCoupon = JSON.parse(storedCoupon);
+          if (!isCouponValid(appliedCoupon)) {
+            appliedCoupon = null;
+            sessionStorage.removeItem('appliedCoupon');
+          }
         }
         updateCouponDisplay();
         updateCart();
@@ -1119,11 +1178,20 @@
       }
     }
 
+    function isCouponValid(coupon) {
+      if (!coupon || !coupon.code || !coupon.buyX || !coupon.discount) return false;
+      const now = new Date();
+      const validFrom = new Date(coupon.validFrom);
+      const validTo = new Date(coupon.validTo);
+      return now >= validFrom && now <= validTo;
+    }
+
     function updateCouponDisplay() {
       const couponApplied = document.getElementById('coupon-applied');
       if (!couponApplied) return;
       if (appliedCoupon) {
-        couponApplied.innerHTML = `Coupon "${appliedCoupon.code}" applied! Buy ${appliedCoupon.buy_x} ${appliedCoupon.category} items for ${appliedCoupon.discount}% off. <span class="remove-coupon" onclick="removeCoupon()" aria-label="Remove coupon">Remove</span>`;
+        const categoryText = appliedCoupon.category ? appliedCoupon.category : 'Any';
+        couponApplied.innerHTML = `Coupon "${appliedCoupon.code}" applied! Buy ${appliedCoupon.buyX} ${categoryText} items for ${appliedCoupon.discount}% off. <span class="remove-coupon" onclick="removeCoupon()" aria-label="Remove coupon">Remove</span>`;
         couponApplied.style.display = 'flex';
       } else {
         couponApplied.style.display = 'none';
@@ -1132,15 +1200,15 @@
 
     function checkCouponEligibility() {
       if (!appliedCoupon) return;
-      const eligibleItems = cart.filter(item => item.category.toLowerCase() === appliedCoupon.category.toLowerCase());
+      const eligibleItems = cart.filter(item => !appliedCoupon.category || item.category.toLowerCase() === appliedCoupon.category.toLowerCase());
       const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
-      if (eligibleQuantity < appliedCoupon.buy_x) {
+      if (eligibleQuantity < appliedCoupon.buyX || !isCouponValid(appliedCoupon)) {
         const couponCode = appliedCoupon.code;
         appliedCoupon = null;
         saveAppliedCoupon();
         updateCouponDisplay();
         updateCart();
-        showToast(`Coupon ${couponCode} removed: Not enough eligible items`);
+        showToast(`Coupon ${couponCode} removed: ${eligibleQuantity < appliedCoupon.buyX ? 'Not enough eligible items' : 'Coupon expired'}`);
       }
     }
 
@@ -1166,9 +1234,9 @@
             <p>₹${Number(item.price).toFixed(2)} x ${item.quantity}</p>
           </div>
           <div class="quantity-controls">
-            <button onclick="updateQuantity(${index}, -1)" aria-label="Decrease quantity">-</button>
+            <button onclick="updateQuantity(${index}, -1)" aria-label="Decrease ${item.name} quantity">-</button>
             <span>${item.quantity}</span>
-            <button onclick="updateQuantity(${index}, 1)" aria-label="Increase quantity">+</button>
+            <button onclick="updateQuantity(${index}, 1)" aria-label="Increase ${item.name} quantity">+</button>
             <button class="btn remove-btn" onclick="removeFromCart(${index})" aria-label="Remove ${item.name}"><i class="fas fa-trash"></i></button>
           </div>
         `;
@@ -1179,12 +1247,12 @@
       let discount = 0;
       let total = subtotal;
       if (appliedCoupon) {
-        const eligibleItems = cart.filter(item => item.category.toLowerCase() === appliedCoupon.category.toLowerCase());
+        const eligibleItems = cart.filter(item => !appliedCoupon.category || item.category.toLowerCase() === appliedCoupon.category.toLowerCase());
         const eligibleQuantity = eligibleItems.reduce((sum, item) => sum + item.quantity, 0);
-        const discountItems = Math.floor(eligibleQuantity / appliedCoupon.buy_x);
-        if (discountItems > 0) {
-          const minPrice = eligibleItems.reduce((min, item) => Math.min(min, Number(item.price)), Infinity);
-          discount = discountItems * (minPrice * (appliedCoupon.discount / 100));
+        const eligibleSubtotal = eligibleItems.reduce((sum, item) => sum + Number(item.price) * item.quantity, 0);
+        const discountSets = Math.floor(eligibleQuantity / appliedCoupon.buyX);
+        if (discountSets > 0) {
+          discount = (eligibleSubtotal * appliedCoupon.discount) / 100;
           total = Math.max(subtotal - discount, 0);
         }
       }
@@ -1197,17 +1265,16 @@
     }
 
     function addToCart(item) {
-      if (!item || !item.id || !item._id || !item.category || !item.name || isNaN(Number(item.price))) {
+      if (!item || !item._id || !item.category || !item.name || isNaN(Number(item.price))) {
         showToast('Invalid item data');
         return;
       }
-      const existingItem = cart.find(cartItem => cartItem.id === item.id);
+      const existingItem = cart.find(cartItem => cartItem._id === item._id);
       if (existingItem) {
         existingItem.quantity += 1;
       } else {
         cart.push({
-          id: Number(item.id),
-          _id: Number(item._id),
+          _id: item._id,
           name: item.name,
           price: Number(item.price),
           category: item.category,
@@ -1276,6 +1343,16 @@
       updateFilterCheckboxes();
     }
 
+    function openCouponModal() {
+      const couponModal = document.getElementById('coupon-modal');
+      if (!couponModal) {
+        showToast('Error opening coupons');
+        return;
+      }
+      couponModal.style.display = 'flex';
+      fetchCoupons();
+    }
+
     function closeModal(modalId) {
       const modal = document.getElementById(modalId);
       if (!modal) return;
@@ -1338,7 +1415,7 @@
         filteredItems = filteredItems.filter(item => selectedCategories.has(item.category));
       }
       if (filteredItems.length === 0) {
-        menuContainer.innerHTML = '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">No menu items available</p>';
+        menuContainer.innerHTML = '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">No menu items found</p>';
         return;
       }
 
@@ -1353,21 +1430,21 @@
           <div class="category-scroll"></div>
         `;
         const scrollContainer = section.querySelector('.category-scroll');
-        categoryItems.forEach((item, index) => {
-          if (!item || !item.id || !item._id || !item.category || !item.name) return;
+        categoryItems.forEach(item => {
+          if (!item || !item._id || !item.category || !item.name) return;
           const div = document.createElement('div');
           div.className = 'menu-item';
-          const price = Number(item.price);
-          const savedAmount = item.savedAmount !== null && !isNaN(Number(item.savedAmount)) ? Number(item.savedAmount) : null;
+          const price = Number(item.originalPrice);
+          const savedPrice = item.savedPrice !== null && !isNaN(Number(item.savedPrice)) ? Number(item.savedPrice) : null;
           div.innerHTML = `
             <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'">
             <h3>${item.name}</h3>
             <p>${item.description || 'No description'}</p>
             <div class="price">
               ₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
-              ${savedAmount !== null ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
+              ${savedPrice !== null ? `<span class="saved-price">₹${savedPrice.toFixed(2)}</span>` : ''}
             </div>
-            <button class="btn add-to-cart-btn" data-index="${item.id}" data-category="${category}" aria-label="Add ${item.name} to cart"><i class="fas fa-plus"></i> Add</button>
+            <button class="btn add-to-cart-btn" data-id="${item._id}" aria-label="Add ${item.name} to cart"><i class="fas fa-plus"></i> Add</button>
           `;
           scrollContainer.appendChild(div);
         });
@@ -1375,15 +1452,22 @@
       });
 
       document.querySelectorAll('.menu-item .add-to-cart-btn').forEach(button => {
-        button.removeEventListener('click', button._clickHandler); // Remove previous listeners
+        button.removeEventListener('click', button._clickHandler);
         button._clickHandler = () => {
-          const index = Number(button.dataset.index);
-          const item = allMenuItems.find(i => i.id === index);
+          const id = button.dataset.id;
+          const item = allMenuItems.find(i => i._id === id);
           if (!item) {
             showToast('Error adding item');
             return;
           }
-          addToCart(item);
+          addToCart({
+            _id: item._id,
+            name: item.name,
+            price: Number(item.savedPrice || item.originalPrice),
+            category: item.category,
+            image: item.image,
+            description: item.description
+          });
         };
         button.addEventListener('click', button._clickHandler);
       });
@@ -1397,72 +1481,94 @@
       }
       try {
         topPicksScroll.innerHTML = '<div class="loading">Loading top picks...</div>';
+        const cache = JSON.parse(sessionStorage.getItem('topPicksCache'));
+        const now = Date.now();
+        if (cache && cache.timestamp && now - cache.timestamp < CACHE_TTL) {
+          renderTopPicks(cache.data);
+          return;
+        }
         const response = await fetch(`${API_BASE_URL}/api/top-picks`, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) throw new Error(result.message || 'Invalid data');
-        const topPicks = result.data.map(item => ({
-          ...item,
-          id: Number(item.id),
-          _id: Number(item.id),
-          price: Number(item.price),
-          savedAmount: item.savedAmount !== undefined ? Number(item.savedAmount) : null
-        }));
-        topPicksScroll.innerHTML = topPicks.length === 0 ? '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">No top picks available</p>' : '';
-        topPicks.forEach((item, index) => {
-          if (!item || !item.id || !item._id || !item.category || !item.name) return;
-          const div = document.createElement('div');
-          div.className = 'top-pick-item';
-          const price = Number(item.price);
-          const savedAmount = item.savedAmount !== null ? Number(item.savedAmount) : null;
-          div.innerHTML = `
-            <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'">
-            <h3>${item.name}</h3>
-            <p>${item.description || 'A Delicute favorite!'}</p>
-            <div class="price">
-              ₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
-              ${savedAmount !== null ? `<span class="saved-amount">Saved ₹${savedAmount.toFixed(2)}</span>` : ''}
-            </div>
-            <button class="btn add-to-cart-btn" data-index="${item.id}" aria-label="Add ${item.name} to cart"><i class="fas fa-plus"></i> Add</button>
-          `;
-          topPicksScroll.appendChild(div);
-        });
-        document.querySelectorAll('.top-pick-item .add-to-cart-btn').forEach(button => {
-          button.removeEventListener('click', button._clickHandler); // Remove previous listeners
-          button._clickHandler = () => {
-            const index = Number(button.dataset.index);
-            const item = topPicks.find(i => i.id === index);
-            if (!item) {
-              showToast('Error adding item');
-              return;
-            }
-            addToCart(item);
-          };
-          button.addEventListener('click', button._clickHandler);
-        });
+        const topPicks = await response.json();
+        const normalizedTopPicks = topPicks.map(pick => ({
+          _id: pick.menuItem._id,
+          name: pick.menuItem.name,
+          category: pick.menuItem.category,
+          description: pick.menuItem.description,
+          image: pick.menuItem.image || PLACEHOLDER_IMAGE,
+          originalPrice: Number(pick.menuItem.originalPrice),
+          savedPrice: pick.menuItem.savedPrice !== undefined ? Number(pick.menuItem.savedPrice) : null
+        })).filter(item => item._id && item.name && item.category && !isNaN(item.originalPrice));
+        sessionStorage.setItem('topPicksCache', JSON.stringify({ data: normalizedTopPicks, timestamp: now }));
+        renderTopPicks(normalizedTopPicks);
       } catch (error) {
         console.error('Top Picks Error:', error);
         topPicksScroll.innerHTML = '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">Unable to load top picks</p>';
-        showToast('Unable to load top picks. Please check your connection or try again later.');
+        showToast('Unable to load top picks. Please try again later.');
       }
+    }
+
+    function renderTopPicks(topPicks) {
+      const topPicksScroll = document.getElementById('top-picks');
+      if (!topPicksScroll) return;
+      topPicksScroll.innerHTML = topPicks.length === 0 ? '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">No top picks available</p>' : '';
+      topPicks.forEach(item => {
+        if (!item || !item._id || !item.category || !item.name) return;
+        const div = document.createElement('div');
+        div.className = 'top-pick-item';
+        const price = Number(item.originalPrice);
+        const savedPrice = item.savedPrice !== null ? Number(item.savedPrice) : null;
+        div.innerHTML = `
+          <img src="${item.image || PLACEHOLDER_IMAGE}" alt="${item.name}" onerror="this.src='${PLACEHOLDER_IMAGE}'">
+          <h3>${item.name}</h3>
+          <p>${item.description || 'A Delicute favorite!'}</p>
+          <div class="price">
+            ₹${isNaN(price) ? 'N/A' : price.toFixed(2)}
+            ${savedPrice !== null ? `<span class="saved-price">₹${savedPrice.toFixed(2)}</span>` : ''}
+          </div>
+          <button class="btn add-to-cart-btn" data-id="${item._id}" aria-label="Add ${item.name} to cart"><i class="fas fa-plus"></i> Add</button>
+        `;
+        topPicksScroll.appendChild(div);
+      });
+      document.querySelectorAll('.top-pick-item .add-to-cart-btn').forEach(button => {
+        button.removeEventListener('click', button._clickHandler);
+        button._clickHandler = () => {
+          const id = button.dataset.id;
+          const item = topPicks.find(i => i._id === id);
+          if (!item) {
+            showToast('Error adding item');
+            return;
+          }
+          addToCart({
+            _id: item._id,
+            name: item.name,
+            price: Number(item.savedPrice || item.originalPrice),
+            category: item.category,
+            image: item.image,
+            description: item.description
+          });
+        };
+        button.addEventListener('click', button._clickHandler);
+      });
     }
 
     async function fetchCategories() {
       try {
         const response = await fetch(`${API_BASE_URL}/api/categories`, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) throw new Error(result.message || 'Invalid data');
-        return result.data;
+        const categories = await response.json();
+        return categories.filter(cat => cat && cat.name);
       } catch (error) {
         console.error('Categories Error:', error);
-        showToast('Unable to load categories. Please check your connection or try again later.');
+        showToast('Unable to load categories. Please try again later.');
         return [];
       }
     }
@@ -1475,29 +1581,104 @@
       }
       try {
         menuContainer.innerHTML = '<div class="loading">Loading menu...</div>';
+        const cache = JSON.parse(sessionStorage.getItem('menuCache'));
+        const now = Date.now();
+        if (cache && cache.timestamp && now - cache.timestamp < CACHE_TTL) {
+          allMenuItems = cache.data;
+          renderMenu();
+          return;
+        }
         const response = await fetch(`${API_BASE_URL}/api/menu`, {
           method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        const result = await response.json();
-        if (!result.success || !Array.isArray(result.data)) throw new Error(result.message || 'Invalid data');
-        allMenuItems = result.data.map(item => ({
-          id: Number(item.id),
-          _id: Number(item.id),
+        const menuItems = await response.json();
+        allMenuItems = menuItems.map(item => ({
+          _id: item._id,
           name: item.name || 'Unnamed Item',
-          price: Number(item.price) || 0,
+          originalPrice: Number(item.originalPrice) || 0,
+          savedPrice: item.savedPrice !== undefined ? Number(item.savedPrice) : null,
           category: item.category || 'Uncategorized',
           description: item.description || '',
-          image: item.image || '',
-          savedAmount: item.savedAmount !== undefined ? Number(item.savedAmount) : null
-        }));
+          image: item.image || PLACEHOLDER_IMAGE
+        })).filter(item => item._id && item.name && item.category && !isNaN(item.originalPrice));
+        sessionStorage.setItem('menuCache', JSON.stringify({ data: allMenuItems, timestamp: now }));
         renderMenu();
       } catch (error) {
         console.error('Menu Error:', error);
         menuContainer.innerHTML = '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">Unable to load menu</p>';
-        showToast('Unable to load menu. Please check your connection or try again later.');
+        showToast('Unable to load menu. Please try again later.');
       }
+    }
+
+    async function fetchCoupons() {
+      const couponList = document.getElementById('coupon-list');
+      if (!couponList) {
+        showToast('Error loading coupons');
+        return;
+      }
+      try {
+        couponList.innerHTML = '<div class="loading">Loading coupons...</div>';
+        const response = await fetch(`${API_BASE_URL}/api/coupons`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include'
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        allCoupons = await response.json();
+        allCoupons = allCoupons.map(coupon => ({
+          _id: coupon._id,
+          code: coupon.code,
+          description: coupon.description,
+          buyX: Number(coupon.buyX),
+          discount: Number(coupon.discount),
+          category: coupon.category || '',
+          validFrom: coupon.validFrom,
+          validTo: coupon.validTo,
+          image: coupon.image || PLACEHOLDER_IMAGE
+        })).filter(coupon => coupon._id && coupon.code && coupon.buyX && coupon.discount && isCouponValid(coupon));
+        renderCoupons();
+      } catch (error) {
+        console.error('Coupons Error:', error);
+        couponList.innerHTML = '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">Unable to load coupons</p>';
+        showToast('Unable to load coupons. Please try again later.');
+      }
+    }
+
+    function renderCoupons() {
+      const couponList = document.getElementById('coupon-list');
+      if (!couponList) return;
+      couponList.innerHTML = allCoupons.length === 0 ? '<p style="color: #4a4a4a; font-size: 1rem; text-align: center;">No coupons available</p>' : '';
+      allCoupons.forEach(coupon => {
+        const div = document.createElement('div');
+        div.className = 'coupon-item';
+        div.innerHTML = `
+          <img src="${coupon.image || PLACEHOLDER_IMAGE}" alt="${coupon.code}" onerror="this.src='${PLACEHOLDER_IMAGE}'">
+          <div class="coupon-item-details">
+            <p>${coupon.code}</p>
+            <p>${coupon.description} - Buy ${coupon.buyX} ${coupon.category || 'Any'} items for ${coupon.discount}% off (Valid: ${new Date(coupon.validFrom).toLocaleDateString()} - ${new Date(coupon.validTo).toLocaleDateString()})</p>
+          </div>
+          <button class="btn" onclick="applyCoupon('${coupon._id}')" aria-label="Apply coupon ${coupon.code}"><i class="fas fa-ticket-alt"></i> Apply</button>
+        `;
+        couponList.appendChild(div);
+      });
+    }
+
+    function applyCoupon(couponId) {
+      const coupon = allCoupons.find(c => c._id === couponId);
+      if (!coupon) {
+        showToast('Invalid coupon');
+        return;
+      }
+      appliedCoupon = coupon;
+      saveAppliedCoupon();
+      updateCouponDisplay();
+      updateCart();
+      closeModal('coupon-modal');
+      showToast(`Coupon ${coupon.code} applied`);
+      checkCouponEligibility();
     }
 
     function searchMenu() {
@@ -1552,14 +1733,14 @@
       }
 
       const order = {
-        customer: { name: customerName },
-        tableNumber: parseInt(tableNumber),
-        specialInstructions: specialInstructions || null,
+        customerName,
+        table: parseInt(tableNumber),
         items: cart.map(item => ({
-          _id: Number(item._id),
+          name: item.name,
           quantity: item.quantity,
           price: Number(item.price)
         })),
+        instructions: specialInstructions || null,
         coupon: appliedCoupon ? appliedCoupon.code : null
       };
 
@@ -1567,11 +1748,12 @@
         const response = await fetch(`${API_BASE_URL}/api/orders`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
           body: JSON.stringify(order)
         });
         const result = await response.json();
-        if (!response.ok || !result.success) throw new Error(result.message || `HTTP ${response.status}`);
-        showToast(`Order placed! ID: ${result.data.orderId}`);
+        if (!response.ok) throw new Error(result.message || `HTTP ${response.status}`);
+        showToast(`Order placed! ID: ${result.orderId}`);
         cart = [];
         appliedCoupon = null;
         sessionStorage.setItem('cart', JSON.stringify(cart));
