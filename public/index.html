@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Delicute | Every Bite Tells a Story</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     * {
       box-sizing: border-box;
@@ -13,11 +13,12 @@
     }
 
     body {
-      font-family: 'Montserrat', sans-serif;
-      background: linear-gradient(135deg, #fff7f0 0%, #ffe8e0 100%);
-      color: #2c2c2c;
+      font-family: 'Playfair Display', serif;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: #1a1a1a;
       overflow-x: hidden;
       line-height: 1.6;
+      min-height: 100vh;
     }
 
     .hero {
@@ -36,43 +37,46 @@
       content: '';
       position: absolute;
       top: 0;
-      left: 0;
+      left: -100%;
       width: 100%;
       height: 100%;
-      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,231,224,0.4) 100%);
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+      animation: shine 4s infinite;
       z-index: 0;
     }
 
     .hero-content {
       position: relative;
       z-index: 1;
-      max-width: 800px;
+      max-width: 900px;
     }
 
     .hero img {
       width: 180px;
       max-width: 50%;
       margin-bottom: 1.5rem;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
       opacity: 0;
       transform: scale(0.8);
       animation: fadeInScale 1s ease-out forwards;
     }
 
     .hero h1 {
-      font-family: 'Playfair Display', serif;
       font-size: 3.5rem;
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 0.75rem;
-      color: #1a1a1a;
+      color: #26a69a;
+      text-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
       opacity: 0;
       transform: translateY(20px);
       animation: fadeInUp 0.8s ease-out 0.2s forwards;
+      letter-spacing: 1px;
     }
 
     .hero p {
       font-size: 1.25rem;
-      font-weight: 400;
-      color: #555;
+      font-weight: 600;
+      color: #4b5e8e;
       margin-bottom: 2rem;
       max-width: 600px;
       opacity: 0;
@@ -81,41 +85,41 @@
     }
 
     .hero .btn {
-      background: linear-gradient(45deg, #fc8019, #ff9a44);
-      color: white;
+      background: linear-gradient(45deg, #ffd700, #ffca28);
+      color: #1a1a1a;
       padding: 1rem 2.5rem;
       font-size: 1.1rem;
-      font-weight: 600;
+      font-weight: 700;
       border: none;
       border-radius: 50px;
       cursor: pointer;
       text-decoration: none;
       display: inline-block;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 15px rgba(252, 128, 25, 0.4);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
       opacity: 0;
       transform: translateY(20px);
       animation: fadeInUp 0.8s ease-out 0.6s forwards;
     }
 
     .hero .btn:hover {
-      background: linear-gradient(45deg, #e56c12, #fc8019);
+      background: linear-gradient(45deg, #ffca28, #ffb300);
       transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(252, 128, 25, 0.5);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    @keyframes shine {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
     }
 
     @keyframes fadeInScale {
-      to {
-        opacity: 1;
-        transform: scale(1);
-      }
+      to { opacity: 1; transform: scale(1); }
     }
 
     @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 768px) {
@@ -128,6 +132,10 @@
       .hero img {
         width: 140px;
       }
+      .hero .btn {
+        padding: 0.9rem 2rem;
+        font-size: 1rem;
+      }
     }
 
     @media (max-width: 480px) {
@@ -137,11 +145,14 @@
       .hero p {
         font-size: 1rem;
       }
+      .hero img {
+        width: 120px;
+      }
       .hero .btn {
-        padding: 0.8rem 2rem;
-        font-size: 1rem;
+        padding: 0.8rem 1.8rem;
+        font-size: 0.95rem;
         width: 100%;
-        max-width: 300px;
+        max-width: 280px;
       }
     }
   </style>
@@ -149,9 +160,9 @@
 <body>
   <section class="hero">
     <div class="hero-content">
-      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo" />
+      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo">
       <h1>Welcome to Delicute</h1>
-      <p>Every bite tells a story.</p>
+      <p>Every Bite Tells a Story</p>
       <a href="customermenu.html" class="btn">Explore Our Menu</a>
     </div>
   </section>

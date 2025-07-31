@@ -3,72 +3,266 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Available Coupons</title>
+  <title>DELICUTE | Available Coupons</title>
+  <link rel="icon" href="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 0; background: #f9f9f9; }
-    header { background: #333; color: #fff; padding: 15px; text-align: center; }
-    .container { max-width: 900px; margin: 20px auto; padding: 15px; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Playfair Display', serif;
+      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      color: #1a1a1a;
+      min-height: 100vh;
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+    header {
+      background: linear-gradient(90deg, #26a69a, #4dd0e1);
+      color: #fff;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      overflow: hidden;
+    }
+    header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+      animation: shine 4s infinite;
+    }
+    header img {
+      height: 80px;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
+      animation: fadeInScale 0.8s ease-out;
+      transition: transform 0.3s ease;
+    }
+    header img:hover {
+      transform: scale(1.15);
+    }
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-top: 0.5rem;
+      text-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
+      animation: fadeInUp 0.6s ease-out 0.2s forwards;
+    }
+    header span {
+      font-size: 1rem;
+      font-weight: 600;
+      opacity: 0.9;
+      color: #fff3cd;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      animation: fadeInUp 0.6s ease-out 0.4s forwards;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .back-btn {
+      background: linear-gradient(45deg, #ffd700, #ffca28);
+      color: #1a1a1a;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+    .back-btn:hover {
+      background: linear-gradient(45deg, #ffca28, #ffb300);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
     .coupon-card {
-      border: 1px solid #ddd; background: #fff; padding: 15px;
-      border-radius: 10px; margin-bottom: 15px;
-      display: flex; gap: 15px; align-items: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.2rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+      max-width: 600px;
+    }
+    .coupon-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     }
     .coupon-card img {
-      width: 120px; height: 100px; object-fit: cover; border-radius: 6px;
+      width: 140px;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 10px;
+      image-rendering: optimizeQuality;
     }
-    .coupon-info { flex: 1; }
-    .coupon-info b { font-size: 1.2rem; color: #333; }
-    .coupon-info p { margin: 5px 0; color: #555; }
+    .coupon-info {
+      flex: 1;
+    }
+    .coupon-info b {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #26a69a;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .coupon-info p {
+      font-size: 0.95rem;
+      color: #4b5e8e;
+      margin: 0.6rem 0;
+      line-height: 1.5;
+    }
     .apply-btn {
-      background: #007bff; color: #fff; border: none;
-      padding: 8px 14px; border-radius: 6px; cursor: pointer;
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      border: none;
+      padding: 0.7rem 1.4rem;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     }
-    .apply-btn:hover { background: #0056b3; }
+    .apply-btn:hover {
+      background: linear-gradient(45deg, #1e8578, #26a69a);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 280px;
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      text-align: center;
+      border-radius: 12px;
+      padding: 1.2rem;
+      position: fixed;
+      z-index: 1000;
+      left: 50%;
+      bottom: 40px;
+      transform: translateX(-50%);
+      font-size: 1rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+    #toast.show {
+      visibility: visible;
+      animation: slideDown 0.5s ease-out, slideUp 0.5s ease-in 2.5s forwards;
+    }
+    @keyframes shine {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translate(-50%, -100%); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+    @media (max-width: 768px) {
+      header { padding: 1.5rem; }
+      header img { height: 60px; }
+      header h1 { font-size: 2rem; }
+      header span { font-size: 0.9rem; }
+      .container { margin: 1.5rem; padding: 0 1rem; }
+      .coupon-card { flex-direction: column; align-items: flex-start; }
+      .coupon-card img { width: 100%; height: 160px; }
+      .coupon-info b { font-size: 1.2rem; }
+      .coupon-info p { font-size: 0.9rem; }
+      .apply-btn { font-size: 0.95rem; padding: 0.6rem 1.2rem; width: 100%; }
+      .back-btn { font-size: 0.95rem; padding: 0.6rem 1.2rem; }
+    }
   </style>
 </head>
 <body>
-<header>
-  <h1>🎟️ Available Coupons</h1>
-</header>
-<div class="container" id="couponList"></div>
+  <header>
+    <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo">
+    <div>
+      <h1>Available Coupons</h1>
+      <span>Unlock Delicious Savings</span>
+    </div>
+  </header>
+  <div class="container">
+    <button class="back-btn" onclick="window.location.href='customermenu.html#cartSection'; localStorage.removeItem('openCart');">Back to Menu</button>
+    <div id="couponList"></div>
+  </div>
 
-<script>
-  async function loadCoupons() {
-    try {
-      const res = await fetch("/api/coupons");
-      const data = await res.json();
-      const list = document.getElementById("couponList");
+  <div id="toast"></div>
 
-      if (data.success && data.data.length > 0) {
-        data.data.forEach(coupon => {
-          list.innerHTML += `
-            <div class="coupon-card">
-              <img src="${coupon.image}" alt="${coupon.code}">
-              <div class="coupon-info">
-                <b>${coupon.code}</b>
-                <p>${coupon.description}</p>
-              </div>
-              <button class="apply-btn" onclick="applyCoupon('${coupon.code}')">Apply</button>
-            </div>
-          `;
-        });
-      } else {
-        list.innerHTML = "<p>No coupons available right now.</p>";
-      }
-    } catch (err) {
-      console.error("Coupon Error:", err);
+  <script>
+    function showToast(msg, success = true) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.background = success ? "linear-gradient(45deg, #26a69a, #4dd0e1)" : "linear-gradient(45deg, #ef5350, #e53935)";
+      toast.className = "show";
+      setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
-  }
 
-  function applyCoupon(code) {
-    // Save coupon code to localStorage (so cart page can use it)
-    localStorage.setItem("appliedCoupon", code);
-    alert(`Coupon ${code} applied! Returning to cart...`);
-    window.location.href = "customermenu.html";
-  }
+    async function loadCoupons() {
+      try {
+        const res = await fetch("/api/coupons");
+        const data = await res.json();
+        const list = document.getElementById("couponList");
 
-  loadCoupons();
-</script>
+        if (data.success && data.data.length > 0) {
+          data.data.forEach(coupon => {
+            list.innerHTML += `
+              <div class="coupon-card">
+                <img src="${coupon.image}" alt="${coupon.code}" loading="lazy">
+                <div class="coupon-info">
+                  <b>${coupon.code}</b>
+                  <p>${coupon.description}</p>
+                </div>
+                <button class="apply-btn" onclick="applyCoupon('${coupon.code}')">Apply Coupon</button>
+              </div>
+            `;
+          });
+        } else {
+          list.innerHTML = "<p style='text-align:center;color:#4b5e8e;'>No coupons available right now.</p>";
+        }
+      } catch (err) {
+        showToast("Error loading coupons", false);
+        console.error("Coupon Error:", err);
+      }
+    }
+
+    function applyCoupon(code) {
+      localStorage.setItem("appliedCoupon", code);
+      localStorage.setItem("openCart", "true"); // Flag to open cart
+      showToast(`Coupon ${code} applied! Returning to cart...`, true);
+      setTimeout(() => {
+        window.location.href = "customermenu.html#cartSection";
+      }, 1000);
+    }
+
+    loadCoupons();
+  </script>
 </body>
 </html>
