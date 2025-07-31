@@ -40,7 +40,7 @@
       animation: shine 4s infinite;
     }
     header img {
-      height: 80px;
+      height: 65px;
       filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
       animation: fadeInScale 0.8s ease-out;
       transition: transform 0.3s ease;
@@ -188,7 +188,7 @@
     }
     @media (max-width: 768px) {
       header { padding: 1.5rem; }
-      header img { height: 60px; }
+      header img { height: 55px; }
       header h1 { font-size: 2rem; }
       header span { font-size: 0.9rem; }
       .container { margin: 1.5rem; padding: 0 1rem; }
@@ -210,7 +210,7 @@
     </div>
   </header>
   <div class="container">
-    <button class="back-btn" onclick="window.location.href='customermenu.html#cartSection'; localStorage.removeItem('openCart');">Back to Menu</button>
+    <button class="back-btn" onclick="window.location.href='customermenu.html'; localStorage.removeItem('openCart'); localStorage.removeItem('appliedCoupon');">Back to Menu</button>
     <div id="couponList"></div>
   </div>
 
@@ -235,7 +235,7 @@
           data.data.forEach(coupon => {
             list.innerHTML += `
               <div class="coupon-card">
-                <img src="${coupon.image}" alt="${coupon.code}" loading="lazy">
+                <img src="${coupon.image}" alt="${coupon.code}" loading="lazy" onerror="this.src='https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png'">
                 <div class="coupon-info">
                   <b>${coupon.code}</b>
                   <p>${coupon.description}</p>
@@ -255,7 +255,7 @@
 
     function applyCoupon(code) {
       localStorage.setItem("appliedCoupon", code);
-      localStorage.setItem("openCart", "true"); // Flag to open cart
+      localStorage.setItem("openCart", "true");
       showToast(`Coupon ${code} applied! Returning to cart...`, true);
       setTimeout(() => {
         window.location.href = "customermenu.html#cartSection";

@@ -45,10 +45,11 @@
       animation: shine 4s infinite;
     }
     header img {
-      height: 45px;
+      height: 65px;
       filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
       animation: fadeInScale 0.8s ease-out;
       transition: transform 0.3s ease;
+      touch-action: pan-x;
     }
     header img:hover {
       transform: scale(1.1);
@@ -191,6 +192,7 @@
       object-fit: cover;
       display: block;
       background: #f0f0f0;
+      touch-action: pan-x;
     }
     .card-body {
       padding: 0.6rem;
@@ -468,18 +470,17 @@
     }
     #toast {
       visibility: hidden;
-      min-width: 180px;
-      max-width: 90%;
-      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      min-width: 200px;
+      max-width: 300px;
+      background: linear-gradient(45deg, #4caf50, #66bb6a);
       color: #fff;
       text-align: center;
       border-radius: 8px;
       padding: 0.7rem;
       position: fixed;
       z-index: 1000;
-      left: 50%;
-      bottom: 10px;
-      transform: translateX(-50%);
+      top: 80px;
+      right: 20px;
       font-size: 0.8rem;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
     }
@@ -500,13 +501,13 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes slideUp {
-      from { opacity: 1; transform: translate(-50%, 0); }
-      to { opacity: 0; transform: translate(-50%, -100%); }
-    }
     @keyframes slideDown {
-      from { opacity: 0; transform: translate(-50%, -100%); }
-      to { opacity: 1; transform: translate(-50%, 0); }
+      from { opacity: 0; top: -100%; }
+      to { opacity: 1; top: 80px; }
+    }
+    @keyframes slideUp {
+      from { opacity: 1; top: 80px; }
+      to { opacity: 0; top: -100%; }
     }
     @keyframes pulseGold {
       0% { transform: translateX(-50%) scaleX(1); }
@@ -514,7 +515,7 @@
       100% { transform: translateX(-50%) scaleX(1); }
     }
     @media (max-width: 768px) {
-      header img { height: 40px; }
+      header img { height: 55px; }
       header h1 { font-size: 1.3rem; }
       header span { font-size: 0.7rem; }
       .container { margin: 0.6rem; padding: 0 0.3rem; }
@@ -546,7 +547,7 @@
       .order-form button { font-size: 0.8rem; padding: 0.6rem; }
       .line { font-size: 0.8rem; }
       .line.bold { font-size: 0.9rem; }
-      #toast { bottom: 8px; font-size: 0.75rem; }
+      #toast { top: 70px; right: 15px; font-size: 0.75rem; }
     }
     @media (min-width: 769px) {
       .category-row {
@@ -622,13 +623,23 @@
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
-      toast.style.background = success ? "linear-gradient(45deg, #26a69a, #4dd0e1)" : "linear-gradient(45deg, #ef5350, #e53935)";
+      toast.style.background = success ? "linear-gradient(45deg, #4caf50, #66bb6a)" : "linear-gradient(45deg, #f44336, #ef5350)";
       toast.className = "show";
       setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
 
     function toggleCart() {
       cartSection.classList.toggle("active");
+    }
+
+    function saveCart() {
+      localStorage.setItem("cart", JSON.stringify(cart));
+    }
+
+    function loadCart() {
+      const savedCart = localStorage.getItem("cart");
+      cart = savedCart ? JSON.parse(savedCart) : [];
+      renderCart();
     }
 
     async function loadMenu() {
@@ -708,6 +719,7 @@
       } else {
         cart.push({ id, name, price, qty: 1 });
       }
+      saveCart();
       showToast(`${name} added to cart!`, true);
       renderCart();
     }
@@ -720,10 +732,11 @@
         cart = cart.filter(i => i.id !== id);
         showToast(`${item.name} removed from cart`, true);
       }
+      saveCart();
       renderCart();
     }
 
-    function renderCart() {
+    async function renderCart() {
       cartItemsEl.innerHTML = "";
       let subtotal = 0, discount = 0;
       if (cart.length === 0) {
@@ -745,7 +758,31 @@
         });
       }
 
-      if (appliedCoupon) discount = appliedCoupon.discount || 0;
+      if (appliedCoupon) {
+        try {
+          const menuRes = await fetch("/api/menu");
+          const menuData = await menuRes.json();
+          if (menuData.success) {
+            const catIds = menuData.data
+              .filter(item => item.category === appliedCoupon.category)
+              .map(item => item.id);
+            const eligibleItems = cart.filter(i => catIds.includes(i.id));
+            const categorySubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+            const categoryQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+
+            if (categorySubtotal > 0) {
+              if (appliedCoupon.type === "buy_x" && categoryQty >= appliedCoupon.buy_x) {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+              } else if (appliedCoupon.type !== "buy_x") {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Menu Fetch Error for Coupon:", err);
+        }
+      }
+
       let total = subtotal - discount;
       if (total < 0) total = 0;
 
@@ -757,35 +794,82 @@
       document.getElementById("total").innerText = "₹" + total.toFixed(2);
     }
 
-    async function applyCoupon() {
-      const code = document.getElementById("couponCode").value.trim();
-      if (!code) {
+    async function applyCoupon(code = null) {
+      const couponCode = code || document.getElementById("couponCode").value.trim();
+      if (!couponCode) {
         showToast("Please enter a coupon code", false);
         return;
       }
+      if (cart.length === 0) {
+        showToast("Your cart is empty! Add items to apply a coupon.", false);
+        document.getElementById("couponCode").value = "";
+        localStorage.removeItem("appliedCoupon");
+        return;
+      }
       try {
-        const res = await fetch("/api/coupons");
-        const data = await res.json();
-        if (data.success) {
-          const found = data.data.find(c => c.code === code);
-          if (found) {
-            appliedCoupon = found;
-            showToast("Coupon applied successfully!", true);
-            renderCart();
-          } else {
-            showToast("Invalid coupon code", false);
-          }
-        } else {
+        const couponRes = await fetch("/api/coupons");
+        const couponData = await couponRes.json();
+        if (!couponData.success) {
           showToast("Failed to fetch coupons", false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
         }
+
+        const coupon = couponData.data.find(c => c.code === couponCode);
+        if (!coupon) {
+          showToast(`Invalid coupon code: ${couponCode}`, false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
+        }
+
+        const menuRes = await fetch("/api/menu");
+        const menuData = await menuRes.json();
+        if (!menuData.success) {
+          showToast("Failed to fetch menu for coupon validation", false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
+        }
+
+        const catIds = menuData.data
+          .filter(item => item.category === coupon.category)
+          .map(item => item.id);
+        const eligibleItems = cart.filter(i => catIds.includes(i.id));
+        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+        const categoryQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+
+        if (categorySubtotal === 0) {
+          showToast(`Coupon ${couponCode} is only valid for ${coupon.category} items`, false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
+        }
+
+        if (coupon.type === "buy_x" && categoryQty < coupon.buy_x) {
+          showToast(`Coupon ${couponCode} requires ${coupon.buy_x} ${coupon.category} items (you have ${categoryQty})`, false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
+        }
+
+        appliedCoupon = coupon;
+        document.getElementById("couponCode").value = couponCode;
+        showToast(`Coupon ${couponCode} applied successfully for ${coupon.category}!`, true);
+        renderCart();
       } catch (err) {
         showToast("Error applying coupon", false);
+        document.getElementById("couponCode").value = "";
+        localStorage.removeItem("appliedCoupon");
         console.error("Coupon Apply Error:", err);
       }
     }
 
     function removeCoupon() {
       appliedCoupon = null;
+      document.getElementById("couponCode").value = "";
+      localStorage.removeItem("appliedCoupon");
       showToast("Coupon removed", true);
       renderCart();
     }
@@ -803,7 +887,33 @@
       }
 
       const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-      const discount = appliedCoupon ? appliedCoupon.discount : 0;
+      let discount = 0;
+
+      if (appliedCoupon) {
+        try {
+          const menuRes = await fetch("/api/menu");
+          const menuData = await menuRes.json();
+          if (menuData.success) {
+            const catIds = menuData.data
+              .filter(item => item.category === appliedCoupon.category)
+              .map(item => item.id);
+            const eligibleItems = cart.filter(i => catIds.includes(i.id));
+            const categorySubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+            const categoryQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+
+            if (categorySubtotal > 0) {
+              if (appliedCoupon.type === "buy_x" && categoryQty >= appliedCoupon.buy_x) {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+              } else if (appliedCoupon.type !== "buy_x") {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Menu Fetch Error for Order:", err);
+        }
+      }
+
       let total = subtotal - discount;
       if (total < 0) total = 0;
 
@@ -826,12 +936,16 @@
         });
         const data = await res.json();
         if (data.success) {
-          showToast(`Order placed successfully! #${data.orderId}`, true);
+          showToast(`Thank you, ${customer_name}! Your order #${data.orderId} has been placed successfully!`, true);
           cart = [];
           appliedCoupon = null;
           document.getElementById("custName").value = "";
           document.getElementById("tableNum").value = "";
           document.getElementById("instructions").value = "";
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("cart");
+          localStorage.removeItem("appliedCoupon");
+          localStorage.removeItem("openCart");
           renderCart();
           toggleCart();
         } else {
@@ -863,7 +977,21 @@
       });
     });
 
-    loadMenu();
+    // Check for openCart flag and apply coupon if redirected from customercoupons.html
+    window.addEventListener("load", () => {
+      loadCart();
+      const openCart = localStorage.getItem("openCart");
+      const couponCode = localStorage.getItem("appliedCoupon");
+      if (openCart === "true") {
+        cartSection.classList.add("active");
+        localStorage.removeItem("openCart");
+        if (couponCode) {
+          document.getElementById("couponCode").value = couponCode;
+          applyCoupon(couponCode);
+        }
+      }
+      loadMenu();
+    });
   </script>
 </body>
 </html>
