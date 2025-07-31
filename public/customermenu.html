@@ -21,13 +21,16 @@
       scroll-behavior: smooth;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
+      overscroll-behavior: contain;
     }
     header {
       background: linear-gradient(90deg, #26a69a, #4dd0e1);
       color: #fff;
       padding: 0.8rem;
       text-align: center;
-      position: relative;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
       box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
       overflow: hidden;
     }
@@ -69,6 +72,7 @@
       max-width: 1200px;
       margin: 0.8rem auto;
       padding: 0 0.4rem;
+      will-change: scroll-position;
     }
     h2 {
       font-size: 1.5rem;
@@ -241,6 +245,7 @@
       align-items: center;
       justify-content: center;
       gap: 0.3rem;
+      touch-action: manipulation;
     }
     .add-btn:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
@@ -281,6 +286,7 @@
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       transition: background 0.3s ease, transform 0.2s ease;
       z-index: 1001;
+      touch-action: manipulation;
     }
     .cart-toggle:hover {
       background: linear-gradient(45deg, #e07b00, #d83c00);
@@ -347,6 +353,7 @@
       cursor: pointer;
       font-size: 0.85rem;
       transition: background 0.3s ease;
+      touch-action: manipulation;
     }
     .qty-controls button:hover {
       background: #1e8578;
@@ -385,6 +392,7 @@
       cursor: pointer;
       font-size: 0.8rem;
       transition: background 0.3s ease, transform 0.2s ease;
+      touch-action: manipulation;
     }
     .coupon-box button:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
@@ -451,6 +459,7 @@
       font-weight: 700;
       transition: background 0.3s ease, transform 0.2s ease;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
     }
     .order-form button:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
@@ -835,6 +844,18 @@
     }
 
     searchInput.addEventListener("input", filterMenu);
+
+    // Smooth scroll handler for touch devices
+    let isScrolling = false;
+    window.addEventListener("scroll", () => {
+      if (!isScrolling) {
+        window.requestAnimationFrame(() => {
+          isScrolling = false;
+        });
+        isScrolling = true;
+      }
+    }, { passive: true });
+
     window.addEventListener("resize", () => {
       const categoryRows = document.querySelectorAll(".category-row");
       categoryRows.forEach(row => {
