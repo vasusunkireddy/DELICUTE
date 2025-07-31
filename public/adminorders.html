@@ -206,6 +206,58 @@
       transform: translateY(-2px);
       box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
     }
+    .status-dropdown {
+      position: relative;
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+    .status-selected {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      font-family: 'Playfair Display', serif;
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      transition: background 0.3s ease, transform 0.2s ease;
+      min-width: 100px;
+      text-align: center;
+    }
+    .status-selected:hover {
+      background: linear-gradient(45deg, #1e8578, #26a69a);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+    }
+    .status-options {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      z-index: 10;
+      min-width: 100px;
+      padding: 0;
+      margin: 0;
+      list-style: none;
+    }
+    .status-options.show {
+      display: block;
+    }
+    .status-options li {
+      padding: 0.5rem 1rem;
+      color: #fff;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .status-options li:hover {
+      background: linear-gradient(45deg, #1e8578, #26a69a);
+    }
     .no-orders {
       font-size: 1.1rem;
       color: #4b5e8e;
@@ -214,17 +266,17 @@
     }
     #toast {
       visibility: hidden;
-      min-width: 250px;
-      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      min-width: 200px;
+      max-width: 300px;
+      background: linear-gradient(45deg, #4caf50, #66bb6a);
       color: #fff;
       text-align: center;
       border-radius: 12px;
       padding: 1rem;
       position: fixed;
       z-index: 1000;
-      left: 50%;
-      bottom: 30px;
-      transform: translateX(-50%);
+      top: 80px;
+      right: 20px;
       font-size: 0.95rem;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
@@ -245,13 +297,13 @@
       from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
     @keyframes slideDown {
-      from { opacity: 0; transform: translate(-50%, -100%); }
-      to { opacity: 1; transform: translate(-50%, 0); }
+      from { opacity: 0; top: -100%; }
+      to { opacity: 1; top: 80px; }
+    }
+    @keyframes slideUp {
+      from { opacity: 1; top: 80px; }
+      to { opacity: 0; top: -100%; }
     }
     @media (max-width: 480px) {
       header img { height: 45px; }
@@ -262,8 +314,9 @@
       .container { margin: 1rem; padding: 1rem; }
       .container h2 { font-size: 1.6rem; }
       th, td { font-size: 0.9rem; padding: 0.6rem; }
-      .btn { font-size: 0.9rem; padding: 0.5rem 1rem; }
+      .btn, .status-selected, .status-options li { font-size: 0.9rem; padding: 0.5rem 1rem; }
       .status { font-size: 0.85rem; padding: 0.3rem 0.6rem; }
+      #toast { top: 70px; right: 15px; font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -311,12 +364,12 @@
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
-      toast.style.background = success ? "linear-gradient(45deg, #26a69a, #4dd0e1)" : "linear-gradient(45deg, #ef5350, #e53935)";
+      toast.style.background = success ? "linear-gradient(45deg, #4caf50, #66bb6a)" : "linear-gradient(45deg, #f44336, #ef5350)";
       toast.className = "show";
       setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
 
-    // ✅ Auth check
+    // Auth check
     window.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await fetch("/api/auth/check", { credentials: "include" });
@@ -342,19 +395,32 @@
           return;
         }
 
+        // Sort orders: Pending (1), Preparing (2), Delivered (3), Cancelled (4)
+        const statusPriority = { Pending: 1, Preparing: 2, Delivered: 3, Cancelled: 4 };
+        data.data.sort((a, b) => statusPriority[a.status] - statusPriority[b.status]);
+
         data.data.forEach(order => {
           const items = Array.isArray(order.items) 
-            ? order.items.map(i => `${i.name} (x${i.quantity})`).join("<br>")
+            ? order.items.map(i => `${i.name} (x${i.qty ?? 1})`).join("<br>")
             : order.items;
 
           tbody.innerHTML += `
             <tr>
-              <td>${order.customer_name}</td>
+              <td>Order #${order.id} - ${order.customer_name}</td>
               <td>${order.table_number}</td>
               <td>${items}</td>
               <td>₹${order.total}</td>
               <td><span class="status ${order.status}">${order.status}</span></td>
               <td>
+                <div class="status-dropdown">
+                  <div class="status-selected" onclick="toggleDropdown(${order.id})">${order.status}</div>
+                  <ul class="status-options" id="dropdown-${order.id}">
+                    <li onclick="updateStatus(${order.id}, 'Pending')">Pending</li>
+                    <li onclick="updateStatus(${order.id}, 'Preparing')">Preparing</li>
+                    <li onclick="updateStatus(${order.id}, 'Delivered')">Delivered</li>
+                    <li onclick="updateStatus(${order.id}, 'Cancelled')">Cancelled</li>
+                  </ul>
+                </div>
                 ${order.status !== "Cancelled" && order.status !== "Delivered" ? 
                   `<button class="btn btn-cancel" onclick="cancelOrder(${order.id})">Cancel</button>` 
                   : ""}
@@ -369,13 +435,52 @@
       }
     }
 
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(`dropdown-${id}`);
+      const isShown = dropdown.classList.contains("show");
+      // Close all dropdowns
+      document.querySelectorAll(".status-options").forEach(d => d.classList.remove("show"));
+      // Toggle the clicked dropdown
+      if (!isShown) {
+        dropdown.classList.add("show");
+      }
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".status-dropdown")) {
+        document.querySelectorAll(".status-options").forEach(d => d.classList.remove("show"));
+      }
+    });
+
+    async function updateStatus(id, status) {
+      try {
+        const res = await fetch(`/api/orders/${id}/status`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Order #${id} marked as ${status}!`);
+          document.querySelectorAll(".status-options").forEach(d => d.classList.remove("show"));
+          fetchOrders();
+        } else {
+          showToast("Failed: " + data.message, false);
+        }
+      } catch (err) {
+        showToast("Error updating status", false);
+        console.error("Status Update Error:", err);
+      }
+    }
+
     async function cancelOrder(id) {
       if (!confirm("Are you sure you want to cancel this order?")) return;
       try {
         const res = await fetch(`/api/orders/${id}/cancel`, { method: "PUT" });
         const data = await res.json();
         if (data.success) {
-          showToast(data.message || "Order cancelled!");
+          showToast(`Order #${id} cancelled!`);
           fetchOrders();
         } else {
           showToast("Failed: " + data.message, false);
@@ -392,7 +497,7 @@
         const res = await fetch(`/api/orders/${id}`, { method: "DELETE" });
         const data = await res.json();
         if (data.success) {
-          showToast(data.message || "Order deleted!");
+          showToast(`Order #${id} deleted!`);
           fetchOrders();
         } else {
           showToast("Failed: " + data.message, false);

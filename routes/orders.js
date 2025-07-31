@@ -1,10 +1,47 @@
-// routes/orders.js
 const express = require("express");
 const router = express.Router();
 const pool = require("../db"); // MySQL pool
 const authenticate = require("../middleware/authenticate");
 
-// ================== GET ALL ORDERS ==================
+// ================== CREATE ORDER ==================
+router.post("/", async (req, res) => {
+  const { customer_name, table_number, items, coupon_code, subtotal, discount, total, instructions } = req.body;
+
+  // Validate request
+  if (!customer_name || !table_number || !items || !Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ success: false, message: "Missing required fields" });
+  }
+
+  // Normalize items to ensure qty
+  const normalizedItems = items.map(item => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    qty: item.qty || 1 // Fallback to 1 if qty is missing
+  }));
+
+  try {
+    const [result] = await pool.query(
+      "INSERT INTO orders (customer_name, table_number, items, coupon_code, subtotal, discount, total, instructions, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'Pending', NOW())",
+      [
+        customer_name,
+        table_number,
+        JSON.stringify(normalizedItems),
+        coupon_code || null,
+        subtotal,
+        discount || 0,
+        total,
+        instructions || ""
+      ]
+    );
+
+    res.json({ success: true, orderId: result.insertId });
+  } catch (err) {
+    console.error("Create order error:", err);
+    res.status(500).json({ success: false, message: "Failed to create order" });
+  }
+});
+
 // ================== GET ALL ORDERS ==================
 router.get("/", authenticate, async (req, res) => {
   try {
@@ -15,13 +52,16 @@ router.get("/", authenticate, async (req, res) => {
       ORDER BY o.created_at DESC
     `);
 
-    // Parse items if JSON
+    // Parse items and normalize qty
     const orders = rows.map(order => {
       let items;
       try {
-        items = JSON.parse(order.items);
+        items = JSON.parse(order.items).map(item => ({
+          ...item,
+          qty: item.qty ?? item.quantity ?? 1 // Fallback to quantity or 1
+        }));
       } catch {
-        items = order.items; // fallback if not JSON
+        items = order.items; // Fallback if not JSON
       }
       return { ...order, items };
     });
@@ -32,7 +72,6 @@ router.get("/", authenticate, async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to fetch orders" });
   }
 });
-
 
 // ================== CANCEL ORDER ==================
 router.put("/:id/cancel", authenticate, async (req, res) => {
