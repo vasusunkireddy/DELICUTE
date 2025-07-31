@@ -6,6 +6,7 @@
   <title>DELICUTE | Menu</title>
   <link rel="icon" href="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * {
       box-sizing: border-box;
@@ -65,38 +66,72 @@
     }
     .container {
       max-width: 1400px;
-      margin: 1.5rem auto;
-      padding: 0 1rem;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
     }
     h2 {
-      font-size: 2rem;
+      font-size: 2.2rem;
       font-weight: 800;
       color: #26a69a;
-      margin: 2rem 0 1rem;
+      margin: 2.5rem 0 1.5rem;
       text-align: center;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       position: relative;
-      letter-spacing: 1px;
+      letter-spacing: 1.2px;
     }
-    h2.top-picks::before {
-      content: '★ Chef’s Favorites ★';
-      display: block;
-      font-size: 1rem;
-      color: #ffd700;
-      background: #26a69a;
-      padding: 0.3rem 1rem;
+    h2::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 5px;
+      background: linear-gradient(90deg, #ffd700, #ffca28, #ffd700);
+      border-radius: 3px;
+      box-shadow: 0 2px 10px rgba(255, 215, 0, 0.6);
+      animation: pulseGold 2s infinite ease-in-out;
+    }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      max-width: 600px;
+      margin: 1rem auto 2rem;
+      background: #fff;
       border-radius: 12px;
-      margin-bottom: 0.5rem;
-      text-shadow: none;
-      animation: fadeInUp 0.6s ease-out;
+      padding: 0.5rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+    .search-bar:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    }
+    .search-bar input {
+      flex: 1;
+      border: none;
+      padding: 0.8rem;
+      font-size: 1rem;
+      font-family: 'Playfair Display', serif;
+      color: #1a1a1a;
+      outline: none;
+    }
+    .search-bar button {
+      background: transparent;
+      border: none;
+      padding: 0.8rem;
+      cursor: pointer;
+      color: #26a69a;
+      font-size: 1.2rem;
+      transition: color 0.3s ease;
+    }
+    .search-bar button:hover {
+      color: #1e8578;
     }
     .category-row {
-      display: flex;
-      overflow-x: auto;
-      gap: 1rem;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.5rem;
       padding: 1rem 0;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
     }
     .category-row::-webkit-scrollbar {
@@ -110,12 +145,10 @@
       background: rgba(0, 0, 0, 0.05);
     }
     .card {
-      flex: 0 0 220px;
       background: #fff;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      scroll-snap-align: start;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       position: relative;
     }
@@ -212,7 +245,7 @@
       position: fixed;
       bottom: 1.5rem;
       right: 1.5rem;
-      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      background: linear-gradient(45deg, #ff8c00, #ff4500);
       color: #fff;
       border: none;
       padding: 1rem;
@@ -224,7 +257,7 @@
       z-index: 1001;
     }
     .cart-toggle:hover {
-      background: linear-gradient(45deg, #1e8578, #26a69a);
+      background: linear-gradient(45deg, #e07b00, #d83c00);
       transform: scale(1.1);
     }
     .cart-toggle::after {
@@ -427,14 +460,22 @@
       from { opacity: 0; transform: translate(-50%, -100%); }
       to { opacity: 1; transform: translate(-50%, 0); }
     }
+    @keyframes pulseGold {
+      0% { transform: translateX(-50%) scaleX(1); }
+      50% { transform: translateX(-50%) scaleX(1.1); }
+      100% { transform: translateX(-50%) scaleX(1); }
+    }
     @media (max-width: 768px) {
       header img { height: 50px; }
       header h1 { font-size: 1.8rem; }
       header span { font-size: 0.8rem; }
-      .container { margin: 1rem; padding: 0 0.5rem; }
-      h2 { font-size: 1.6rem; }
-      h2.top-picks::before { font-size: 0.9rem; padding: 0.2rem 0.8rem; }
-      .card { flex: 0 0 180px; }
+      .container { margin: 1.5rem 1rem; padding: 0 0.5rem; }
+      h2 { font-size: 1.8rem; }
+      h2::after { width: 120px; height: 4px; }
+      .search-bar { max-width: 100%; }
+      .search-bar input { font-size: 0.9rem; }
+      .search-bar button { font-size: 1rem; }
+      .category-row { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
       .card img { height: 140px; }
       .card-body h3 { font-size: 1.1rem; }
       .card-body p { font-size: 0.85rem; }
@@ -479,20 +520,24 @@
   </header>
 
   <div class="container">
-    <h2 class="top-picks">OUR DELICUTE SPECIALS</h2>
+    <h2>OUR DELICUTE SPECIALS</h2>
     <div id="topPicks" class="category-row"></div>
     <h2>OUR MENU</h2>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search menu items...">
+      <button onclick="filterMenu()"><i class="fas fa-filter"></i></button>
+    </div>
     <div id="menuCategories"></div>
   </div>
 
   <div class="cart-section" id="cartSection">
-    <h2>🛒 Your Cart</h2>
+    <h2><i class="fas fa-shopping-cart"></i> Your Cart</h2>
     <div id="cartItems"></div>
     <div class="coupon-box">
       <input type="text" id="couponCode" placeholder="Enter coupon code">
       <button onclick="applyCoupon()">Apply</button>
       <button onclick="removeCoupon()">Remove</button>
-      <a href="customercoupons.html">👉 View Available Coupons</a>
+      <a href="customercoupons.html"><i class="fas fa-ticket-alt"></i> View Available Coupons</a>
     </div>
     <div class="total-box">
       <div class="line"><span>Subtotal:</span><span id="subtotal">₹0</span></div>
@@ -507,16 +552,18 @@
     </div>
   </div>
 
-  <button class="cart-toggle" id="cartToggle" onclick="toggleCart()">🛒</button>
+  <button class="cart-toggle" id="cartToggle" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i></button>
 
   <div id="toast"></div>
 
   <script>
+    let menuData = [];
     const topPicksEl = document.getElementById("topPicks");
     const categoriesEl = document.getElementById("menuCategories");
     const cartItemsEl = document.getElementById("cartItems");
     const cartSection = document.getElementById("cartSection");
     const cartToggle = document.getElementById("cartToggle");
+    const searchInput = document.getElementById("searchInput");
     let cart = [];
     let appliedCoupon = null;
 
@@ -537,36 +584,41 @@
         const res = await fetch("/api/menu");
         const data = await res.json();
         if (data.success) {
-          const grouped = {};
-          topPicksEl.innerHTML = "";
-
-          data.data.forEach(item => {
-            if (item.is_top_pick) {
-              topPicksEl.innerHTML += buildCard(item, true);
-            }
-            if (!grouped[item.category]) grouped[item.category] = [];
-            grouped[item.category].push(item);
-          });
-
-          categoriesEl.innerHTML = "";
-          if (Object.keys(grouped).length === 0) {
-            categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;'>No menu items available</p>";
-          } else {
-            Object.keys(grouped).forEach(cat => {
-              categoriesEl.innerHTML += `
-                <h2>${cat}</h2>
-                <div class="category-row">
-                  ${grouped[cat].map(item => buildCard(item, false)).join("")}
-                </div>
-              `;
-            });
-          }
+          menuData = data.data;
+          renderMenu(menuData);
         } else {
           showToast("Failed to load menu", false);
         }
       } catch (err) {
         showToast("Error loading menu", false);
         console.error("Menu Load Error:", err);
+      }
+    }
+
+    function renderMenu(data) {
+      const grouped = {};
+      topPicksEl.innerHTML = "";
+
+      data.forEach(item => {
+        if (item.is_top_pick) {
+          topPicksEl.innerHTML += buildCard(item, true);
+        }
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
+      });
+
+      categoriesEl.innerHTML = "";
+      if (Object.keys(grouped).length === 0) {
+        categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;'>No menu items available</p>";
+      } else {
+        Object.keys(grouped).forEach(cat => {
+          categoriesEl.innerHTML += `
+            <h2>${cat}</h2>
+            <div class="category-row">
+              ${grouped[cat].map(item => buildCard(item, false)).join("")}
+            </div>
+          `;
+        });
       }
     }
 
@@ -581,10 +633,20 @@
               <span class="price">₹${item.price}</span>
               ${item.original_price ? `<span class="old-price">₹${item.original_price}</span>` : ""}
             </p>
-            <button class="add-btn" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price})">Add to Cart</button>
+            <button class="add-btn" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price})"><i class="fas fa-cart-plus"></i> Add to Cart</button>
           </div>
         </div>
       `;
+    }
+
+    function filterMenu() {
+      const query = searchInput.value.toLowerCase().trim();
+      const filtered = menuData.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query) ||
+        item.category.toLowerCase().includes(query)
+      );
+      renderMenu(filtered);
     }
 
     function addToCart(id, name, price) {
@@ -728,6 +790,8 @@
         console.error("Order Error:", err);
       }
     }
+
+    searchInput.addEventListener("input", filterMenu);
 
     loadMenu();
   </script>
