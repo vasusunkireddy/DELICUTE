@@ -222,7 +222,7 @@
       cursor: pointer;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
       transition: background 0.3s ease, transform 0.2s ease;
-      min-width: 100px;
+      min-width: 120px;
       text-align: center;
     }
     .status-selected:hover {
@@ -236,24 +236,32 @@
       top: 100%;
       left: 0;
       background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-      z-index: 10;
-      min-width: 100px;
-      padding: 0;
-      margin: 0;
-      list-style: none;
+      z-index: 100;
+      min-width: 120px;
+      padding: 0.5rem 0;
+      overflow: visible;
+      transform: translateY(-10px);
+      opacity: 0;
+      transition: transform 0.3s ease, opacity 0.3s ease;
     }
     .status-options.show {
       display: block;
+      transform: translateY(0);
+      opacity: 1;
     }
     .status-options li {
-      padding: 0.5rem 1rem;
+      padding: 0.6rem 1rem;
       color: #fff;
-      font-size: 0.95rem;
+      font-size: 1rem;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.3s ease;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
     }
     .status-options li:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
@@ -355,8 +363,8 @@
       th:nth-child(3), td:nth-child(3) { width: 25%; }
       th:nth-child(4), td:nth-child(4) { width: 15%; }
       th:nth-child(5), td:nth-child(5) { width: 15%; }
-      th:nth-child(6), td:nth-child(6) { width: 15%; }
-      th:nth-child(7), td:nth-child(7) { width: 20%; }
+      th:nth-child(6), td:nth-child(6) { width: 18%; }
+      th:nth-child(7), td:nth-child(7) { width: 17%; }
     }
   </style>
 </head>
@@ -420,6 +428,7 @@
         }
         await fetchOrders();
       } catch (err) {
+        console.error("Auth check error:", err);
         window.location.href = "/admin.html";
       }
     });
@@ -461,7 +470,7 @@
               <td><span class="status ${order.status}">${order.status}</span></td>
               <td>
                 <div class="status-dropdown">
-                  <div class="status-selected" onclick="toggleDropdown(${order.id})">${order.status}</div>
+                  <div class="status-selected" onclick="toggleDropdown(event, ${order.id})">${order.status}</div>
                   <ul class="status-options" id="dropdown-${order.id}">
                     <li onclick="updateStatus(${order.id}, 'Pending')">Pending</li>
                     <li onclick="updateStatus(${order.id}, 'Preparing')">Preparing</li>
@@ -483,14 +492,20 @@
       }
     }
 
-    function toggleDropdown(id) {
+    function toggleDropdown(event, id) {
+      event.stopPropagation(); // Prevent click from bubbling to document
       const dropdown = document.getElementById(`dropdown-${id}`);
+      if (!dropdown) {
+        console.error(`Dropdown with id dropdown-${id} not found`);
+        return;
+      }
       const isShown = dropdown.classList.contains("show");
       // Close all dropdowns
       document.querySelectorAll(".status-options").forEach(d => d.classList.remove("show"));
       // Toggle the clicked dropdown
       if (!isShown) {
         dropdown.classList.add("show");
+        console.log(`Opened dropdown for order ${id}`);
       }
     }
 
@@ -525,7 +540,7 @@
         if (data.success) {
           showToast(`Order #${id} marked as ${status}!`);
           document.querySelectorAll(".status-options").forEach(d => d.classList.remove("show"));
-          fetchOrders();
+          await fetchOrders();
         } else {
           showToast("Failed: " + data.message, false);
         }
@@ -542,7 +557,7 @@
         const data = await res.json();
         if (data.success) {
           showToast(`Order #${id} cancelled!`);
-          fetchOrders();
+          await fetchOrders();
         } else {
           showToast("Failed: " + data.message, false);
         }
@@ -559,7 +574,7 @@
         const data = await res.json();
         if (data.success) {
           showToast(`Order #${id} deleted!`);
-          fetchOrders();
+          await fetchOrders();
         } else {
           showToast("Failed: " + data.message, false);
         }
@@ -570,8 +585,13 @@
     }
 
     async function logout() {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-      window.location.href = "/admin.html";
+      try {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        window.location.href = "/admin.html";
+      } catch (err) {
+        console.error("Logout error:", err);
+        window.location.href = "/admin.html";
+      }
     }
   </script>
 </body>
