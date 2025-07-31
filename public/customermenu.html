@@ -136,16 +136,25 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
-      align-items: stretch;
+      justify-content: flex-start;
     }
-    .category-row::-webkit-scrollbar {
+    .category-row.two-rows {
+      flex-wrap: wrap;
+      gap: 0.6rem 0.6rem;
+      max-height: 450px;
+      overflow-y: auto;
+    }
+    .category-row::-webkit-scrollbar,
+    .category-row.two-rows::-webkit-scrollbar {
       height: 6px;
     }
-    .category-row::-webkit-scrollbar-thumb {
+    .category-row::-webkit-scrollbar-thumb,
+    .category-row.two-rows::-webkit-scrollbar-thumb {
       background: #26a69a;
       border-radius: 3px;
     }
-    .category-row::-webkit-scrollbar-track {
+    .category-row::-webkit-scrollbar-track,
+    .category-row.two-rows::-webkit-scrollbar-track {
       background: rgba(0, 0, 0, 0.05);
     }
     .card {
@@ -158,6 +167,11 @@
       scroll-snap-align: start;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       position: relative;
+    }
+    .category-row.two-rows .card {
+      flex: 0 0 calc(50% - 0.3rem);
+      max-width: calc(50% - 0.3rem);
+      margin-bottom: 0.6rem;
     }
     .card.top-pick::after {
       content: 'Top Pick';
@@ -182,6 +196,7 @@
       object-fit: cover;
       display: block;
       transition: transform 0.3s ease;
+      background: #f0f0f0;
     }
     .card img:hover {
       transform: scale(1.05);
@@ -513,7 +528,9 @@
       .search-bar input { font-size: 0.85rem; padding: 0.6rem; }
       .search-bar button { font-size: 1rem; padding: 0.6rem; }
       .category-row { gap: 0.5rem; padding: 0.6rem 0; }
+      .category-row.two-rows { gap: 0.5rem 0.5rem; max-height: 400px; }
       .card { flex: 0 0 calc(50% - 0.25rem); max-width: calc(50% - 0.25rem); }
+      .category-row.two-rows .card { margin-bottom: 0.5rem; }
       .card img { height: 90px; }
       .card-body h3 { font-size: 0.9rem; }
       .card-body p { font-size: 0.7rem; }
@@ -538,8 +555,27 @@
       #toast { bottom: 10px; font-size: 0.8rem; }
     }
     @media (min-width: 769px) {
-      .category-row { justify-content: center; }
-      .card { flex: 0 0 180px; max-width: 180px; }
+      .category-row {
+        flex-wrap: wrap;
+        justify-content: flex-start;
+      }
+      .category-row.two-rows {
+        flex-wrap: wrap;
+        max-height: none;
+        overflow-y: visible;
+      }
+      .card {
+        flex: 0 0 180px;
+        max-width: 180px;
+        margin-right: 0.6rem;
+        margin-bottom: 0.6rem;
+      }
+      .category-row.two-rows .card {
+        flex: 0 0 180px;
+        max-width: 180px;
+        margin-right: 0.6rem;
+        margin-bottom: 0.6rem;
+      }
     }
   </style>
 </head>
@@ -645,10 +681,13 @@
         categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;'>No menu items available</p>";
       } else {
         Object.keys(grouped).forEach(cat => {
+          const items = grouped[cat];
+          const isScrollable = items.length > 5;
+          const isTwoRows = items.length > 10;
           categoriesEl.innerHTML += `
             <h2>${cat}</h2>
-            <div class="category-row">
-              ${grouped[cat].map(item => buildCard(item, false)).join("")}
+            <div class="category-row ${isTwoRows ? 'two-rows' : ''} ${isScrollable ? '' : 'no-scroll'}">
+              ${items.map(item => buildCard(item, false)).join("")}
             </div>
           `;
         });
@@ -658,7 +697,7 @@
     function buildCard(item, isTopPick) {
       return `
         <div class="card ${isTopPick ? 'top-pick' : ''}">
-          <img src="${item.image}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/180x100?text=Image+Not+Found'">
+          <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/180x100?text=Image+Not+Found'">
           <div class="card-body">
             <h3>${item.name}</h3>
             <p>${item.description || "No description available"}</p>
