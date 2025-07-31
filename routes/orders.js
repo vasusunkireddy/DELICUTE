@@ -47,7 +47,7 @@ router.get("/", authenticate, async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT o.id, o.customer_name, o.table_number, o.total, 
-             o.status, o.items, o.created_at
+             o.status, o.items, o.instructions, o.created_at
       FROM orders o
       ORDER BY o.created_at DESC
     `);
@@ -63,7 +63,7 @@ router.get("/", authenticate, async (req, res) => {
       } catch {
         items = order.items; // Fallback if not JSON
       }
-      return { ...order, items };
+      return { ...order, items, instructions: order.instructions || "" };
     });
 
     res.json({ success: true, data: orders });

@@ -258,6 +258,35 @@
     .status-options li:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
     }
+    .instructions {
+      font-size: 0.95rem;
+      color: #4b5e8e;
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      padding: 0.4rem 0.8rem;
+      background: rgba(38, 166, 154, 0.05);
+      border-radius: 8px;
+    }
+    .show-more {
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-top: 0.3rem;
+      display: none;
+      transition: background 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .show-more:hover {
+      background: linear-gradient(45deg, #1e8578, #26a69a);
+      transform: translateY(-2px);
+    }
     .no-orders {
       font-size: 1.1rem;
       color: #4b5e8e;
@@ -316,7 +345,18 @@
       th, td { font-size: 0.9rem; padding: 0.6rem; }
       .btn, .status-selected, .status-options li { font-size: 0.9rem; padding: 0.5rem 1rem; }
       .status { font-size: 0.85rem; padding: 0.3rem 0.6rem; }
+      .instructions { font-size: 0.85rem; max-width: 100px; }
+      .instructions.long { position: relative; }
+      .instructions.long .show-more { display: block; }
       #toast { top: 70px; right: 15px; font-size: 0.9rem; }
+      table { display: block; overflow-x: auto; white-space: nowrap; }
+      th:nth-child(1), td:nth-child(1) { width: 20%; }
+      th:nth-child(2), td:nth-child(2) { width: 10%; }
+      th:nth-child(3), td:nth-child(3) { width: 25%; }
+      th:nth-child(4), td:nth-child(4) { width: 15%; }
+      th:nth-child(5), td:nth-child(5) { width: 15%; }
+      th:nth-child(6), td:nth-child(6) { width: 15%; }
+      th:nth-child(7), td:nth-child(7) { width: 20%; }
     }
   </style>
 </head>
@@ -347,12 +387,13 @@
           <th>Table</th>
           <th>Items</th>
           <th>Total Price</th>
+          <th>Instructions</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
       </thead>
       <tbody id="ordersTable">
-        <tr><td colspan="6" class="no-orders">Loading orders...</td></tr>
+        <tr><td colspan="7" class="no-orders">Loading orders...</td></tr>
       </tbody>
     </table>
   </div>
@@ -391,7 +432,7 @@
         tbody.innerHTML = "";
 
         if (!data.success || data.data.length === 0) {
-          tbody.innerHTML = "<tr><td colspan='6' class='no-orders'>No orders found</td></tr>";
+          tbody.innerHTML = "<tr><td colspan='7' class='no-orders'>No orders found</td></tr>";
           return;
         }
 
@@ -403,6 +444,9 @@
           const items = Array.isArray(order.items) 
             ? order.items.map(i => `${i.name} (x${i.qty ?? 1})`).join("<br>")
             : order.items;
+          const instructions = order.instructions || "None";
+          const isLongInstruction = instructions.length > 50;
+          const displayInstructions = isLongInstruction ? instructions.substring(0, 50) + "..." : instructions;
 
           tbody.innerHTML += `
             <tr>
@@ -410,6 +454,10 @@
               <td>${order.table_number}</td>
               <td>${items}</td>
               <td>₹${order.total}</td>
+              <td class="instructions${isLongInstruction ? ' long' : ''}" data-full="${instructions.replace(/"/g, '&quot;')}">
+                ${displayInstructions}
+                ${isLongInstruction ? `<button class="show-more" onclick="toggleInstructions(this)">Show More</button>` : ''}
+              </td>
               <td><span class="status ${order.status}">${order.status}</span></td>
               <td>
                 <div class="status-dropdown">
@@ -443,6 +491,19 @@
       // Toggle the clicked dropdown
       if (!isShown) {
         dropdown.classList.add("show");
+      }
+    }
+
+    function toggleInstructions(button) {
+      const td = button.parentElement;
+      const fullText = td.getAttribute("data-full");
+      const isTruncated = td.classList.contains("long") && button.textContent === "Show More";
+      if (isTruncated) {
+        td.firstChild.textContent = fullText;
+        button.textContent = "Show Less";
+      } else {
+        td.firstChild.textContent = fullText.substring(0, 50) + "...";
+        button.textContent = "Show More";
       }
     }
 
