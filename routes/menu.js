@@ -2,7 +2,7 @@
 const express = require("express");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const { Readable } = require("stream");
 const pool = require("../db"); // mysql pool
 const router = express.Router();
 
@@ -13,15 +13,23 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ✅ Multer + Cloudinary storage
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "menu_items",
-    allowed_formats: ["jpg", "png", "jpeg", "gif", "webp"],
-  },
-});
+// ✅ Multer memory storage
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+// ✅ Helper to upload file buffer to Cloudinary
+async function uploadToCloudinary(fileBuffer, filename) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder: "menu_items", public_id: filename.split(".")[0] },
+      (err, result) => {
+        if (err) reject(err);
+        else resolve(result.secure_url);
+      }
+    );
+    Readable.from(fileBuffer).pipe(uploadStream);
+  });
+}
 
 /* ================================
    GET all menu items
@@ -88,7 +96,9 @@ router.post("/", upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "Image is required" });
     }
 
-    const imageUrl = req.file.path;
+    // Upload image to Cloudinary
+    const imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+
     const finalPrice = parseFloat(original_price) - parseFloat(saved_price || 0);
 
     await pool.query(
@@ -120,7 +130,9 @@ router.put("/:id", upload.single("image"), async (req, res) => {
 
     // If new image uploaded
     let imageUrl;
-    if (req.file) imageUrl = req.file.path;
+    if (req.file) {
+      imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+    }
 
     // Build update query dynamically
     const fields = [];
