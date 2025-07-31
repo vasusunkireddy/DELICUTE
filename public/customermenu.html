@@ -225,12 +225,14 @@
       font-weight: 700;
       font-size: 0.95rem;
       margin-bottom: 0.4rem;
+      font-family: Arial, sans-serif;
     }
     .old-price {
       text-decoration: line-through;
       color: #888;
       font-size: 0.8rem;
       margin-left: 0.3rem;
+      font-family: Arial, sans-serif;
     }
     .add-btn {
       background: linear-gradient(45deg, #ffd700, #ffca28);
@@ -271,6 +273,7 @@
       transition: transform 0.3s ease;
       z-index: 1000;
       -webkit-overflow-scrolling: touch;
+      font-family: Arial, sans-serif;
     }
     .cart-section.active {
       transform: translateY(0);
@@ -322,6 +325,7 @@
       align-items: center;
       justify-content: center;
       gap: 0.4rem;
+      font-family: Arial, sans-serif;
     }
     .cart-item {
       display: flex;
@@ -334,6 +338,13 @@
       background: #f9f9f9;
       box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     }
+    .cart-item img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 4px;
+      margin-right: 0.6rem;
+    }
     .cart-item h4 {
       font-size: 0.85rem;
       font-weight: 600;
@@ -342,6 +353,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-family: Arial, sans-serif;
     }
     .qty-controls {
       display: flex;
@@ -358,6 +370,7 @@
       font-size: 0.9rem;
       transition: background 0.3s ease;
       touch-action: manipulation;
+      font-family: Arial, sans-serif;
     }
     .qty-controls button:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
@@ -366,6 +379,7 @@
       margin: 0 0.4rem;
       font-size: 0.9rem;
       font-weight: 600;
+      font-family: Arial, sans-serif;
     }
     .cart-item span:last-child {
       font-weight: 700;
@@ -373,6 +387,7 @@
       min-width: 50px;
       text-align: right;
       font-size: 0.9rem;
+      font-family: Arial, sans-serif;
     }
     .coupon-box {
       margin: 1rem 0;
@@ -387,10 +402,10 @@
       border: 1px solid #26a69a;
       border-radius: 6px;
       font-size: 0.85rem;
-      font-family: 'Playfair Display', serif;
       color: #1a1a1a;
       background: #fff;
       outline: none;
+      font-family: Arial, sans-serif;
     }
     .coupon-box button {
       background: linear-gradient(45deg, #26a69a, #4dd0e1);
@@ -403,6 +418,7 @@
       font-weight: 600;
       transition: background 0.3s ease, transform 0.2s ease;
       touch-action: manipulation;
+      font-family: Arial, sans-serif;
     }
     .coupon-box button:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
@@ -422,6 +438,7 @@
       justify-content: center;
       gap: 0.3rem;
       transition: color 0.3s ease;
+      font-family: Arial, sans-serif;
     }
     .coupon-box a:hover {
       color: #1e8578;
@@ -430,20 +447,24 @@
       margin-top: 1rem;
       border-top: 1px solid rgba(0, 0, 0, 0.1);
       padding-top: 0.8rem;
+      font-family: Arial, sans-serif;
     }
     .line {
       display: flex;
       justify-content: space-between;
       margin: 0.4rem 0;
       font-size: 0.9rem;
+      font-family: Arial, sans-serif;
     }
     .line span:last-child {
       font-weight: 600;
       color: #26a69a;
+      font-family: Arial, sans-serif;
     }
     .line.bold {
       font-weight: 700;
       font-size: 1rem;
+      font-family: Arial, sans-serif;
     }
     .order-form input, .order-form textarea {
       width: 100%;
@@ -451,11 +472,11 @@
       border: 1px solid #26a69a;
       border-radius: 6px;
       font-size: 0.85rem;
-      font-family: 'Playfair Display', serif;
       color: #1a1a1a;
       background: #fff;
       margin-bottom: 0.6rem;
       outline: none;
+      font-family: Arial, sans-serif;
     }
     .order-form textarea {
       resize: vertical;
@@ -474,6 +495,7 @@
       transition: background 0.3s ease, transform 0.2s ease;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       touch-action: manipulation;
+      font-family: Arial, sans-serif;
     }
     .order-form button:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
@@ -494,6 +516,7 @@
       transition: background 0.3s ease, transform 0.2s ease;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       touch-action: manipulation;
+      font-family: Arial, sans-serif;
     }
     .clear-cart-btn:hover {
       background: linear-gradient(45deg, #d32f2f, #ef5350);
@@ -515,6 +538,7 @@
       right: 15px;
       font-size: 0.8rem;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+      font-family: Arial, sans-serif;
     }
     #toast.show {
       visibility: visible;
@@ -802,8 +826,11 @@
       } else {
         cart.forEach(item => {
           subtotal += item.price * item.qty;
+          const menuItem = menuData.find(menu => menu.id === item.id);
+          const imageSrc = menuItem ? menuItem.image : 'https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png';
           cartItemsEl.innerHTML += `
             <div class="cart-item">
+              <img src="${imageSrc}" alt="${item.name}" onerror="this.src='https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png'">
               <h4>${item.name}</h4>
               <div class="qty-controls">
                 <button onclick="changeQty(${item.id}, -1)">-</button>
