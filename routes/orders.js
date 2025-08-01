@@ -132,16 +132,16 @@ router.get("/test-email", authenticate, async (req, res) => {
       subject: "Test Email from DELICUTE",
       text: "This is a test email to verify Nodemailer configuration.",
       html: `
-        <div style="font-family: 'Playfair Display', serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #e0f7fa, #b2ebf2); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
-          <div style="text-align: center; padding-bottom: 20px;">
-            <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo" style="height: 60px;">
-            <h1 style="font-size: 2rem; color: #26a69a; margin: 10px 0;">Test Email</h1>
+        <div style="font-family: 'Roboto', sans-serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #e0f7fa, #b2ebf2); padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+          <div style="text-align: center; padding-bottom: 15px;">
+            <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo" style="height: 50px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+            <h1 style="font-family: 'Playfair Display', serif; font-size: 24px; color: #26a69a; margin: 10px 0 5px; font-weight: 700;">Test Email</h1>
           </div>
-          <div style="background: #fff; padding: 20px; border-radius: 8px;">
-            <p style="font-size: 1rem; color: #1a1a1a;">This is a test email to verify Nodemailer configuration.</p>
+          <div style="background: #fff; padding: 15px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05);">
+            <p style="font-size: 14px; color: #1a1a1a; line-height: 1.5; margin: 0;">This is a test email to verify Nodemailer configuration.</p>
           </div>
-          <div style="text-align: center; padding-top: 20px; font-size: 0.9rem; color: #4b5e8e;">
-            <p>DELICUTE &copy; ${new Date().getFullYear()} | All Rights Reserved</p>
+          <div style="text-align: center; padding-top: 15px; font-size: 12px; color: #4b5e8e;">
+            <p style="margin: 0;">DELICUTE &copy; ${new Date().getFullYear()} | All Rights Reserved</p>
           </div>
         </div>
       `
@@ -154,7 +154,6 @@ router.get("/test-email", authenticate, async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to send test email", error: err.message });
   }
 });
-
 // ================== GET ALL ORDERS ==================
 router.get("/", authenticate, async (req, res) => {
   try {
