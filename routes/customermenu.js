@@ -94,7 +94,7 @@ router.post("/orders", async (req, res) => {
         }
         discount = (subtotal * coupon.discount) / 100;
       }
-      // Handle category-specific coupons (buy_x, percentage, fixed)
+      // Handle category-specific coupons
       else {
         if (!coupon.category_id) {
           return res.status(400).json({
@@ -127,6 +127,12 @@ router.post("/orders", async (req, res) => {
           discount = (eligibleSubtotal * coupon.discount) / 100;
         } else if (coupon.type === "fixed") {
           discount = Math.min(coupon.discount, eligibleSubtotal); // Ensure discount doesn't exceed subtotal
+        } else if (coupon.type === "bogo") {
+          if (eligibleQty >= 2) {
+            const pairs = Math.floor(eligibleQty / 2);
+            const avgPrice = eligibleSubtotal / eligibleQty; // Average price of eligible items
+            discount = pairs * avgPrice; // Discount one item per pair
+          }
         }
       }
 

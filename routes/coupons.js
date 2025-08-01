@@ -31,7 +31,7 @@ async function uploadToCloudinary(fileBuffer, filename) {
 }
 
 // Valid coupon types
-const VALID_COUPON_TYPES = ['buy_x', 'date_range', 'min_cart_amount'];
+const VALID_COUPON_TYPES = ['buy_x', 'date_range', 'min_cart_amount', 'bogo'];
 
 // ================= GET ALL COUPONS =================
 router.get("/", async (req, res) => {
@@ -86,8 +86,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       min_cart_amount,
     } = req.body;
 
-    if (!code || !description || !discount || !type) {
-      return res.status(400).json({ success: false, message: "Code, description, discount, and type are required" });
+    if (!code || !description || !type) {
+      return res.status(400).json({ success: false, message: "Code, description, and type are required" });
     }
 
     if (!VALID_COUPON_TYPES.includes(type)) {
@@ -98,8 +98,15 @@ router.post("/", upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "Minimum cart amount is required for Min Cart Amount type" });
     }
 
+    if (type !== "min_cart_amount" && !quantity) {
+      return res.status(400).json({ success: false, message: "Quantity is required for this coupon type" });
+    }
+
     let category_id = null;
-    if (category) {
+    if (type !== "min_cart_amount") {
+      if (!category) {
+        return res.status(400).json({ success: false, message: "Category is required for this coupon type" });
+      }
       const [catRows] = await pool.query("SELECT id FROM categories WHERE name = ?", [category]);
       if (catRows.length === 0)
         return res.status(400).json({ success: false, message: "Invalid category" });
@@ -111,6 +118,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
     }
 
+    const discountValue = type === "bogo" ? 0 : (discount || null);
+
     await pool.query(
       `INSERT INTO coupons 
         (code, description, image, discount, quantity, category_id, type, buy_x, valid_from, valid_to, min_cart_amount) 
@@ -119,7 +128,7 @@ router.post("/", upload.single("image"), async (req, res) => {
         code,
         description,
         imageUrl,
-        discount,
+        discountValue,
         quantity || null,
         category_id,
         type,
@@ -153,8 +162,8 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       min_cart_amount,
     } = req.body;
 
-    if (!code || !description || !discount || !type) {
-      return res.status(400).json({ success: false, message: "Code, description, discount, and type are required" });
+    if (!code || !description || !type) {
+      return res.status(400).json({ success: false, message: "Code, description, and type are required" });
     }
 
     if (!VALID_COUPON_TYPES.includes(type)) {
@@ -165,8 +174,15 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "Minimum cart amount is required for Min Cart Amount type" });
     }
 
+    if (type !== "min_cart_amount" && !quantity) {
+      return res.status(400).json({ success: false, message: "Quantity is required for this coupon type" });
+    }
+
     let category_id = null;
-    if (category) {
+    if (type !== "min_cart_amount") {
+      if (!category) {
+        return res.status(400).json({ success: false, message: "Category is required for this coupon type" });
+      }
       const [catRows] = await pool.query("SELECT id FROM categories WHERE name = ?", [category]);
       if (catRows.length === 0)
         return res.status(400).json({ success: false, message: "Invalid category" });
@@ -178,6 +194,8 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
     }
 
+    const discountValue = type === "bogo" ? 0 : (discount || null);
+
     await pool.query(
       `UPDATE coupons SET 
         code=?, description=?, discount=?, quantity=?, category_id=?, type=?, 
@@ -186,7 +204,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       [
         code,
         description,
-        discount,
+        discountValue,
         quantity || null,
         category_id,
         type,

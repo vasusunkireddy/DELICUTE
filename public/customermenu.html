@@ -673,7 +673,6 @@
   }
 }
 
-
     function saveCart() {
       localStorage.setItem("cart", JSON.stringify(cart));
     }
@@ -807,23 +806,43 @@
             return (subtotal * appliedCoupon.discount) / 100;
           }
           return 0;
-        } else {
+        } else if (appliedCoupon.type === "buy_x") {
+          const catIds = menuData.data
+            .filter(item => item.category === appliedCoupon.category)
+            .map(item => item.id);
+          const eligibleItems = cart.filter(i => catIds.includes(i.id));
+          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
+
+          if (categoryQty >= (appliedCoupon.buy_x || 0)) {
+            return (categoryQty * appliedCoupon.discount) / 100;
+          }
+          return 0;
+        } else if (appliedCoupon.type === "date_range") {
           const catIds = menuData.data
             .filter(item => item.category === appliedCoupon.category)
             .map(item => item.id);
           const eligibleItems = cart.filter(i => catIds.includes(i.id));
           const categorySubtotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
-          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
 
           if (categorySubtotal > 0) {
-            if (appliedCoupon.type === "buy_x" && categoryQty >= (appliedCoupon.buy_x || 0)) {
-              return (categorySubtotal * appliedCoupon.discount) / 100;
-            } else if (appliedCoupon.type === "date_range") {
-              return (categorySubtotal * appliedCoupon.discount) / 100;
-            }
+            return (categorySubtotal * appliedCoupon.discount) / 100;
+          }
+          return 0;
+        } else if (appliedCoupon.type === "bogo") {
+          const catIds = menuData.data
+            .filter(item => item.category === appliedCoupon.category)
+            .map(item => item.id);
+          const eligibleItems = cart.filter(i => catIds.includes(i.id));
+          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
+
+          if (categoryQty >= 2) {
+            const pairs = Math.floor(categoryQty / 2);
+            const eligibleTotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
+            return pairs * (eligibleTotal / categoryQty); // Discount half the price for every second item
           }
           return 0;
         }
+        return 0;
       } catch (err) {
         console.error("Menu Fetch Error for Coupon Calculation:", err);
         return 0;
@@ -914,7 +933,7 @@
           localStorage.setItem("appliedCoupon", couponCode);
           showToast(`Coupon ${couponCode} applied successfully! ${coupon.discount}% off for cart ≥ ₹${coupon.min_cart_amount}`, true);
           renderCart();
-        } else {
+        } else if (coupon.type === "buy_x" || coupon.type === "date_range" || coupon.type === "bogo") {
           const menuRes = await fetch("/api/menu");
           const menuData = await menuRes.json();
           if (!menuData.success) {
@@ -947,6 +966,13 @@
 
           if (coupon.type === "buy_x" && categoryQty < (coupon.buy_x || 0)) {
             showToast(`Coupon ${couponCode} requires ${coupon.buy_x} ${coupon.category} items (you have ${categoryQty})`, false);
+            document.getElementById("couponCode").value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
+
+          if (coupon.type === "bogo" && categoryQty < 2) {
+            showToast(`Coupon ${couponCode} requires at least 2 ${coupon.category} items (you have ${categoryQty})`, false);
             document.getElementById("couponCode").value = "";
             localStorage.removeItem("appliedCoupon");
             return;
