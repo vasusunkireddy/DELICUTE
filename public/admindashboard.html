@@ -128,6 +128,93 @@
       color: #4b5e8e;
       font-weight: 600;
     }
+    .notification-container {
+      position: absolute;
+      top: 1rem;
+      right: 8rem; /* Positioned to the left of logout button */
+      display: flex;
+      align-items: center;
+    }
+    .notification-icon {
+      position: relative;
+      cursor: pointer;
+      font-size: 1.5rem;
+      color: #fff3cd;
+      transition: transform 0.2s ease;
+    }
+    .notification-icon:hover {
+      transform: scale(1.2);
+    }
+    .notification-badge {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ff5252;
+      color: #fff;
+      border-radius: 50%;
+      padding: 2px 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .notification-dropdown {
+      display: none;
+      position: absolute;
+      top: 2.5rem;
+      right: 0;
+      width: 300px;
+      max-height: 400px;
+      overflow-y: auto;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .notification-dropdown.show {
+      display: block;
+    }
+    .notification-item {
+      padding: 0.8rem;
+      border-bottom: 1px solid #e0f7fa;
+      font-size: 0.9rem;
+      color: #1a1a1a;
+      transition: background 0.2s ease;
+    }
+    .notification-item:last-child {
+      border-bottom: none;
+    }
+    .notification-item:hover {
+      background: #e0f7fa;
+    }
+    .notification-item strong {
+      color: #26a69a;
+    }
+    .clear-notifications {
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      background: linear-gradient(45deg, #ffd700, #ffca28);
+      color: #1a1a1a;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      margin-top: 0.5rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+    .clear-notifications:hover {
+      background: linear-gradient(45deg, #ffca28, #ffb300);
+      transform: translateY(-2px);
+    }
+    .no-notifications {
+      padding: 0.8rem;
+      font-size: 0.9rem;
+      color: #4b5e8e;
+      text-align: center;
+    }
     @keyframes shine {
       0% { left: -100%; }
       50% { left: 100%; }
@@ -154,6 +241,9 @@
       .content { margin: 1rem; padding: 1rem; }
       .content h2 { font-size: 1.6rem; }
       .content p { font-size: 1rem; }
+      .notification-container { right: 6rem; }
+      .notification-dropdown { width: 250px; }
+      .notification-icon { font-size: 1.2rem; }
     }
   </style>
 </head>
@@ -163,6 +253,13 @@
     <div>
       <h1>DELICUTE</h1>
       <span>Every Bite Tells A Story</span>
+    </div>
+    <div class="notification-container">
+      <span class="notification-icon">🔔<span class="notification-badge" id="notification-count">0</span></span>
+      <div class="notification-dropdown" id="notification-dropdown">
+        <div id="notification-list"></div>
+        <button class="clear-notifications" onclick="clearNotifications()">Clear All</button>
+      </div>
     </div>
     <button class="logout" onclick="logout()">Logout</button>
   </header>
@@ -180,6 +277,7 @@
     <p>Select a section above to manage your kitchen.</p>
   </div>
 
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
     // ✅ Protect dashboard with auth check
     window.addEventListener("DOMContentLoaded", async () => {
@@ -196,6 +294,71 @@
     async function logout() {
       await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
       window.location.href = "/admin.html";
+    }
+
+    // Notification handling
+    const socket = io({
+      auth: { token: localStorage.getItem("token") || getCookie("token") }
+    });
+    const notificationCount = document.getElementById("notification-count");
+    const notificationList = document.getElementById("notification-list");
+    const notificationDropdown = document.getElementById("notification-dropdown");
+    let notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
+
+    // Update notification count
+    function updateNotificationCount() {
+      notificationCount.textContent = notifications.length;
+      notificationCount.style.display = notifications.length > 0 ? "inline" : "none";
+    }
+
+    // Render notifications
+    function renderNotifications() {
+      if (notifications.length === 0) {
+        notificationList.innerHTML = '<div class="no-notifications">No new notifications</div>';
+      } else {
+        notificationList.innerHTML = notifications
+          .map(n => `
+            <div class="notification-item">
+              <strong>Order #${n.id}</strong> by ${n.customer_name}<br>
+              Table: ${n.table_number} | Total: ₹${n.total.toFixed(2)}
+            </div>
+          `)
+          .join("");
+      }
+      updateNotificationCount();
+    }
+
+    // Toggle dropdown
+    document.querySelector(".notification-icon").addEventListener("click", () => {
+      notificationDropdown.classList.toggle("show");
+    });
+
+    // Clear notifications
+    function clearNotifications() {
+      notifications = [];
+      localStorage.setItem("notifications", JSON.stringify(notifications));
+      renderNotifications();
+    }
+
+    // WebSocket events
+    socket.on("connect", () => {
+      console.log("WebSocket connected:", socket.id);
+    });
+
+    socket.on("new-order", (order) => {
+      notifications.unshift(order); // Add to start of array
+      localStorage.setItem("notifications", JSON.stringify(notifications));
+      renderNotifications();
+    });
+
+    // Load existing notifications
+    renderNotifications();
+
+    // Get cookie
+    function getCookie(name) {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(";").shift();
     }
   </script>
 </body>
