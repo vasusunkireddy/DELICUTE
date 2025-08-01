@@ -174,15 +174,14 @@
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     }
     .card img {
-  width: 100%;
-  height: 150px;      /* fixed height */
-  object-fit: cover;  /* fills box, crops edges */
-  display: block;
-  background: #f0f0f0; /* optional background */
-  max-width: 100%;
-  pointer-events: none;
-}
-
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      display: block;
+      background: #f0f0f0;
+      max-width: 100%;
+      pointer-events: none;
+    }
     .card-body {
       padding: 0.4rem;
       display: flex;
@@ -332,11 +331,7 @@
       border-radius: 4px;
       margin-right: 0.6rem;
       background: #f0f0f0;
-      transition: opacity 0.2s ease;
       pointer-events: none;
-    }
-    .cart-item img.loading {
-      opacity: 0.5;
     }
     .cart-item h4 {
       font-size: clamp(0.85rem, 2vw, 0.95rem);
@@ -655,23 +650,23 @@
     }
 
     function toggleCart() {
-  const cartSection = document.querySelector('.cart-section'); 
-  const container = document.querySelector('.container');
+      const cartSection = document.querySelector('.cart-section'); 
+      const container = document.querySelector('.container');
 
-  if (!cartSection) return; // avoid errors if cart not found
+      if (!cartSection) return;
 
-  cartSection.classList.toggle("active");
+      cartSection.classList.toggle("active");
 
-  if (cartSection.classList.contains("active")) {
-    localStorage.setItem("openCart", "true");
-    document.body.style.overflow = 'hidden';   // lock scroll when cart open
-    if (container) container.style.touchAction = 'none';
-  } else {
-    localStorage.removeItem("openCart");
-    document.body.style.overflow = 'auto';     // restore scroll
-    if (container) container.style.touchAction = 'auto';
-  }
-}
+      if (cartSection.classList.contains("active")) {
+        localStorage.setItem("openCart", "true");
+        document.body.style.overflow = 'hidden';
+        if (container) container.style.touchAction = 'none';
+      } else {
+        localStorage.removeItem("openCart");
+        document.body.style.overflow = 'auto';
+        if (container) container.style.touchAction = 'auto';
+      }
+    }
 
     function saveCart() {
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -742,7 +737,7 @@
       const imageSrc = item.image && item.image !== '' ? item.image : defaultImage;
       return `
         <div class="card ${isTopPick ? 'top-pick' : ''}">
-          <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'" onload="this.classList.remove('loading')">
+          <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
           <div class="card-body">
             <h3>${item.name}</h3>
             <p>${item.description || "No description available"}</p>
@@ -791,7 +786,7 @@
     }
 
     async function calculateDiscount(subtotal) {
-      if (!appliedCoupon) return 0;
+      if (!appliedCoupon || !subtotal) return 0;
 
       try {
         const menuRes = await fetch("/api/menu");
@@ -801,44 +796,39 @@
           return 0;
         }
 
+        const catIds = appliedCoupon.category
+          ? menuData.data.filter(item => item.category === appliedCoupon.category).map(item => item.id)
+          : [];
+        const eligibleItems = cart.filter(i => catIds.includes(i.id));
+        const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
+        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
+
         if (appliedCoupon.type === "min_cart_amount") {
           if (subtotal >= (appliedCoupon.min_cart_amount || 0)) {
-            return (subtotal * appliedCoupon.discount) / 100;
+            return (subtotal * (appliedCoupon.discount || 0)) / 100;
           }
           return 0;
         } else if (appliedCoupon.type === "buy_x") {
-          const catIds = menuData.data
-            .filter(item => item.category === appliedCoupon.category)
-            .map(item => item.id);
-          const eligibleItems = cart.filter(i => catIds.includes(i.id));
-          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
-
           if (categoryQty >= (appliedCoupon.buy_x || 0)) {
-            return (categoryQty * appliedCoupon.discount) / 100;
+            return (categorySubtotal * (appliedCoupon.discount || 0)) / 100;
           }
           return 0;
         } else if (appliedCoupon.type === "date_range") {
-          const catIds = menuData.data
-            .filter(item => item.category === appliedCoupon.category)
-            .map(item => item.id);
-          const eligibleItems = cart.filter(i => catIds.includes(i.id));
-          const categorySubtotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
-
           if (categorySubtotal > 0) {
-            return (categorySubtotal * appliedCoupon.discount) / 100;
+            return (categorySubtotal * (appliedCoupon.discount || 0)) / 100;
           }
           return 0;
         } else if (appliedCoupon.type === "bogo") {
-          const catIds = menuData.data
-            .filter(item => item.category === appliedCoupon.category)
-            .map(item => item.id);
-          const eligibleItems = cart.filter(i => catIds.includes(i.id));
-          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
-
           if (categoryQty >= 2) {
             const pairs = Math.floor(categoryQty / 2);
-            const eligibleTotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
-            return pairs * (eligibleTotal / categoryQty); // Discount half the price for every second item
+            const sortedItems = eligibleItems
+              .flatMap(item => Array(item.qty).fill(item))
+              .sort((a, b) => a.price - b.price);
+            let bogoDiscount = 0;
+            for (let i = 0; i < pairs; i++) {
+              bogoDiscount += sortedItems[i].price;
+            }
+            return bogoDiscount;
           }
           return 0;
         }
@@ -863,7 +853,7 @@
           const imageSrc = menuItem && menuItem.image && menuItem.image !== '' ? menuItem.image : defaultImage;
           cartItemsEl.innerHTML += `
             <div class="cart-item">
-              <img src="${imageSrc}" alt="${item.name}" class="loading" loading="lazy" onerror="this.src='${defaultImage}'" onload="this.classList.remove('loading')">
+              <img src="${imageSrc}" alt="${item.name}" onerror="this.src='${defaultImage}'">
               <h4>${item.name}</h4>
               <div class="qty-controls">
                 <button onclick="changeQty(${item.id}, -1)">-</button>
