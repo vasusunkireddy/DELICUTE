@@ -424,46 +424,30 @@
       background: linear-gradient(45deg, #1e8578, #26a69a);
       transform: translateY(-2px);
     }
-    .coupon-link {
-      background: linear-gradient(45deg, #ffca28, #ffd700);
+    .coupon-btn {
+      width: 100%;
+      background: linear-gradient(45deg, #ffd700, #ffca28);
       color: #1a1a1a;
       border: none;
-      padding: 0.7rem 1rem;
+      padding: 0.7rem;
       border-radius: 6px;
       cursor: pointer;
       font-size: 0.85rem;
       font-weight: 600;
-      width: 100%;
-      text-align: center;
-      text-decoration: none;
+      margin-top: 0.4rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.3rem;
-      margin-top: 0.4rem;
-      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
       font-family: Arial, sans-serif;
-      position: relative;
-      overflow: hidden;
     }
-    .coupon-link:hover {
-      background: linear-gradient(45deg, #ffb300, #ffca28);
+    .coupon-btn:hover {
+      background: linear-gradient(45deg, #ffca28, #ffb300);
       transform: translateY(-2px);
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-    }
-    .coupon-link::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-      transition: left 0.5s ease;
-    }
-    .coupon-link:hover::before {
-      left: 100%;
     }
     .total-box {
       margin-top: 1rem;
@@ -548,23 +532,23 @@
     #toast {
       visibility: hidden;
       min-width: 200px;
-      max-width: 280px;
-      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      max-width: 300px;
+      background: linear-gradient(45deg, #4caf50, #66bb6a);
       color: #fff;
       text-align: center;
       border-radius: 8px;
       padding: 0.8rem;
       position: fixed;
       z-index: 1000;
-      top: 20px;
-      right: 20px;
-      font-size: 0.85rem;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      top: 70px;
+      right: 15px;
+      font-size: 0.8rem;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
       font-family: Arial, sans-serif;
     }
     #toast.show {
       visibility: visible;
-      animation: slideIn 0.5s ease-out, slideOut 0.5s ease-in 2.5s forwards;
+      animation: slideDown 0.5s ease-out, slideUp 0.5s ease-in 2.5s forwards;
     }
     @keyframes shine {
       0% { left: -100%; }
@@ -579,13 +563,13 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-20px); }
-      to { opacity: 1; transform: translateY(0); }
+    @keyframes slideDown {
+      from { opacity: 0; top: -100%; }
+      to { opacity: 1; top: 70px; }
     }
-    @keyframes slideOut {
-      from { opacity: 1; transform: translateY(0); }
-      to { opacity: 0; transform: translateY(-20px); }
+    @keyframes slideUp {
+      from { opacity: 1; top: 70px; }
+      to { opacity: 0; top: -100%; }
     }
     @keyframes pulseGold {
       0% { transform: translateX(-50%) scaleX(1); }
@@ -622,13 +606,13 @@
       .cart-item span:last-child { font-size: 0.85rem; min-width: 45px; }
       .coupon-box input { font-size: 0.8rem; padding: 0.6rem; }
       .coupon-box button { font-size: 0.8rem; padding: 0.6rem 0.8rem; }
-      .coupon-link { font-size: 0.8rem; padding: 0.6rem 0.8rem; }
+      .coupon-btn { font-size: 0.8rem; padding: 0.6rem; }
       .order-form input, .order-form textarea { font-size: 0.8rem; padding: 0.6rem; }
       .order-form button { font-size: 0.85rem; padding: 0.7rem; }
       .clear-cart-btn { font-size: 0.8rem; padding: 0.6rem; }
       .line { font-size: 0.85rem; }
       .line.bold { font-size: 0.95rem; }
-      #toast { top: 15px; right: 15px; font-size: 0.8rem; padding: 0.7rem; max-width: 250px; }
+      #toast { top: 70px; right: 15px; font-size: 0.75rem; padding: 0.7rem; }
     }
     @media (min-width: 769px) {
       .category-row {
@@ -649,11 +633,10 @@
       .qty-controls button { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
       .coupon-box input { padding: 0.5rem; font-size: 0.75rem; }
       .coupon-box button { padding: 0.5rem 0.7rem; font-size: 0.75rem; }
-      .coupon-link { font-size: 0.75rem; padding: 0.5rem 0.7rem; }
+      .coupon-btn { padding: 0.5rem; font-size: 0.75rem; }
       .order-form input, .order-form textarea { padding: 0.5rem; font-size: 0.75rem; }
       .order-form button { padding: 0.6rem; font-size: 0.8rem; }
       .clear-cart-btn { padding: 0.5rem; font-size: 0.75rem; }
-      #toast { top: 10px; right: 10px; font-size: 0.75rem; padding: 0.6rem; max-width: 220px; }
     }
   </style>
 </head>
@@ -685,7 +668,7 @@
       <button onclick="applyCoupon()">Apply</button>
       <button onclick="removeCoupon()">Remove</button>
       <button class="clear-cart-btn" onclick="clearCart()">Clear Cart</button>
-      <a href="customercoupons.html" class="coupon-link"><i class="fas fa-ticket-alt"></i> View Available Coupons</a>
+      <a href="customercoupons.html" class="coupon-btn"><i class="fas fa-ticket-alt"></i> View Available Coupons</a>
     </div>
     <div class="total-box">
       <div class="line"><span>Subtotal:</span><span id="subtotal">₹0</span></div>
@@ -718,7 +701,7 @@
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
-      toast.style.background = success ? "linear-gradient(45deg, #26a69a, #4dd0e1)" : "linear-gradient(45deg, #ef5350, #e53935)";
+      toast.style.background = success ? "linear-gradient(45deg, #4caf50, #66bb6a)" : "linear-gradient(45deg, #f44336, #ef5350)";
       toast.className = "show";
       setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
@@ -734,6 +717,7 @@
     function loadCart() {
       const savedCart = localStorage.getItem("cart");
       cart = savedCart ? JSON.parse(savedCart) : [];
+      if (!Array.isArray(cart)) cart = [];
       renderCart();
     }
 
@@ -794,15 +778,15 @@
     function buildCard(item, isTopPick) {
       return `
         <div class="card ${isTopPick ? 'top-pick' : ''}">
-          <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="this.src='https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png'">
+          <img src="${item.image || 'https://via.placeholder.com/150'}" alt="${item.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'">
           <div class="card-body">
             <h3>${item.name}</h3>
             <p>${item.description || "No description available"}</p>
             <p>
               <span class="price">₹${item.price}</span>
-              ${item.saved_amount ? `<span class="old-price">₹${(item.price + item.saved_amount).toFixed(2)}</span>` : ""}
+              ${item.original_price ? `<span class="old-price">₹${item.original_price}</span>` : ""}
             </p>
-            <button class="add-btn" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price}, '${item.category}')"><i class="fas fa-cart-plus"></i> Add</button>
+            <button class="add-btn" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price})"><i class="fas fa-cart-plus"></i> Add</button>
           </div>
         </div>
       `;
@@ -818,12 +802,12 @@
       renderMenu(filtered);
     }
 
-    function addToCart(id, name, price, category) {
+    function addToCart(id, name, price) {
       const existing = cart.find(i => i.id === id);
       if (existing) {
         existing.qty++;
       } else {
-        cart.push({ id, name, price, category, qty: 1 });
+        cart.push({ id, name, price, qty: 1 });
       }
       saveCart();
       showToast(`${name} added to cart!`, true);
@@ -845,16 +829,17 @@
     async function renderCart() {
       cartItemsEl.innerHTML = "";
       let subtotal = 0, discount = 0;
-      if (cart.length === 0) {
+      if (!Array.isArray(cart) || cart.length === 0) {
         cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:0.9rem;'>Your cart is empty</p>";
       } else {
         cart.forEach(item => {
+          if (!item.price || !item.qty) return;
           subtotal += item.price * item.qty;
           const menuItem = menuData.find(menu => menu.id === item.id);
-          const imageSrc = menuItem ? menuItem.image : 'https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png';
+          const imageSrc = menuItem ? (menuItem.image || 'https://via.placeholder.com/50') : 'https://via.placeholder.com/50';
           cartItemsEl.innerHTML += `
             <div class="cart-item">
-              <img src="${imageSrc}" alt="${item.name}" onerror="this.src='https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png'">
+              <img src="${imageSrc}" alt="${item.name}" onerror="this.src='https://via.placeholder.com/50'">
               <h4>${item.name}</h4>
               <div class="qty-controls">
                 <button onclick="changeQty(${item.id}, -1)">-</button>
@@ -870,25 +855,20 @@
       if (appliedCoupon) {
         try {
           const menuRes = await fetch("/api/menu");
-          const menuDataRes = await menuRes.json();
-          if (menuDataRes.success) {
-            let eligibleSubtotal = subtotal;
-            let eligibleQty = cart.reduce((sum, i) => sum + i.qty, 0);
+          const menuData = await menuRes.json();
+          if (menuData.success) {
+            const catIds = menuData.data
+              .filter(item => item.category === appliedCoupon.category)
+              .map(item => item.id);
+            const eligibleItems = cart.filter(i => catIds.includes(i.id));
+            const categorySubtotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
+            const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
 
-            if (appliedCoupon.category && appliedCoupon.category !== "") {
-              const eligibleItems = cart.filter(item => item.category === appliedCoupon.category);
-              eligibleSubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-              eligibleQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
-            }
-
-            if (eligibleSubtotal > 0) {
-              if (appliedCoupon.type === "buy_x" && eligibleQty >= appliedCoupon.buy_x) {
-                discount = (eligibleSubtotal * appliedCoupon.discount) / 100;
-              } else if (appliedCoupon.type === "date_range") {
-                const today = new Date().toISOString().split("T")[0];
-                if (today >= appliedCoupon.valid_from && today <= appliedCoupon.valid_to) {
-                  discount = Math.min(appliedCoupon.discount, eligibleSubtotal);
-                }
+            if (categorySubtotal > 0) {
+              if (appliedCoupon.type === "buy_x" && categoryQty >= appliedCoupon.buy_x) {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+              } else if (appliedCoupon.type !== "buy_x") {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
               }
             }
           }
@@ -900,7 +880,7 @@
       let total = subtotal - discount;
       if (total < 0) total = 0;
 
-      cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + item.qty, 0));
+      cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item.qty || 0), 0));
       cartToggle.classList.toggle("has-items", cart.length > 0);
 
       document.getElementById("subtotal").innerText = "₹" + subtotal.toFixed(2);
@@ -914,7 +894,7 @@
         showToast("Please enter a coupon code", false);
         return;
       }
-      if (cart.length === 0) {
+      if (!Array.isArray(cart) || cart.length === 0) {
         showToast("Your cart is empty! Add items to apply a coupon.", false);
         document.getElementById("couponCode").value = "";
         localStorage.removeItem("appliedCoupon");
@@ -938,36 +918,40 @@
           return;
         }
 
-        if (coupon.category && coupon.category !== "") {
-          const eligibleItems = cart.filter(item => item.category === coupon.category);
-          if (eligibleItems.length === 0) {
-            showToast(`Coupon ${couponCode} is only valid for ${coupon.category} items`, false);
-            document.getElementById("couponCode").value = "";
-            localStorage.removeItem("appliedCoupon");
-            return;
-          }
-          if (coupon.type === "buy_x" && eligibleItems.reduce((sum, i) => sum + i.qty, 0) < coupon.buy_x) {
-            showToast(`Coupon ${couponCode} requires ${coupon.buy_x} ${coupon.category} items`, false);
-            document.getElementById("couponCode").value = "";
-            localStorage.removeItem("appliedCoupon");
-            return;
-          }
+        const menuRes = await fetch("/api/menu");
+        const menuData = await menuRes.json();
+        if (!menuData.success) {
+          showToast("Failed to fetch menu for coupon validation", false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
         }
 
-        if (coupon.type === "date_range") {
-          const today = new Date().toISOString().split("T")[0];
-          if (today < coupon.valid_from || today > coupon.valid_to) {
-            showToast(`Coupon ${couponCode} is not valid today`, false);
-            document.getElementById("couponCode").value = "";
-            localStorage.removeItem("appliedCoupon");
-            return;
-          }
+        const catIds = menuData.data
+          .filter(item => item.category === coupon.category)
+          .map(item => item.id);
+        const eligibleItems = cart.filter(i => catIds.includes(i.id));
+        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
+        const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
+
+        if (categorySubtotal === 0) {
+          showToast(`Coupon ${couponCode} is only valid for ${coupon.category} items`, false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
+        }
+
+        if (coupon.type === "buy_x" && categoryQty < coupon.buy_x) {
+          showToast(`Coupon ${couponCode} requires ${coupon.buy_x} ${coupon.category} items (you have ${categoryQty})`, false);
+          document.getElementById("couponCode").value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
         }
 
         appliedCoupon = coupon;
         document.getElementById("couponCode").value = couponCode;
         localStorage.setItem("appliedCoupon", couponCode);
-        showToast(`Coupon ${couponCode} applied successfully${coupon.category ? ` for ${coupon.category}!` : "!"}`, true);
+        showToast(`Coupon ${couponCode} applied successfully for ${coupon.category}!`, true);
         renderCart();
       } catch (err) {
         showToast("Error applying coupon", false);
@@ -986,7 +970,7 @@
     }
 
     async function placeOrder() {
-      if (cart.length === 0) {
+      if (!Array.isArray(cart) || cart.length === 0) {
         showToast("Your cart is empty!", false);
         return;
       }
@@ -997,11 +981,46 @@
         return;
       }
 
+      const subtotal = cart.reduce((s, i) => s + ((i.price || 0) * (i.qty || 0)), 0);
+      let discount = 0;
+
+      if (appliedCoupon) {
+        try {
+          const menuRes = await fetch("/api/menu");
+          const menuData = await menuRes.json();
+          if (menuData.success) {
+            const catIds = menuData.data
+              .filter(item => item.category === appliedCoupon.category)
+              .map(item => item.id);
+            const eligibleItems = cart.filter(i => catIds.includes(i.id));
+            const categorySubtotal = eligibleItems.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0);
+            const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
+
+            if (categorySubtotal > 0) {
+              if (appliedCoupon.type === "buy_x" && categoryQty >= appliedCoupon.buy_x) {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+              } else if (appliedCoupon.type !== "buy_x") {
+                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Menu Fetch Error for Order:", err);
+        }
+      }
+
+      let total = subtotal - discount;
+      if (total < 0) total = 0;
+
       const body = {
         customer_name,
         table_number: parseInt(table_number),
         items: cart,
-        coupon_code: appliedCoupon?.code || null
+        coupon_code: appliedCoupon?.code || null,
+        subtotal,
+        discount,
+        total,
+        instructions: document.getElementById("instructions").value.trim()
       };
 
       try {
