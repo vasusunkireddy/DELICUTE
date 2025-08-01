@@ -30,9 +30,9 @@ router.get("/coupons", async (req, res) => {
     const [rows] = await pool.query(
       `
       SELECT c.id, c.code, c.description, c.image, c.discount, c.quantity, c.type, c.buy_x, 
-             c.valid_from, c.valid_to, cat.name AS category
+             c.valid_from, c.valid_to, c.min_cart_amount, cat.name AS category
       FROM coupons c
-      JOIN categories cat ON c.category_id = cat.id
+      LEFT JOIN categories cat ON c.category_id = cat.id
       WHERE (c.valid_from IS NULL OR c.valid_from <= ?) 
         AND (c.valid_to IS NULL OR c.valid_to >= ?)
         AND (c.quantity > 0 OR c.quantity IS NULL)
@@ -84,8 +84,25 @@ router.post("/orders", async (req, res) => {
       let eligibleSubtotal = subtotal;
       let eligibleQty = items.reduce((sum, i) => sum + i.qty, 0);
 
-      // If coupon is category-specific, filter eligible items
-      if (coupon.category_id) {
+      // Handle min_cart_amount coupon
+      if (coupon.type === "min_cart_amount") {
+        if (subtotal < (coupon.min_cart_amount || 0)) {
+          return res.status(400).json({
+            success: false,
+            message: `Coupon requires a minimum cart amount of ₹${coupon.min_cart_amount} (current: ₹${subtotal.toFixed(2)})`,
+          });
+        }
+        discount = (subtotal * coupon.discount) / 100;
+      }
+      // Handle category-specific coupons (buy_x, percentage, fixed)
+      else {
+        if (!coupon.category_id) {
+          return res.status(400).json({
+            success: false,
+            message: "Coupon is invalid: no category specified",
+          });
+        }
+
         const [catItems] = await pool.query(
           `SELECT id FROM menu_items WHERE category_id = ?`,
           [coupon.category_id]
@@ -94,12 +111,16 @@ router.post("/orders", async (req, res) => {
         const eligibleItems = items.filter(i => catIds.includes(i.id));
         eligibleSubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
         eligibleQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
-      }
 
-      // Apply discount based on coupon type
-      if (eligibleSubtotal > 0) {
+        if (eligibleSubtotal === 0) {
+          return res.status(400).json({
+            success: false,
+            message: `Coupon is only valid for ${coupon.category_name} items`,
+          });
+        }
+
         if (coupon.type === "buy_x") {
-          if (eligibleQty >= coupon.buy_x) {
+          if (eligibleQty >= (coupon.buy_x || 0)) {
             discount = (eligibleSubtotal * coupon.discount) / 100;
           }
         } else if (coupon.type === "percentage") {
@@ -116,6 +137,7 @@ router.post("/orders", async (req, res) => {
     }
 
     total = subtotal - discount;
+    if (total < 0) total = 0;
 
     // ====== Save order in DB ======
     conn = await pool.getConnection();

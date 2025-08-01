@@ -295,7 +295,7 @@
       to { opacity: 0; transform: translateY(-20px); }
     }
     @media (max-width: 768px) {
-      header { padding: 0.8rem; }
+      header { padding: 0хом.8rem; }
       header img { height: 50px; }
       header h1 { font-size: 1.5rem; }
       header span { font-size: 0.8rem; }
@@ -358,16 +358,17 @@
       <textarea id="description" required></textarea>
       <label>Image</label>
       <input type="file" id="image" accept="image/*">
-      <label>Discount Amount (% for Buy_X, ₹ for Date Range)</label>
+      <label>Discount Amount (% for Buy_X/Min_Cart_Amount, ₹ for Date Range)</label>
       <input type="number" id="discount" min="1" required>
       <label>Quantity</label>
-      <input type="number" id="quantity" min="1" required>
+      <input type="number" id="quantity" min="1">
       <label>Category</label>
-      <select id="category" required></select>
+      <select id="category"></select>
       <label>Type</label>
       <select id="type" required>
         <option value="buy_x">Buy_X</option>
         <option value="date_range">Date Range</option>
+        <option value="min_cart_amount">Min Cart Amount</option>
       </select>
       <div id="buyXFields">
         <label>Buy_X (Minimum Quantity)</label>
@@ -378,6 +379,10 @@
         <input type="date" id="valid_from">
         <label>Valid To</label>
         <input type="date" id="valid_to">
+      </div>
+      <div id="minCartFields">
+        <label>Minimum Cart Amount (₹)</label>
+        <input type="number" id="min_cart_amount" min="1" required>
       </div>
       <button type="submit">Save Coupon</button>
     </form>
@@ -394,6 +399,7 @@
           <th>Category</th>
           <th>Type</th>
           <th>Validity</th>
+          <th>Min Cart Amount</th>
           <th>Actions</th>
         </tr>
       </thead>
@@ -414,6 +420,19 @@
       setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
 
+    function toggleRequiredFields() {
+      const type = document.getElementById("type").value;
+      const quantityInput = document.getElementById("quantity");
+      const categorySelect = document.getElementById("category");
+      if (type === "min_cart_amount") {
+        quantityInput.removeAttribute("required");
+        categorySelect.removeAttribute("required");
+      } else {
+        quantityInput.setAttribute("required", "required");
+        categorySelect.setAttribute("required", "required");
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await fetch("/api/auth/check", { credentials: "include" });
@@ -423,6 +442,7 @@
         }
         await loadCategories();
         await fetchCoupons();
+        toggleRequiredFields(); // Initialize required fields based on default type
       } catch (err) {
         window.location.href = "/admin.html";
         console.error("Auth Check Error:", err);
@@ -432,6 +452,8 @@
     document.getElementById("type").addEventListener("change", (e) => {
       document.getElementById("buyXFields").style.display = e.target.value === "buy_x" ? "block" : "none";
       document.getElementById("dateFields").style.display = e.target.value === "date_range" ? "block" : "none";
+      document.getElementById("minCartFields").style.display = e.target.value === "min_cart_amount" ? "block" : "none";
+      toggleRequiredFields();
     });
 
     async function loadCategories() {
@@ -445,7 +467,7 @@
             categorySelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
           });
         } else {
-          categorySelect.innerHTML = `<option value="" disabled>No categories available</option>`;
+          categorySelect.innerHTML += `<option value="" disabled>No categories available</option>`;
         }
       } catch (err) {
         showToast("Error loading categories", false);
@@ -461,22 +483,24 @@
         table.innerHTML = "";
 
         if (!data.success || data.data.length === 0) {
-          table.innerHTML = "<tr><td colspan='9' class='no-coupons'>No coupons found</td></tr>";
+          table.innerHTML = "<tr><td colspan='10' class='no-coupons'>No coupons found</td></tr>";
           return;
         }
 
         data.data.forEach(coupon => {
           const quantityDisplay = coupon.type === "buy_x" ? coupon.buy_x : coupon.quantity;
+          const minCartDisplay = coupon.type === "min_cart_amount" ? `₹${coupon.min_cart_amount}` : "-";
           table.innerHTML += `
             <tr>
               <td><img src="${coupon.image}" alt="${coupon.code}" onerror="this.src='https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png'"></td>
               <td>${coupon.code}</td>
               <td>${coupon.description}</td>
-              <td>${coupon.type === "buy_x" ? `${coupon.discount}%` : `₹${coupon.discount}`}</td>
+              <td>${coupon.type === "date_range" ? `₹${coupon.discount}` : `${coupon.discount}%`}</td>
               <td>${quantityDisplay || '-'}</td>
               <td>${coupon.category || 'All'}</td>
               <td>${coupon.type}</td>
               <td>${coupon.valid_from ? coupon.valid_from.split("T")[0] : "-"} → ${coupon.valid_to ? coupon.valid_to.split("T")[0] : "-"}</td>
+              <td>${minCartDisplay}</td>
               <td>
                 <button class="btn-edit" onclick="editCoupon(${coupon.id})">Edit</button>
                 <button class="btn-delete" onclick="deleteCoupon(${coupon.id})">Delete</button>
@@ -497,14 +521,20 @@
       formData.append("code", document.getElementById("code").value);
       formData.append("description", document.getElementById("description").value);
       formData.append("discount", document.getElementById("discount").value);
-      formData.append("quantity", document.getElementById("quantity").value);
-      formData.append("category", document.getElementById("category").value);
+      const quantity = document.getElementById("quantity").value;
+      if (quantity) formData.append("quantity", quantity);
+      const category = document.getElementById("category").value;
+      if (category) formData.append("category", category);
       formData.append("type", document.getElementById("type").value);
-      if (document.getElementById("type").value === "buy_x") {
+
+      const couponType = document.getElementById("type").value;
+      if (couponType === "buy_x") {
         formData.append("buy_x", document.getElementById("buy_x").value || null);
-      } else {
+      } else if (couponType === "date_range") {
         formData.append("valid_from", document.getElementById("valid_from").value || null);
         formData.append("valid_to", document.getElementById("valid_to").value || null);
+      } else if (couponType === "min_cart_amount") {
+        formData.append("min_cart_amount", document.getElementById("min_cart_amount").value || null);
       }
 
       const imageFile = document.getElementById("image").files[0];
@@ -522,9 +552,12 @@
         if (res.ok) {
           showToast(data.message || (id ? "Coupon updated!" : "Coupon added!"), true);
           document.getElementById("couponForm").reset();
-          document.getElementById("buyXFields").style.display = "block";
+          document.getElementById("buyXFields").style.display = "none";
           document.getElementById("dateFields").style.display = "none";
+          document.getElementById("minCartFields").style.display = "none";
           document.getElementById("type").value = "buy_x";
+          document.getElementById("buyXFields").style.display = "block";
+          toggleRequiredFields();
           fetchCoupons();
         } else {
           showToast(data.message || "Error saving coupon", false);
@@ -545,14 +578,17 @@
           document.getElementById("code").value = c.code;
           document.getElementById("description").value = c.description;
           document.getElementById("discount").value = c.discount;
-          document.getElementById("quantity").value = c.quantity;
+          document.getElementById("quantity").value = c.quantity || "";
           document.getElementById("category").value = c.category || "";
           document.getElementById("type").value = c.type;
           document.getElementById("buyXFields").style.display = c.type === "buy_x" ? "block" : "none";
           document.getElementById("dateFields").style.display = c.type === "date_range" ? "block" : "none";
+          document.getElementById("minCartFields").style.display = c.type === "min_cart_amount" ? "block" : "none";
           document.getElementById("buy_x").value = c.buy_x || "";
           document.getElementById("valid_from").value = c.valid_from?.split("T")[0] || "";
           document.getElementById("valid_to").value = c.valid_to?.split("T")[0] || "";
+          document.getElementById("min_cart_amount").value = c.min_cart_amount || "";
+          toggleRequiredFields();
         } else {
           showToast("Error loading coupon data", false);
         }
@@ -592,6 +628,7 @@
     window.addEventListener("load", () => {
       document.getElementById("buyXFields").style.display = "block";
       document.getElementById("dateFields").style.display = "none";
+      document.getElementById("minCartFields").style.display = "none";
     });
   </script>
 </body>

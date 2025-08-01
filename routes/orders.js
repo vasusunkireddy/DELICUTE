@@ -67,7 +67,7 @@ router.post("/", async (req, res) => {
         <div style="font-family: 'Playfair Display', serif; max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #e0f7fa, #b2ebf2); padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
           <div style="text-align: center; padding-bottom: 20px;">
             <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo" style="height: 60px;">
-            <h1 style="font-size: 2rem; color: #26a69a; margin: 10px 0; text-shadow: 0 1px 3px rgba(0,0,0,0.1);">New Order #${order.id}</h1>
+            <h1 style="font-size: 2rem; color: #26a69aff; margin: 10px 0; text-shadow: 0 1px 3px rgba(0,0,0,0.1);">New Order #${order.id}</h1>
             <p style="font-size: 1rem; color: #1a1a1a;">Every Bite Tells A Story</p>
           </div>
           <div style="background: #fff; padding: 20px; border-radius: 8px;">
