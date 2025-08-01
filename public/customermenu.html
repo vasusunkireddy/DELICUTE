@@ -59,6 +59,7 @@
       max-width: 1400px;
       margin: 0.8rem auto;
       padding: 0 0.5rem;
+      touch-action: auto;
     }
     h2 {
       font-size: clamp(1.3rem, 3vw, 1.6rem);
@@ -113,6 +114,7 @@
       color: #26a69a;
       font-size: clamp(1rem, 2vw, 1.1rem);
       transition: color 0.2s ease;
+      touch-action: manipulation;
     }
     .search-bar button:hover {
       color: #1e8578;
@@ -150,6 +152,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      touch-action: auto;
     }
     .card.top-pick::after {
       content: 'Top Pick';
@@ -174,6 +177,7 @@
       display: block;
       background: #f0f0f0;
       max-width: 100%;
+      pointer-events: none;
     }
     .card-body {
       padding: 0.6rem;
@@ -231,6 +235,7 @@
       justify-content: center;
       gap: 0.3rem;
       touch-action: manipulation;
+      pointer-events: auto;
     }
     .add-btn:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
@@ -323,6 +328,7 @@
       margin-right: 0.6rem;
       background: #f0f0f0;
       transition: opacity 0.2s ease;
+      pointer-events: none;
     }
     .cart-item img.loading {
       opacity: 0.5;
@@ -352,6 +358,7 @@
       font-size: clamp(0.85rem, 2vw, 0.95rem);
       transition: background 0.2s ease;
       touch-action: manipulation;
+      pointer-events: auto;
     }
     .qty-controls button:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
@@ -399,7 +406,7 @@
       font-weight: 600;
       transition: background 0.2s ease;
       touch-action: manipulation;
-      font-family: Arial, sans-serif;
+      pointer-events: auto;
     }
     .coupon-box button:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
@@ -422,7 +429,7 @@
       justify-content: center;
       gap: 0.3rem;
       touch-action: manipulation;
-      font-family: Arial, sans-serif;
+      pointer-events: auto;
     }
     .coupon-btn:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
@@ -479,7 +486,7 @@
       transition: background 0.2s ease;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       touch-action: manipulation;
-      font-family: Arial, sans-serif;
+      pointer-events: auto;
     }
     .order-form button:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
@@ -498,7 +505,7 @@
       transition: background 0.2s ease;
       box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
       touch-action: manipulation;
-      font-family: Arial, sans-serif;
+      pointer-events: auto;
     }
     .clear-cart-btn:hover {
       background: linear-gradient(45deg, #d32f2f, #ef5350);
@@ -647,6 +654,8 @@
         localStorage.setItem("openCart", "true");
       } else {
         localStorage.removeItem("openCart");
+        document.body.style.overflow = 'auto';
+        document.querySelector('.container').style.touchAction = 'auto';
       }
     }
 
