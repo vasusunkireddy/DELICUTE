@@ -141,8 +141,10 @@
       background: rgba(0, 0, 0, 0.05);
     }
     .card {
-      flex: 0 0 calc(45% - 0.25rem);
-      max-width: calc(45% - 0.25rem);
+      flex: 0 0 auto;
+      width: auto;
+      max-width: calc(50% - 0.25rem);
+      min-height: 300px;
       background: #fff;
       border-radius: 8px;
       overflow: hidden;
@@ -152,6 +154,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      align-items: center;
       touch-action: auto;
     }
     .card.top-pick::after {
@@ -171,20 +174,22 @@
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
     }
     .card img {
-      width: 100%;
-      height: clamp(90px, 18vw, 120px);
-      object-fit: contain;
-      display: block;
-      background: #f0f0f0;
-      max-width: 100%;
-      pointer-events: none;
-    }
+  width: 100%;
+  height: 150px;      /* fixed height */
+  object-fit: cover;  /* fills box, crops edges */
+  display: block;
+  background: #f0f0f0; /* optional background */
+  max-width: 100%;
+  pointer-events: none;
+}
+
     .card-body {
-      padding: 0.6rem;
+      padding: 0.4rem;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       flex-grow: 1;
+      width: 100%;
     }
     .card-body h3 {
       font-size: clamp(0.85rem, 1.8vw, 0.95rem);
@@ -542,7 +547,8 @@
     @media (min-width: 769px) {
       .container { padding: 0 1rem; }
       .category-row { flex-wrap: wrap; gap: 1rem; }
-      .card { flex: 0 0 200px; max-width: 200px; }
+      .card { max-width: 200px; min-height: 320px; }
+      .card img { height: 180px; }
       .cart-section { max-width: 400px; right: 1rem; }
       .search-bar { max-width: 700px; }
     }
@@ -555,8 +561,8 @@
       h2::after { width: 70px; }
       .search-bar input { font-size: 0.85rem; padding: 0.6rem; }
       .search-bar button { font-size: 0.9rem; padding: 0.6rem; }
-      .card { flex: 0 0 calc(100% - 0.2rem); max-width: calc(100% - 0.2rem); }
-      .card img { height: 110px; }
+      .card { max-width: calc(100% - 0.2rem); min-height: 280px; }
+      .card img { height: 120px; }
       .card-body h3 { font-size: 0.8rem; }
       .card-body p { font-size: 0.7rem; }
       .price { font-size: 0.8rem; }
@@ -638,7 +644,7 @@
     const searchInput = document.getElementById("searchInput");
     let cart = [];
     let appliedCoupon = null;
-    const defaultImage = 'https://via.placeholder.com/50';
+    const defaultImage = 'https://via.placeholder.com/150';
 
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
@@ -649,15 +655,24 @@
     }
 
     function toggleCart() {
-      cartSection.classList.toggle("active");
-      if (cartSection.classList.contains("active")) {
-        localStorage.setItem("openCart", "true");
-      } else {
-        localStorage.removeItem("openCart");
-        document.body.style.overflow = 'auto';
-        document.querySelector('.container').style.touchAction = 'auto';
-      }
-    }
+  const cartSection = document.querySelector('.cart-section'); 
+  const container = document.querySelector('.container');
+
+  if (!cartSection) return; // avoid errors if cart not found
+
+  cartSection.classList.toggle("active");
+
+  if (cartSection.classList.contains("active")) {
+    localStorage.setItem("openCart", "true");
+    document.body.style.overflow = 'hidden';   // lock scroll when cart open
+    if (container) container.style.touchAction = 'none';
+  } else {
+    localStorage.removeItem("openCart");
+    document.body.style.overflow = 'auto';     // restore scroll
+    if (container) container.style.touchAction = 'auto';
+  }
+}
+
 
     function saveCart() {
       localStorage.setItem("cart", JSON.stringify(cart));
@@ -725,10 +740,10 @@
     }
 
     function buildCard(item, isTopPick) {
-      const imageSrc = item.image && item.image !== '' ? item.image : 'https://via.placeholder.com/150';
+      const imageSrc = item.image && item.image !== '' ? item.image : defaultImage;
       return `
         <div class="card ${isTopPick ? 'top-pick' : ''}">
-          <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/150'" onload="this.classList.remove('loading')">
+          <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'" onload="this.classList.remove('loading')">
           <div class="card-body">
             <h3>${item.name}</h3>
             <p>${item.description || "No description available"}</p>
