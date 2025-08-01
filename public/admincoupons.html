@@ -19,17 +19,21 @@
       min-height: 100vh;
       line-height: 1.6;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      overscroll-behavior: contain;
     }
     header {
       background: linear-gradient(90deg, #26a69a, #4dd0e1);
       color: #fff;
-      padding: 1.5rem 2rem;
+      padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-      position: relative;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
       overflow: hidden;
     }
     header::before {
@@ -43,27 +47,28 @@
       animation: shine 3s infinite;
     }
     header img {
-      height: 60px;
-      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
+      height: 55px;
+      filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.2));
       animation: fadeInScale 0.8s ease-out;
       transition: transform 0.3s ease;
+      touch-action: pan-y;
     }
     header img:hover {
-      transform: scale(1.15);
+      transform: scale(1.1);
     }
     header h1 {
-      font-size: 2.2rem;
+      font-size: 1.8rem;
       font-weight: 800;
-      margin-top: 0.5rem;
-      text-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
+      margin-top: 0.4rem;
+      text-shadow: 0 2px 5px rgba(255, 215, 0, 0.4);
       animation: fadeInUp 0.6s ease-out 0.2s forwards;
     }
     header span {
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       font-weight: 600;
       opacity: 0.9;
       color: #fff3cd;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
       animation: fadeInUp 0.6s ease-out 0.4s forwards;
     }
     nav {
@@ -71,80 +76,83 @@
       display: flex;
       justify-content: center;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      flex-wrap: wrap;
     }
     nav a {
-      flex: 0 1 150px;
-      padding: 1rem;
+      flex: 0 1 120px;
+      padding: 0.8rem;
       text-align: center;
       color: #fff;
       text-decoration: none;
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       transition: background 0.3s ease, transform 0.2s ease, color 0.3s ease;
+      touch-action: manipulation;
     }
     nav a:hover {
       background: #26a69a;
       color: #fff3cd;
-      transform: translateY(-3px);
+      transform: translateY(-2px);
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
     }
     .logout {
       background: linear-gradient(45deg, #ffd700, #ffca28);
       border: none;
-      padding: 0.6rem 1.5rem;
+      padding: 0.5rem 1.2rem;
       color: #1a1a1a;
       font-weight: 700;
-      font-size: 1rem;
-      border-radius: 10px;
+      font-size: 0.9rem;
+      border-radius: 8px;
       cursor: pointer;
       position: absolute;
-      top: 1rem;
-      right: 1rem;
+      top: 0.8rem;
+      right: 0.8rem;
       transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
     }
     .logout:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
       transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
     .container {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 1.5rem;
+      max-width: 1000px;
+      margin: 1.2rem auto;
+      padding: 1rem;
       background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       animation: slideUp 0.6s ease-out;
     }
     .container h2 {
-      font-size: 2rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: #26a69a;
-      margin-bottom: 1rem;
+      margin-bottom: 0.8rem;
       text-align: center;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     form {
       display: grid;
-      gap: 0.8rem;
+      gap: 0.6rem;
       background: #fff;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      margin-bottom: 1.5rem;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      margin-bottom: 1rem;
     }
     label {
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 600;
       color: #1a1a1a;
     }
     input, textarea, select {
-      padding: 0.8rem;
+      padding: 0.6rem;
       border: 1px solid rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
+      border-radius: 6px;
       font-family: 'Playfair Display', serif;
-      font-size: 1rem;
+      font-size: 0.9rem;
       background: rgba(255, 255, 255, 0.9);
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
       width: 100%;
@@ -156,37 +164,38 @@
     }
     textarea {
       resize: vertical;
-      min-height: 80px;
+      min-height: 70px;
     }
     button {
       background: linear-gradient(45deg, #ffd700, #ffca28);
       border: none;
-      padding: 0.8rem 1.5rem;
+      padding: 0.6rem 1.2rem;
       color: #1a1a1a;
       font-weight: 700;
-      font-size: 1rem;
-      border-radius: 8px;
+      font-size: 0.9rem;
+      border-radius: 6px;
       cursor: pointer;
       transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      touch-action: manipulation;
     }
     button:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
       transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
     table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
       background: #fff;
-      border-radius: 12px;
+      border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      margin-top: 1rem;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+      margin-top: 0.8rem;
     }
     th, td {
-      padding: 0.8rem;
+      padding: 0.6rem;
       text-align: center;
       vertical-align: middle;
       border-bottom: 1px solid rgba(0, 0, 0, 0.05);
@@ -195,18 +204,18 @@
       background: linear-gradient(45deg, #26a69a, #4dd0e1);
       color: #fff;
       font-weight: 700;
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
     td {
-      font-size: 1rem;
+      font-size: 0.9rem;
       color: #1a1a1a;
     }
     img {
-      width: 50px;
-      height: 50px;
+      width: 45px;
+      height: 45px;
       object-fit: cover;
-      border-radius: 8px;
+      border-radius: 6px;
       transition: transform 0.3s ease;
     }
     img:hover {
@@ -218,7 +227,7 @@
     .btn-edit {
       background: linear-gradient(45deg, #26a69a, #4dd0e1);
       color: #fff;
-      margin-right: 0.5rem;
+      margin-right: 0.4rem;
     }
     .btn-edit:hover {
       background: linear-gradient(45deg, #1e8578, #26a69a);
@@ -233,30 +242,32 @@
       transform: translateY(-2px);
     }
     .no-coupons {
-      font-size: 1.1rem;
+      font-size: 0.95rem;
       color: #4b5e8e;
       text-align: center;
-      padding: 2rem;
+      padding: 1.5rem;
+      font-family: Arial, sans-serif;
     }
     #toast {
       visibility: hidden;
-      min-width: 250px;
+      min-width: 200px;
+      max-width: 280px;
       background: linear-gradient(45deg, #26a69a, #4dd0e1);
       color: #fff;
       text-align: center;
-      border-radius: 12px;
-      padding: 1rem;
+      border-radius: 8px;
+      padding: 0.8rem;
       position: fixed;
       z-index: 1000;
-      left: 50%;
-      bottom: 30px;
-      transform: translateX(-50%);
-      font-size: 0.95rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      top: 20px;
+      right: 20px;
+      font-size: 0.85rem;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      font-family: Arial, sans-serif;
     }
     #toast.show {
       visibility: visible;
-      animation: slideDown 0.5s ease-out, slideUp 0.5s ease-in 2.5s forwards;
+      animation: slideIn 0.5s ease-out, slideOut 0.5s ease-in 2.5s forwards;
     }
     @keyframes shine {
       0% { left: -100%; }
@@ -268,28 +279,54 @@
       to { opacity: 1; transform: scale(1); }
     }
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(15px); }
+      from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(20px); }
+      from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
-    @keyframes slideDown {
-      from { opacity: 0; transform: translate(-50%, -100%); }
-      to { opacity: 1; transform: translate(-50%, 0); }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
     }
-    @media (max-width: 480px) {
-      header img { height: 45px; }
-      header h1 { font-size: 1.8rem; }
+    @keyframes slideOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-20px); }
+    }
+    @media (max-width: 768px) {
+      header { padding: 0.8rem; }
+      header img { height: 50px; }
+      header h1 { font-size: 1.5rem; }
       header span { font-size: 0.8rem; }
-      nav a { font-size: 0.9rem; padding: 0.8rem; flex: 0 1 100px; }
-      .logout { padding: 0.5rem 1rem; font-size: 0.9rem; }
-      .container { margin: 1rem; padding: 1rem; }
-      .container h2 { font-size: 1.6rem; }
-      th, td { font-size: 0.9rem; padding: 0.6rem; }
+      nav a { font-size: 0.85rem; padding: 0.6rem; flex: 0 1 100px; }
+      .logout { padding: 0.4rem 1rem; font-size: 0.85rem; top: 0.6rem; right: 0.6rem; }
+      .container { margin: 1rem; padding: 0.8rem; }
+      .container h2 { font-size: 1.4rem; }
+      form { padding: 0.8rem; gap: 0.5rem; }
+      label, input, textarea, select, button { font-size: 0.85rem; padding: 0.5rem; }
+      th, td { font-size: 0.85rem; padding: 0.5rem; }
       img { width: 40px; height: 40px; }
-      label, input, textarea, select, button { font-size: 0.9rem; padding: 0.6rem; }
+      .btn-edit, .btn-delete { padding: 0.5rem 0.8rem; font-size: 0.85rem; }
+      .no-coupons { font-size: 0.9rem; padding: 1rem; }
+      #toast { top: 15px; right: 15px; font-size: 0.8rem; padding: 0.7rem; max-width: 250px; }
+    }
+    @media (max-width: 360px) {
+      header { padding: 0.6rem; }
+      header img { height: 45px; }
+      header h1 { font-size: 1.3rem; }
+      header span { font-size: 0.7rem; }
+      nav a { font-size: 0.8rem; padding: 0.5rem; flex: 0 1 80px; }
+      .logout { padding: 0.3rem 0.8rem; font-size: 0.8rem; top: 0.5rem; right: 0.5rem; }
+      .container { margin: 0.8rem; padding: 0.6rem; }
+      .container h2 { font-size: 1.2rem; }
+      form { padding: 0.6rem; gap: 0.4rem; }
+      label, input, textarea, select, button { font-size: 0.8rem; padding: 0.4rem; }
+      th, td { font-size: 0.8rem; padding: 0.4rem; }
+      img { width: 35px; height: 35px; }
+      .btn-edit, .btn-delete { padding: 0.4rem 0.6rem; font-size: 0.8rem; }
+      .no-coupons { font-size: 0.85rem; padding: 0.8rem; }
+      #toast { top: 10px; right: 10px; font-size: 0.75rem; padding: 0.6rem; max-width: 220px; }
     }
   </style>
 </head>
@@ -321,7 +358,7 @@
       <textarea id="description" required></textarea>
       <label>Image</label>
       <input type="file" id="image" accept="image/*">
-      <label>Discount Amount (₹)</label>
+      <label>Discount Amount (% for Buy_X, ₹ for Date Range)</label>
       <input type="number" id="discount" min="1" required>
       <label>Quantity</label>
       <input type="number" id="quantity" min="1" required>
@@ -332,11 +369,11 @@
         <option value="buy_x">Buy_X</option>
         <option value="date_range">Date Range</option>
       </select>
-      <div id="buyXFields" style="display:none;">
+      <div id="buyXFields">
         <label>Buy_X (Minimum Quantity)</label>
         <input type="number" id="buy_x" min="1">
       </div>
-      <div id="dateFields" style="display:none;">
+      <div id="dateFields">
         <label>Valid From</label>
         <input type="date" id="valid_from">
         <label>Valid To</label>
@@ -364,7 +401,6 @@
     </table>
   </div>
 
-  <!-- Toast -->
   <div id="toast"></div>
 
   <script>
@@ -378,7 +414,6 @@
       setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
 
-    // ✅ Auth check
     window.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await fetch("/api/auth/check", { credentials: "include" });
@@ -390,6 +425,7 @@
         await fetchCoupons();
       } catch (err) {
         window.location.href = "/admin.html";
+        console.error("Auth Check Error:", err);
       }
     });
 
@@ -403,7 +439,7 @@
         const res = await fetch("/api/categories");
         const data = await res.json();
         const categorySelect = document.getElementById("category");
-        categorySelect.innerHTML = "";
+        categorySelect.innerHTML = '<option value="">All Categories</option>';
         if (data.success && data.data.length > 0) {
           data.data.forEach(cat => {
             categorySelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
@@ -430,14 +466,15 @@
         }
 
         data.data.forEach(coupon => {
+          const quantityDisplay = coupon.type === "buy_x" ? coupon.buy_x : coupon.quantity;
           table.innerHTML += `
             <tr>
-              <td><img src="${coupon.image}" alt="${coupon.code}"></td>
+              <td><img src="${coupon.image}" alt="${coupon.code}" onerror="this.src='https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png'"></td>
               <td>${coupon.code}</td>
               <td>${coupon.description}</td>
-              <td>₹${coupon.discount}</td>
-              <td>${coupon.quantity}</td>
-              <td>${coupon.category}</td>
+              <td>${coupon.type === "buy_x" ? `${coupon.discount}%` : `₹${coupon.discount}`}</td>
+              <td>${quantityDisplay || '-'}</td>
+              <td>${coupon.category || 'All'}</td>
               <td>${coupon.type}</td>
               <td>${coupon.valid_from ? coupon.valid_from.split("T")[0] : "-"} → ${coupon.valid_to ? coupon.valid_to.split("T")[0] : "-"}</td>
               <td>
@@ -463,9 +500,12 @@
       formData.append("quantity", document.getElementById("quantity").value);
       formData.append("category", document.getElementById("category").value);
       formData.append("type", document.getElementById("type").value);
-      formData.append("buy_x", document.getElementById("buy_x").value);
-      formData.append("valid_from", document.getElementById("valid_from").value);
-      formData.append("valid_to", document.getElementById("valid_to").value);
+      if (document.getElementById("type").value === "buy_x") {
+        formData.append("buy_x", document.getElementById("buy_x").value || null);
+      } else {
+        formData.append("valid_from", document.getElementById("valid_from").value || null);
+        formData.append("valid_to", document.getElementById("valid_to").value || null);
+      }
 
       const imageFile = document.getElementById("image").files[0];
       if (imageFile) {
@@ -480,10 +520,11 @@
         const res = await fetch(url, { method, body: formData });
         const data = await res.json();
         if (res.ok) {
-          showToast(data.message || (id ? "Coupon updated!" : "Coupon added!"));
+          showToast(data.message || (id ? "Coupon updated!" : "Coupon added!"), true);
           document.getElementById("couponForm").reset();
-          document.getElementById("buyXFields").style.display = "none";
+          document.getElementById("buyXFields").style.display = "block";
           document.getElementById("dateFields").style.display = "none";
+          document.getElementById("type").value = "buy_x";
           fetchCoupons();
         } else {
           showToast(data.message || "Error saving coupon", false);
@@ -505,19 +546,13 @@
           document.getElementById("description").value = c.description;
           document.getElementById("discount").value = c.discount;
           document.getElementById("quantity").value = c.quantity;
-          document.getElementById("category").value = c.category;
+          document.getElementById("category").value = c.category || "";
           document.getElementById("type").value = c.type;
-
-          if (c.type === "buy_x") {
-            document.getElementById("buy_x").value = c.buy_x;
-            document.getElementById("buyXFields").style.display = "block";
-            document.getElementById("dateFields").style.display = "none";
-          } else {
-            document.getElementById("valid_from").value = c.valid_from?.split("T")[0] || "";
-            document.getElementById("valid_to").value = c.valid_to?.split("T")[0] || "";
-            document.getElementById("buyXFields").style.display = "none";
-            document.getElementById("dateFields").style.display = "block";
-          }
+          document.getElementById("buyXFields").style.display = c.type === "buy_x" ? "block" : "none";
+          document.getElementById("dateFields").style.display = c.type === "date_range" ? "block" : "none";
+          document.getElementById("buy_x").value = c.buy_x || "";
+          document.getElementById("valid_from").value = c.valid_from?.split("T")[0] || "";
+          document.getElementById("valid_to").value = c.valid_to?.split("T")[0] || "";
         } else {
           showToast("Error loading coupon data", false);
         }
@@ -533,7 +568,7 @@
         const res = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
         const data = await res.json();
         if (res.ok) {
-          showToast(data.message || "Coupon deleted!");
+          showToast(data.message || "Coupon deleted!", true);
           fetchCoupons();
         } else {
           showToast(data.message || "Error deleting coupon", false);
@@ -545,9 +580,19 @@
     }
 
     async function logout() {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-      window.location.href = "/admin.html";
+      try {
+        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+        window.location.href = "/admin.html";
+      } catch (err) {
+        showToast("Error logging out", false);
+        console.error("Logout Error:", err);
+      }
     }
+
+    window.addEventListener("load", () => {
+      document.getElementById("buyXFields").style.display = "block";
+      document.getElementById("dateFields").style.display = "none";
+    });
   </script>
 </body>
 </html>
