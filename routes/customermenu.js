@@ -1,4 +1,3 @@
-// routes/customermenu.js
 const express = require("express");
 const router = express.Router();
 const pool = require("../db"); // centralized pool import
@@ -36,6 +35,7 @@ router.get("/coupons", async (req, res) => {
       JOIN categories cat ON c.category_id = cat.id
       WHERE (c.valid_from IS NULL OR c.valid_from <= ?) 
         AND (c.valid_to IS NULL OR c.valid_to >= ?)
+        AND (c.quantity > 0 OR c.quantity IS NULL)
     `,
       [now, now]
     );
@@ -62,43 +62,56 @@ router.post("/orders", async (req, res) => {
     let discount = 0;
     let total = subtotal;
 
-    // ====== Apply Coupon Logic (strict per-category) ======
+    // ====== Apply Coupon Logic (flexible for all scenarios) ======
     if (coupon_code) {
       const [cRows] = await pool.query(
         `SELECT c.*, cat.id AS category_id, cat.name AS category_name 
          FROM coupons c 
-         JOIN categories cat ON c.category_id = cat.id
+         LEFT JOIN categories cat ON c.category_id = cat.id
          WHERE c.code = ? 
            AND (c.valid_from IS NULL OR c.valid_from <= NOW()) 
            AND (c.valid_to IS NULL OR c.valid_to >= NOW())
+           AND (c.quantity > 0 OR c.quantity IS NULL)
          LIMIT 1`,
         [coupon_code]
       );
 
-      if (cRows.length > 0) {
-        const coupon = cRows[0];
+      if (cRows.length === 0) {
+        return res.status(400).json({ success: false, message: "Invalid or expired coupon" });
+      }
 
-        // filter items belonging to coupon's category
+      const coupon = cRows[0];
+      let eligibleSubtotal = subtotal;
+      let eligibleQty = items.reduce((sum, i) => sum + i.qty, 0);
+
+      // If coupon is category-specific, filter eligible items
+      if (coupon.category_id) {
         const [catItems] = await pool.query(
           `SELECT id FROM menu_items WHERE category_id = ?`,
           [coupon.category_id]
         );
         const catIds = catItems.map(i => i.id);
-
         const eligibleItems = items.filter(i => catIds.includes(i.id));
-        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-        const categoryQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+        eligibleSubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+        eligibleQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+      }
 
-        if (categorySubtotal > 0) {
-          if (coupon.type === "buy_x") {
-            if (categoryQty >= coupon.buy_x) {
-              discount = (categorySubtotal * coupon.discount) / 100;
-            }
-          } else {
-            // flat percentage on category subtotal
-            discount = (categorySubtotal * coupon.discount) / 100;
+      // Apply discount based on coupon type
+      if (eligibleSubtotal > 0) {
+        if (coupon.type === "buy_x") {
+          if (eligibleQty >= coupon.buy_x) {
+            discount = (eligibleSubtotal * coupon.discount) / 100;
           }
+        } else if (coupon.type === "percentage") {
+          discount = (eligibleSubtotal * coupon.discount) / 100;
+        } else if (coupon.type === "fixed") {
+          discount = Math.min(coupon.discount, eligibleSubtotal); // Ensure discount doesn't exceed subtotal
         }
+      }
+
+      // Update coupon quantity if applicable
+      if (coupon.quantity !== null) {
+        await pool.query(`UPDATE coupons SET quantity = quantity - 1 WHERE id = ?`, [coupon.id]);
       }
     }
 

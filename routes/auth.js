@@ -55,9 +55,9 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Create JWT
+    // Create JWT with name included
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { id: user.id, email: user.email, role: user.role, name: user.name },
       process.env.JWT_SECRET,
       { expiresIn: "2h" }
     );
@@ -65,7 +65,7 @@ router.post("/login", async (req, res) => {
     // Store token in HTTP-only cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // use true in production (https)
+      secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
     });

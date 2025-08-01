@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>DELICUTE |Customer's Menu</title>
+  <title>DELICUTE | Customer's Menu</title>
   <link rel="icon" href="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -424,24 +424,46 @@
       background: linear-gradient(45deg, #1e8578, #26a69a);
       transform: translateY(-2px);
     }
-    .coupon-box a {
-      display: block;
-      margin-top: 0.4rem;
-      color: #26a69a;
-      text-decoration: none;
-      font-weight: 600;
+    .coupon-link {
+      background: linear-gradient(45deg, #ffca28, #ffd700);
+      color: #1a1a1a;
+      border: none;
+      padding: 0.7rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
       font-size: 0.85rem;
+      font-weight: 600;
       width: 100%;
       text-align: center;
+      text-decoration: none;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 0.3rem;
-      transition: color 0.3s ease;
+      margin-top: 0.4rem;
+      transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
       font-family: Arial, sans-serif;
+      position: relative;
+      overflow: hidden;
     }
-    .coupon-box a:hover {
-      color: #1e8578;
+    .coupon-link:hover {
+      background: linear-gradient(45deg, #ffb300, #ffca28);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    .coupon-link::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+      transition: left 0.5s ease;
+    }
+    .coupon-link:hover::before {
+      left: 100%;
     }
     .total-box {
       margin-top: 1rem;
@@ -600,7 +622,7 @@
       .cart-item span:last-child { font-size: 0.85rem; min-width: 45px; }
       .coupon-box input { font-size: 0.8rem; padding: 0.6rem; }
       .coupon-box button { font-size: 0.8rem; padding: 0.6rem 0.8rem; }
-      .coupon-box a { font-size: 0.8rem; }
+      .coupon-link { font-size: 0.8rem; padding: 0.6rem 0.8rem; }
       .order-form input, .order-form textarea { font-size: 0.8rem; padding: 0.6rem; }
       .order-form button { font-size: 0.85rem; padding: 0.7rem; }
       .clear-cart-btn { font-size: 0.8rem; padding: 0.6rem; }
@@ -627,6 +649,7 @@
       .qty-controls button { padding: 0.3rem 0.6rem; font-size: 0.8rem; }
       .coupon-box input { padding: 0.5rem; font-size: 0.75rem; }
       .coupon-box button { padding: 0.5rem 0.7rem; font-size: 0.75rem; }
+      .coupon-link { font-size: 0.75rem; padding: 0.5rem 0.7rem; }
       .order-form input, .order-form textarea { padding: 0.5rem; font-size: 0.75rem; }
       .order-form button { padding: 0.6rem; font-size: 0.8rem; }
       .clear-cart-btn { padding: 0.5rem; font-size: 0.75rem; }
@@ -661,7 +684,7 @@
       <button onclick="applyCoupon()">Apply</button>
       <button onclick="removeCoupon()">Remove</button>
       <button class="clear-cart-btn" onclick="clearCart()">Clear Cart</button>
-      <a href="customercoupons.html"><i class="fas fa-ticket-alt"></i> View Available Coupons</a>
+      <a href="customercoupons.html" class="coupon-link"><i class="fas fa-ticket-alt"></i> View Available Coupons</a>
     </div>
     <div class="total-box">
       <div class="line"><span>Subtotal:</span><span id="subtotal">₹0</span></div>
@@ -776,7 +799,7 @@
             <p>${item.description || "No description available"}</p>
             <p>
               <span class="price">₹${item.price}</span>
-              ${item.original_price ? `<span class="old-price">₹${item.original_price}</span>` : ""}
+              ${item.saved_amount ? `<span class="old-price">₹${(item.price + item.saved_amount).toFixed(2)}</span>` : ""}
             </p>
             <button class="add-btn" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price})"><i class="fas fa-cart-plus"></i> Add</button>
           </div>
@@ -848,18 +871,26 @@
           const menuRes = await fetch("/api/menu");
           const menuData = await menuRes.json();
           if (menuData.success) {
-            const catIds = menuData.data
-              .filter(item => item.category === appliedCoupon.category)
-              .map(item => item.id);
-            const eligibleItems = cart.filter(i => catIds.includes(i.id));
-            const categorySubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-            const categoryQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+            let eligibleSubtotal = subtotal;
+            let eligibleQty = cart.reduce((sum, i) => sum + i.qty, 0);
 
-            if (categorySubtotal > 0) {
-              if (appliedCoupon.type === "buy_x" && categoryQty >= appliedCoupon.buy_x) {
-                discount = (categorySubtotal * appliedCoupon.discount) / 100;
-              } else if (appliedCoupon.type !== "buy_x") {
-                discount = (categorySubtotal * appliedCoupon.discount) / 100;
+            // If coupon is category-specific, filter eligible items
+            if (appliedCoupon.category_id) {
+              const catIds = menuData.data
+                .filter(item => item.category === appliedCoupon.category)
+                .map(item => item.id);
+              const eligibleItems = cart.filter(i => catIds.includes(i.id));
+              eligibleSubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+              eligibleQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+            }
+
+            if (eligibleSubtotal > 0) {
+              if (appliedCoupon.type === "buy_x" && eligibleQty >= appliedCoupon.buy_x) {
+                discount = (eligibleSubtotal * appliedCoupon.discount) / 100;
+              } else if (appliedCoupon.type === "percentage") {
+                discount = (eligibleSubtotal * appliedCoupon.discount) / 100;
+              } else if (appliedCoupon.type === "fixed") {
+                discount = Math.min(appliedCoupon.discount, eligibleSubtotal);
               }
             }
           }
@@ -918,22 +949,28 @@
           return;
         }
 
-        const catIds = menuData.data
-          .filter(item => item.category === coupon.category)
-          .map(item => item.id);
-        const eligibleItems = cart.filter(i => catIds.includes(i.id));
-        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-        const categoryQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+        let eligibleSubtotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+        let eligibleQty = cart.reduce((sum, i) => sum + i.qty, 0);
 
-        if (categorySubtotal === 0) {
-          showToast(`Coupon ${couponCode} is only valid for ${coupon.category} items`, false);
-          document.getElementById("couponCode").value = "";
-          localStorage.removeItem("appliedCoupon");
-          return;
+        // If coupon is category-specific, filter eligible items
+        if (coupon.category_id) {
+          const catIds = menuData.data
+            .filter(item => item.category === coupon.category)
+            .map(item => item.id);
+          const eligibleItems = cart.filter(i => catIds.includes(i.id));
+          eligibleSubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+          eligibleQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
+
+          if (eligibleSubtotal === 0) {
+            showToast(`Coupon ${couponCode} is only valid for ${coupon.category} items`, false);
+            document.getElementById("couponCode").value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
         }
 
-        if (coupon.type === "buy_x" && categoryQty < coupon.buy_x) {
-          showToast(`Coupon ${couponCode} requires ${coupon.buy_x} ${coupon.category} items (you have ${categoryQty})`, false);
+        if (coupon.type === "buy_x" && eligibleQty < coupon.buy_x) {
+          showToast(`Coupon ${couponCode} requires ${coupon.buy_x} ${coupon.category || "items"} (you have ${eligibleQty})`, false);
           document.getElementById("couponCode").value = "";
           localStorage.removeItem("appliedCoupon");
           return;
@@ -942,7 +979,7 @@
         appliedCoupon = coupon;
         document.getElementById("couponCode").value = couponCode;
         localStorage.setItem("appliedCoupon", couponCode);
-        showToast(`Coupon ${couponCode} applied successfully for ${coupon.category}!`, true);
+        showToast(`Coupon ${couponCode} applied successfully${coupon.category ? ` for ${coupon.category}!` : "!"}`, true);
         renderCart();
       } catch (err) {
         showToast("Error applying coupon", false);
@@ -972,46 +1009,11 @@
         return;
       }
 
-      const subtotal = cart.reduce((s, i) => s + (i.price * i.qty), 0);
-      let discount = 0;
-
-      if (appliedCoupon) {
-        try {
-          const menuRes = await fetch("/api/menu");
-          const menuData = await menuRes.json();
-          if (menuData.success) {
-            const catIds = menuData.data
-              .filter(item => item.category === appliedCoupon.category)
-              .map(item => item.id);
-            const eligibleItems = cart.filter(i => catIds.includes(i.id));
-            const categorySubtotal = eligibleItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-            const categoryQty = eligibleItems.reduce((sum, i) => sum + i.qty, 0);
-
-            if (categorySubtotal > 0) {
-              if (appliedCoupon.type === "buy_x" && categoryQty >= appliedCoupon.buy_x) {
-                discount = (categorySubtotal * appliedCoupon.discount) / 100;
-              } else if (appliedCoupon.type !== "buy_x") {
-                discount = (categorySubtotal * appliedCoupon.discount) / 100;
-              }
-            }
-          }
-        } catch (err) {
-          console.error("Menu Fetch Error for Order:", err);
-        }
-      }
-
-      let total = subtotal - discount;
-      if (total < 0) total = 0;
-
       const body = {
         customer_name,
         table_number: parseInt(table_number),
         items: cart,
-        coupon_code: appliedCoupon?.code || null,
-        subtotal,
-        discount,
-        total,
-        instructions: document.getElementById("instructions").value.trim()
+        coupon_code: appliedCoupon?.code || null
       };
 
       try {
