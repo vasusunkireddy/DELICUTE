@@ -521,13 +521,13 @@
       align-items: center;
       justify-content: center;
       z-index: 2000;
-      opacity: 1;
-      transition: opacity 0.6s ease-out;
-      visibility: visible;
-    }
-    .splash-screen.hidden {
       opacity: 0;
+      transition: opacity 0.6s ease-in-out;
       visibility: hidden;
+    }
+    .splash-screen.visible {
+      opacity: 1;
+      visibility: visible;
     }
     .splash-content {
       position: relative;
@@ -537,7 +537,7 @@
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-      animation: fadeInPop 0.7s ease-out;
+      animation: fadeInPop 0.7s ease-out forwards;
       border: 2px solid #26a69a;
     }
     .splash-content img {
@@ -634,6 +634,10 @@
       from { opacity: 0; transform: scale(0.85); }
       to { opacity: 1; transform: scale(1); }
     }
+    @keyframes fadeOutPop {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.85); }
+    }
     @media (min-width: 769px) {
       .container { padding: 0 1rem; }
       .category-row { flex-wrap: wrap; gap: 1rem; }
@@ -676,16 +680,17 @@
       .clear-cart-btn { font-size: 0.75rem; padding: 0.6rem; }
       .line { font-size: 0.8rem; }
       .line.bold { font-size: 0.9rem; }
-      .splash-content img { height: 200px; }
+      .splash-content { width: 95%; max-width: 320px; }
+      .splash-content img { height: 180px; }
       .splash-info b { font-size: 1rem; }
       .splash-info p { font-size: 0.8rem; }
       .splash-close { width: 25px; height: 25px; font-size: 0.9rem; }
-      #toast { font-size: 0.7rem; padding: 0.7rem; }
+      #toast { font-size: 0.7rem; padding: 0.7rem; top: 50px; }
     }
   </style>
 </head>
 <body>
-  <div class="splash-screen hidden" id="splashScreen">
+  <div class="splash-screen" id="splashScreen">
     <div class="splash-content" id="splashContent">
       <button class="splash-close" onclick="hideSplashScreen()"><i class="fas fa-times"></i></button>
       <img src="https://via.placeholder.com/600x300" alt="Promotion">
@@ -766,11 +771,12 @@
     async function loadPromotions() {
       if (localStorage.getItem("promotionsShown")) {
         splashScreen.style.display = "none";
+        loadMenu();
         return;
       }
 
       try {
-        const res = await fetch("/api/promotions");
+        const res = await fetch("/api/promotions", { cache: "no-store" });
         const data = await res.json();
         const splashContent = document.getElementById("splashContent");
         const now = new Date();
@@ -786,13 +792,13 @@
             const promotion = activePromotions[0]; // Show first active promotion
             splashContent.innerHTML = `
               <button class="splash-close" onclick="hideSplashScreen()"><i class="fas fa-times"></i></button>
-              <img src="${promotion.image || 'https://via.placeholder.com/600x300'}" alt="${promotion.title.replace(/'/g, "\\'")}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x300'">
+              <img src="${promotion.image || 'https://via.placeholder.com/600x300'}" alt="${promotion.title.replace(/'/g, "\\'")}" loading="eager" onerror="this.src='https://via.placeholder.com/600x300'">
               <div class="splash-info">
                 <b>${promotion.title}</b>
                 <p>${promotion.description}</p>
               </div>
             `;
-            splashScreen.classList.remove("hidden");
+            splashScreen.classList.add("visible");
             setTimeout(hideSplashScreen, 5000); // Auto-close after 5 seconds
             localStorage.setItem("promotionsShown", "true");
           } else {
@@ -805,12 +811,17 @@
         showToast("Error loading promotions", false);
         console.error("Promotion Load Error:", err);
         splashScreen.style.display = "none";
+      } finally {
+        loadMenu();
       }
     }
 
     function hideSplashScreen() {
-      splashScreen.classList.add("hidden");
-      setTimeout(() => splashScreen.style.display = "none", 600); // Match transition duration
+      splashScreen.style.animation = "fadeOutPop 0.6s ease-in-out forwards";
+      setTimeout(() => {
+        splashScreen.style.display = "none";
+        splashScreen.style.animation = "";
+      }, 600); // Match animation duration
     }
 
     function toggleCart() {
@@ -856,7 +867,7 @@
 
     async function loadMenu() {
       try {
-        const res = await fetch("/api/menu");
+        const res = await fetch("/api/menu", { cache: "no-store" });
         const data = await res.json();
         if (data.success) {
           menuData = data.data;
@@ -901,7 +912,7 @@
       const imageSrc = item.image && item.image !== '' ? item.image : defaultImage;
       return `
         <div class="card ${isTopPick ? 'top-pick' : ''}">
-          <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
+          <img src="${imageSrc}" alt="${item.name}" loading="eager" onerror="this.src='${defaultImage}'">
           <div class="card-body">
             <h3>${item.name}</h3>
             <p>${item.description || "No description available"}</p>
@@ -953,7 +964,7 @@
       if (!appliedCoupon || !subtotal) return 0;
 
       try {
-        const menuRes = await fetch("/api/menu");
+        const menuRes = await fetch("/api/menu", { cache: "no-store" });
         const menuData = await menuRes.json();
         if (!menuData.success) {
           console.error("Failed to fetch menu for coupon calculation");
@@ -1056,7 +1067,7 @@
       }
 
       try {
-        const couponRes = await fetch("/api/coupons");
+        const couponRes = await fetch("/api/coupons", { cache: "no-store" });
         const couponData = await couponRes.json();
         if (!couponData.success) {
           showToast("Failed to fetch coupons", false);
@@ -1088,7 +1099,7 @@
           showToast(`Coupon ${couponCode} applied successfully! ${coupon.discount}% off for cart ≥ ₹${coupon.min_cart_amount}`, true);
           renderCart();
         } else if (coupon.type === "buy_x" || coupon.type === "date_range" || coupon.type === "bogo") {
-          const menuRes = await fetch("/api/menu");
+          const menuRes = await fetch("/api/menu", { cache: "no-store" });
           const menuData = await menuRes.json();
           if (!menuData.success) {
             showToast("Failed to fetch menu for coupon validation", false);
@@ -1227,7 +1238,6 @@
         }
       }
       loadPromotions();
-      loadMenu();
     });
   </script>
 </body>
