@@ -855,7 +855,7 @@
     let appliedCoupon = null;
     const defaultImage = 'https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80';
 
-    // Configure API base URL based on environment
+    // Configure API base URL for deployment
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3000'
       : 'https://delicute-3bf1.onrender.com'; // Replace with your production API URL
@@ -908,22 +908,39 @@
       }
 
       try {
+        // Get authentication token from localStorage or your auth mechanism
+        const token = localStorage.getItem("authToken"); // Replace with your token storage method
         const headers = {
           'Content-Type': 'application/json',
-          // Uncomment and replace with your token if required
-          // 'Authorization': 'Bearer <your-token-here>'
+          'Accept': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }) // Include token if available
         };
+
+        // Add timeout to prevent hanging on slow networks
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
         const res = await fetch(`${API_BASE_URL}/api/promotions`, {
           headers,
-          cache: "no-store"
+          signal: controller.signal,
+          cache: "no-store",
+          credentials: 'include' // Include cookies for session-based auth
         });
+
+        clearTimeout(timeoutId);
+
         if (!res.ok) {
           if (res.status === 401) {
             showToast("Please log in to view promotions.", false);
             throw new Error("Unauthorized");
+          } else if (res.status === 403) {
+            showToast("Access to promotions denied.", false);
+            throw new Error("Forbidden");
+          } else {
+            throw new Error(`HTTP error! status: ${res.status}`);
           }
-          throw new Error(`HTTP error! status: ${res.status}`);
         }
+
         const data = await res.json();
         const splashContent = document.getElementById("splashContent");
         if (!splashContent) throw new Error("splashContent element not found");
@@ -970,8 +987,13 @@
           await loadMenu();
         }
       } catch (err) {
-        console.error("Promotion Load Error:", err.message);
-        showToast("Unable to load promotions. Please try again later.", false);
+        console.error("Promotion Load Error:", {
+          message: err.message,
+          url: `${API_BASE_URL}/api/promotions`,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        });
+        showToast("Unable to load promotions. Please check your connection and try again.", false);
         splashScreen.style.display = "none";
         await loadMenu();
       }
