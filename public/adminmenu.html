@@ -166,15 +166,34 @@
     .search-bar button:hover {
       color: #1e8578;
     }
+    .category-section {
+      margin-top: 1rem;
+    }
+    .category-header {
+      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      color: #fff;
+      padding: 0.8rem;
+      border-radius: 8px 8px 0 0;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 1.2rem;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+    .category-items {
+      display: block;
+    }
+    .category-items.collapsed {
+      display: none;
+    }
     table {
       width: 100%;
       border-collapse: separate;
       border-spacing: 0;
       background: #fff;
-      border-radius: 12px;
+      border-radius: 0 0 12px 12px;
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      margin-top: 1rem;
+      margin-top: -1px;
     }
     table th, table td {
       padding: 0.8rem;
@@ -353,7 +372,7 @@
     }
     @keyframes slideDown {
       from { opacity: 0; transform: translate(-50%, -100%); }
-      to { opacity: 1; transform: translate(-50%, 0); }
+      to { opacity: 1; translate: translate(-50%, 0); }
     }
     @keyframes modalScaleIn {
       from { opacity: 0; transform: scale(0.9); }
@@ -373,6 +392,7 @@
       table img { width: 40px; height: 40px; }
       .modal-content { max-width: 90%; padding: 1rem; }
       .modal-content h3 { font-size: 1.3rem; }
+      .category-header { font-size: 1rem; padding: 0.6rem; }
     }
   </style>
 </head>
@@ -396,25 +416,6 @@
 
   <div class="content">
     <h2>Manage Menu Items 🍽️</h2>
-    <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search by name or category...">
-      <button onclick="filterMenu()"><i class="fas fa-search"></i></button>
-    </div>
-    <table id="menuTable">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Description</th>
-          <th>Original Price</th>
-          <th>Saved Price</th>
-          <th>Category</th>
-          <th>Image</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
     <h3>Add New Item</h3>
     <form id="addMenuForm" enctype="multipart/form-data">
       <input type="text" name="name" placeholder="Item Name" required>
@@ -425,6 +426,11 @@
       <input type="file" name="image" accept="image/*" required>
       <button type="submit">Add Item</button>
     </form>
+    <div class="search-bar">
+      <input type="text" id="searchInput" placeholder="Search by name or category...">
+      <button onclick="filterMenu()"><i class="fas fa-search"></i></button>
+    </div>
+    <div id="menuCategories" class="category-section"></div>
   </div>
 
   <!-- Edit Modal -->
@@ -478,23 +484,65 @@
     }
 
     function renderMenu(data) {
-      const tbody = document.querySelector("#menuTable tbody");
-      tbody.innerHTML = "";
+      const categoriesEl = document.getElementById("menuCategories");
+      categoriesEl.innerHTML = "";
+      if (!Array.isArray(data) || data.length === 0) {
+        categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:1rem;'>No menu items available</p>";
+        return;
+      }
+
+      const grouped = {};
       data.forEach(item => {
-        tbody.innerHTML += `
-          <tr>
-            <td>${item.name}</td>
-            <td>${item.description || ""}</td>
-            <td>₹${item.original_price}</td>
-            <td>${item.saved_price > 0 ? "₹" + item.saved_price : "-"}</td>
-            <td>${item.category}</td>
-            <td><img src="${item.image}" alt="${item.name}"></td>
-            <td>
-              <button class="btn btn-edit" onclick="openEditModal(${item.id})">Edit</button>
-              <button class="btn btn-del" onclick="deleteItem(${item.id})">Delete</button>
-            </td>
-          </tr>`;
+        if (!item || !item.category) return;
+        if (!grouped[item.category]) grouped[item.category] = [];
+        grouped[item.category].push(item);
       });
+
+      Object.keys(grouped).sort().forEach(category => {
+        categoriesEl.innerHTML += `
+          <div class="category-section">
+            <div class="category-header" onclick="toggleCategory('${category}')">${category} <span>▼</span></div>
+            <div class="category-items" id="category-${category.replace(/ /g, '-')}" data-expanded="true">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Original Price</th>
+                    <th>Saved Price</th>
+                    <th>Image</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${grouped[category].map(item => `
+                    <tr>
+                      <td>${item.name}</td>
+                      <td>${item.description || ""}</td>
+                      <td>₹${item.original_price}</td>
+                      <td>${item.saved_price > 0 ? "₹" + item.saved_price : "-"}</td>
+                      <td><img src="${item.image}" alt="${item.name}"></td>
+                      <td>
+                        <button class="btn btn-edit" onclick="openEditModal(${item.id})">Edit</button>
+                        <button class="btn btn-del" onclick="deleteItem(${item.id})">Delete</button>
+                      </td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    function toggleCategory(category) {
+      const categoryDiv = document.getElementById(`category-${category.replace(/ /g, '-')}`);
+      const isExpanded = categoryDiv.getAttribute("data-expanded") === "true";
+      categoryDiv.classList.toggle("collapsed", isExpanded);
+      categoryDiv.setAttribute("data-expanded", !isExpanded);
+      const header = categoryDiv.previousElementSibling;
+      header.innerHTML = `${category} <span>${isExpanded ? "▶" : "▼"}</span>`;
     }
 
     window.addEventListener("DOMContentLoaded", async () => {

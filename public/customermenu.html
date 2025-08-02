@@ -48,7 +48,7 @@
       font-size: clamp(1.1rem, 2.5vw, 1.4rem);
       font-weight: 800;
       margin-top: 0.3rem;
-      text-shadow: 0 1px 3px rgba(255, 215, 0, 0.3);
+      text-shadow: 0 1px 3px rgba(255, 167, 38, 0.3);
     }
     header span {
       font-size: clamp(0.65rem, 1.8vw, 0.8rem);
@@ -753,16 +753,13 @@
         return;
       }
 
-      // Sort items by order_index (or id if order_index is missing)
       const sortedData = [...data].sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
 
-      // Extract top picks
       const topPicks = sortedData.filter(item => item && item.is_top_pick);
       topPicksEl.innerHTML = topPicks.length > 0
         ? topPicks.map(item => buildCard(item, true)).join("")
         : "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
 
-      // Group items by category and preserve backend order
       const grouped = {};
       sortedData.forEach(item => {
         if (!item || !item.id || !item.category) return;
@@ -770,7 +767,6 @@
         grouped[item.category].push(item);
       });
 
-      // Sort categories by the order_index of their first item
       const sortedCategories = Object.keys(grouped).sort((a, b) => {
         const firstItemA = grouped[a][0];
         const firstItemB = grouped[b][0];
@@ -920,38 +916,82 @@
         console.error("Cart elements not found");
         return;
       }
-      cartItemsEl.innerHTML = "";
-      let subtotal = 0;
+      const subtotalEl = document.getElementById("subtotal");
+      const discountEl = document.getElementById("discount");
+      const totalEl = document.getElementById("total");
+
+      // Initialize cart items if empty
       if (!Array.isArray(cart) || cart.length === 0) {
-        cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
-      } else {
-        for (const item of cart) {
-          if (!item || !item.price || !item.qty) continue;
-          subtotal += item.price * item.qty;
-          const menuItem = menuData.find(menu => menu && menu.id === item.id) || {};
-          const imageSrc = menuItem.image && menuItem.image !== '' ? menuItem.image : defaultImage;
-          cartItemsEl.innerHTML += `
-            <div class="cart-item">
-              <img src="${imageSrc}" alt="${item.name}" onerror="this.src='${defaultImage}'">
-              <h4>${item.name}</h4>
-              <div class="qty-controls">
-                <button onclick="changeQty(${item.id}, -1)">-</button>
-                <span>${item.qty}</span>
-                <button onclick="changeQty(${item.id}, 1)">+</button>
-              </div>
-              <span>₹${(item.price * item.qty).toFixed(2)}</span>
-            </div>
-          `;
+        if (cartItemsEl.innerHTML !== "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>") {
+          cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
         }
+        subtotalEl.innerText = "₹0";
+        discountEl.innerText = "₹0";
+        totalEl.innerText = "₹0";
+        cartToggle.setAttribute("data-count", "0");
+        cartToggle.classList.remove("has-items");
+        return;
       }
+
+      let subtotal = 0;
+      const existingItems = new Map();
+      cartItemsEl.querySelectorAll('.cart-item').forEach(item => {
+        const id = item.dataset.id;
+        if (id) existingItems.set(id, item);
+      });
+
+      // Build or update cart items
+      cart.forEach(item => {
+        if (!item || !item.id || !item.price || !item.qty) return;
+        subtotal += item.price * item.qty;
+        const menuItem = menuData.find(m => m && m.id === item.id) || {};
+        const imageSrc = menuItem.image && menuItem.image !== '' ? menuItem.image : defaultImage;
+        const itemId = String(item.id);
+        let cartItem = existingItems.get(itemId);
+
+        if (cartItem) {
+          // Update existing item
+          const qtySpan = cartItem.querySelector('.qty-controls span');
+          const totalSpan = cartItem.querySelector('span:last-child');
+          if (qtySpan) qtySpan.textContent = item.qty;
+          if (totalSpan) totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
+        } else {
+          // Add new item
+          const newItem = document.createElement('div');
+          newItem.className = 'cart-item';
+          newItem.dataset.id = itemId;
+          newItem.innerHTML = `
+            <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
+            <h4>${item.name}</h4>
+            <div class="qty-controls">
+              <button onclick="changeQty(${item.id}, -1)">-</button>
+              <span>${item.qty}</span>
+              <button onclick="changeQty(${item.id}, 1)">+</button>
+            </div>
+            <span>₹${(item.price * item.qty).toFixed(2)}</span>
+          `;
+          cartItemsEl.appendChild(newItem);
+          existingItems.set(itemId, newItem);
+        }
+      });
+
+      // Remove items no longer in cart
+      existingItems.forEach((item, id) => {
+        if (!cart.find(i => String(i.id) === id)) {
+          cartItemsEl.removeChild(item);
+          existingItems.delete(id);
+        }
+      });
+
+      // Update totals
       const discount = await calculateDiscount(subtotal);
       let total = subtotal - discount;
       if (total < 0) total = 0;
       cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item && item.qty || 0), 0));
       cartToggle.classList.toggle("has-items", cart.length > 0);
-      document.getElementById("subtotal").innerText = "₹" + subtotal.toFixed(2);
-      document.getElementById("discount").innerText = "₹" + discount.toFixed(2);
-      document.getElementById("total").innerText = "₹" + total.toFixed(2);
+      subtotalEl.innerText = "₹" + subtotal.toFixed(2);
+      discountEl.innerText = "₹" + discount.toFixed(2);
+      totalEl.innerText = "₹" + total.toFixed(2);
     }
 
     async function applyCoupon(code = null) {
