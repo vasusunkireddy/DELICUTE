@@ -23,6 +23,7 @@
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
 
     body {
@@ -32,6 +33,7 @@
       min-height: 100vh;
       line-height: 1.6;
       overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
     }
 
     header {
@@ -59,7 +61,6 @@
     header img {
       height: 60px;
       filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
-      animation: fadeInScale 0.8s ease-out;
       transition: transform 0.3s ease;
     }
 
@@ -72,14 +73,12 @@
       font-weight: 800;
       margin-top: 0.5rem;
       text-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
-      animation: fadeInUp 0.6s ease-out 0.2s forwards;
     }
 
     header span {
       font-size: 0.9rem;
       font-weight: 600;
       color: var(--text-light);
-      animation: fadeInUp 0.6s ease-out 0.4s forwards;
     }
 
     nav {
@@ -136,7 +135,6 @@
       background: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
       box-shadow: var(--shadow-md);
-      animation: slideUp 0.6s ease-out;
     }
 
     .content h2 {
@@ -309,6 +307,34 @@
       top: 1rem;
       right: 1rem;
       cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .close-btn:hover {
+      color: var(--primary-teal);
+    }
+
+    #toast {
+      visibility: hidden;
+      min-width: 180px;
+      max-width: 90%;
+      background: linear-gradient(45deg, #4caf50, #66bb6a);
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 0.8rem;
+      position: fixed;
+      z-index: 1000;
+      top: 60px;
+      right: 10px;
+      font-size: 0.85rem;
+      box-shadow: var(--shadow-sm);
+      font-family: Arial, sans-serif;
+    }
+
+    #toast.show {
+      visibility: visible;
+      animation: slideDown 0.4s ease-out, slideUp 0.4s ease-in 2s forwards;
     }
 
     @keyframes shine {
@@ -322,14 +348,19 @@
       to { opacity: 1; transform: scale(1); }
     }
 
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(15px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(20px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; top: -100%; }
+      to { opacity: 1; top: 60px; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 1; top: 60px; }
+      to { opacity: 0; top: -100%; }
     }
 
     @media (max-width: 480px) {
@@ -345,10 +376,13 @@
       .promotion-image { width: 80px; height: 48px; }
       .action-btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
       .modal-content { padding: 1rem; }
+      #toast { font-size: 0.7rem; padding: 0.7rem; top: 50px; }
     }
   </style>
 </head>
 <body>
+  <div id="toast"></div>
+
   <header>
     <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo">
     <div>
@@ -415,7 +449,6 @@
     </table>
   </div>
 
-  <!-- Edit Modal -->
   <div class="modal" id="edit-modal">
     <div class="modal-content">
       <h3>Edit Promotion</h3>
@@ -453,38 +486,66 @@
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
+    // Toast Notification Function
+    function showToast(msg, success = true) {
+      const toast = document.getElementById("toast");
+      toast.textContent = msg;
+      toast.style.background = success 
+        ? "linear-gradient(45deg, #4caf50, #66bb6a)" 
+        : "linear-gradient(45deg, #f44336, #ef5350)";
+      toast.className = "show";
+      setTimeout(() => toast.className = toast.className.replace("show", ""), 2000);
+    }
+
     // Authentication Check
     document.addEventListener("DOMContentLoaded", async () => {
       try {
-        const response = await fetch("/api/auth/check", { credentials: "include" });
+        const response = await fetch("/api/auth/check", { 
+          credentials: "include",
+          cache: "no-store"
+        });
         if (!response.ok) {
           window.location.href = "/admin.html";
         }
       } catch (error) {
         console.error("Auth Check Error:", error);
-        window.location.href = "/admin.html";
+        showToast("Authentication failed. Redirecting to login.", false);
+        setTimeout(() => window.location.href = "/admin.html", 2000);
       }
     });
 
     // Logout Function
     async function logout() {
       try {
-        await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-        window.location.href = "/admin.html";
+        const response = await fetch("/api/auth/logout", { 
+          method: "POST", 
+          credentials: "include",
+          cache: "no-store"
+        });
+        if (response.ok) {
+          showToast("Logged out successfully!", true);
+          setTimeout(() => window.location.href = "/admin.html", 1000);
+        } else {
+          throw new Error("Logout failed");
+        }
       } catch (error) {
-        console.error("Logout failed:", error);
-        alert("Logout failed: " + error.message);
+        console.error("Logout Error:", error);
+        showToast("Logout failed: " + error.message, false);
       }
     }
 
     // WebSocket Setup
     const socket = io({
-      auth: { token: localStorage.getItem("token") || getCookie("token") }
+      auth: { token: localStorage.getItem("token") || getCookie("token") },
+      reconnectionAttempts: 3,
+      timeout: 5000
     });
 
     socket.on("connect", () => console.log("WebSocket connected:", socket.id));
-    socket.on("new-promotion", (promotion) => {
-      fetchPromotions();
+    socket.on("new-promotion", () => fetchPromotions());
+    socket.on("connect_error", (err) => {
+      console.error("WebSocket Error:", err);
+      showToast("WebSocket connection failed", false);
     });
 
     // Utility: Get Cookie
@@ -503,13 +564,16 @@
     // Fetch Promotions
     async function fetchPromotions() {
       try {
-        const response = await fetch("/api/promotions", { credentials: "include" });
+        const response = await fetch("/api/promotions", { 
+          credentials: "include",
+          cache: "no-store"
+        });
         const { success, data, message } = await response.json();
         if (!success) throw new Error(message);
         renderPromotions(data);
       } catch (err) {
         console.error("Fetch Promotions Error:", err);
-        alert("Failed to fetch promotions: " + err.message);
+        showToast("Failed to fetch promotions: " + err.message, false);
       }
     }
 
@@ -520,7 +584,7 @@
             <tr>
               <td>${p.title}</td>
               <td>${p.description}</td>
-              <td><img src="${p.image}" alt="${p.title}" class="promotion-image"></td>
+              <td><img src="${p.image}" alt="${p.title}" class="promotion-image" loading="lazy" onerror="this.src='https://via.placeholder.com/100x60'"></td>
               <td>${new Date(p.start_date).toLocaleString()}</td>
               <td>${new Date(p.end_date).toLocaleString()}</td>
               <td>
@@ -562,22 +626,25 @@
         document.getElementById("end-date-error").style.display = "block";
         isValid = false;
       }
-      if (!isValid) return;
+      if (!isValid) {
+        showToast("Please correct the form errors", false);
+        return;
+      }
 
       try {
         const response = await fetch("/api/promotions", {
           method: "POST",
           body: formData,
-          credentials: "include",
+          credentials: "include"
         });
         const { success, message } = await response.json();
         if (!success) throw new Error(message);
         promotionForm.reset();
         fetchPromotions();
-        alert("Promotion added successfully");
+        showToast("Promotion added successfully!", true);
       } catch (err) {
         console.error("Add Promotion Error:", err);
-        alert("Failed to add promotion: " + err.message);
+        showToast("Failed to add promotion: " + err.message, false);
       }
     });
 
@@ -626,22 +693,25 @@
         document.getElementById("edit-end-date-error").style.display = "block";
         isValid = false;
       }
-      if (!isValid) return;
+      if (!isValid) {
+        showToast("Please correct the form errors", false);
+        return;
+      }
 
       try {
         const response = await fetch(`/api/promotions/${id}`, {
           method: "PUT",
           body: formData,
-          credentials: "include",
+          credentials: "include"
         });
         const { success, message } = await response.json();
         if (!success) throw new Error(message);
         closeEditModal();
         fetchPromotions();
-        alert("Promotion updated successfully");
+        showToast("Promotion updated successfully!", true);
       } catch (err) {
         console.error("Update Promotion Error:", err);
-        alert("Failed to update promotion: " + err.message);
+        showToast("Failed to update promotion: " + err.message, false);
       }
     });
 
@@ -652,14 +722,15 @@
         const response = await fetch(`/api/promotions/${id}`, {
           method: "DELETE",
           credentials: "include",
+          cache: "no-store"
         });
         const { success, message } = await response.json();
         if (!success) throw new Error(message);
         fetchPromotions();
-        alert("Promotion deleted successfully");
+        showToast("Promotion deleted successfully!", true);
       } catch (err) {
         console.error("Delete Promotion Error:", err);
-        alert("Failed to delete promotion: " + err.message);
+        showToast("Failed to delete promotion: " + err.message, false);
       }
     }
 
