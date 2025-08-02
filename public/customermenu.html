@@ -16,7 +16,7 @@
     }
     body {
       font-family: 'Playfair Display', serif;
-      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      background: linear-gradient(135deg, #d8b7d2 0%, #e0e7fa 100%);
       color: #1a1a1a;
       min-height: 100vh;
       overflow-x: hidden;
@@ -25,14 +25,14 @@
       touch-action: auto;
     }
     header {
-      background: linear-gradient(90deg, #26a69a, #4dd0e1);
+      background: linear-gradient(90deg, #ffa726 0%, #8e44ad 100%);
       color: #fff;
       padding: 1rem;
       text-align: center;
       position: sticky;
       top: 0;
       z-index: 1000;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(142, 68, 173, 0.2);
     }
     header img {
       height: clamp(50px, 8vw, 60px);
@@ -64,7 +64,7 @@
     h2 {
       font-size: clamp(1.3rem, 3vw, 1.6rem);
       font-weight: 800;
-      color: #26a69a;
+      color: #8e44ad;
       margin: 1rem 0 0.8rem;
       text-align: center;
       text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -79,7 +79,7 @@
       transform: translateX(-50%);
       width: clamp(80px, 10vw, 100px);
       height: 2px;
-      background: linear-gradient(90deg, #ffd700, #ffca28);
+      background: linear-gradient(90deg, #ffa726, #ffca28);
       border-radius: 2px;
     }
     .search-bar {
@@ -88,13 +88,14 @@
       max-width: 600px;
       margin: 0.8rem auto;
       background: #fff;
+      border: 2px solid #d8b7d2;
       border-radius: 8px;
       padding: 0.4rem;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(216, 183, 210, 0.2);
       transition: box-shadow 0.2s ease;
     }
     .search-bar:hover {
-      box-shadow: 0 3px 7px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 3px 7px rgba(216, 183, 210, 0.3);
     }
     .search-bar input {
       flex: 1;
@@ -111,13 +112,19 @@
       border: none;
       padding: 0.7rem;
       cursor: pointer;
-      color: #26a69a;
+      color: #8e44ad;
       font-size: clamp(1rem, 2vw, 1.1rem);
       transition: color 0.2s ease;
       touch-action: manipulation;
     }
     .search-bar button:hover {
-      color: #1e8578;
+      color: #6c3483;
+    }
+    .category-row-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
     }
     .category-row {
       display: flex;
@@ -129,26 +136,27 @@
       -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
       touch-action: pan-x;
+      min-height: 320px;
     }
     .category-row::-webkit-scrollbar {
       height: 6px;
     }
     .category-row::-webkit-scrollbar-thumb {
-      background: #26a69a;
+      background: #8e44ad;
       border-radius: 3px;
     }
     .category-row::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.05);
+      background: rgba(216, 183, 210, 0.2);
     }
     .card {
       flex: 0 0 auto;
-      width: auto;
-      max-width: calc(50% - 0.25rem);
+      width: clamp(150px, 45vw, 180px);
       min-height: 300px;
       background: #fff;
+      border: 1px solid #d8b7d2;
       border-radius: 8px;
       overflow: hidden;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 5px rgba(216, 183, 210, 0.1);
       scroll-snap-align: start;
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       position: relative;
@@ -162,7 +170,7 @@
       position: absolute;
       top: 6px;
       right: 6px;
-      background: #ffd700;
+      background: #ffa726;
       color: #1a1a1a;
       padding: 0.2rem 0.5rem;
       border-radius: 5px;
@@ -171,7 +179,7 @@
     }
     .card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 3px 8px rgba(216, 183, 210, 0.2);
     }
     .card img {
       width: 100%;
@@ -209,7 +217,7 @@
       overflow: hidden;
     }
     .price {
-      color: #26a69a;
+      color: #ffa726;
       font-weight: 700;
       font-size: clamp(0.85rem, 1.8vw, 0.95rem);
       margin-bottom: 0.3rem;
@@ -223,7 +231,7 @@
       font-family: Arial, sans-serif;
     }
     .add-btn {
-      background: linear-gradient(45deg, #ffd700, #ffca28);
+      background: linear-gradient(45deg, #ffa726, #ffca28);
       color: #1a1a1a;
       border: none;
       padding: 0.6rem;
@@ -233,7 +241,7 @@
       font-weight: 600;
       width: 100%;
       transition: background 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(255, 167, 38, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -252,10 +260,10 @@
       max-width: 500px;
       height: 70%;
       background: rgba(255, 255, 255, 0.98);
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      border-top: 1px solid #d8b7d2;
       padding: 1rem;
       overflow-y: auto;
-      box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 -2px 8px rgba(142, 68, 173, 0.1);
       transform: translateY(100%);
       transition: transform 0.3s ease;
       z-index: 1000;
@@ -269,20 +277,20 @@
       position: fixed;
       bottom: 1.2rem;
       right: 1.2rem;
-      background: linear-gradient(45deg, #ff8c00, #ff4500);
+      background: linear-gradient(45deg, #ffa726, #8e44ad);
       color: #fff;
       border: none;
       padding: 0.9rem;
       border-radius: 50%;
       cursor: pointer;
       font-size: clamp(1.1rem, 2.5vw, 1.2rem);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 5px rgba(255, 167, 38, 0.2);
       transition: background 0.2s ease, transform 0.2s ease;
       z-index: 1001;
       touch-action: manipulation;
     }
     .cart-toggle:hover {
-      background: linear-gradient(45deg, #e07b00, #d83c00);
+      background: linear-gradient(45deg, #ff8c00, #6c3483);
       transform: scale(1.05);
     }
     .cart-toggle::after {
@@ -290,7 +298,7 @@
       position: absolute;
       top: -5px;
       right: -5px;
-      background: #ffd700;
+      background: #ffa726;
       color: #1a1a1a;
       border-radius: 50%;
       padding: 0.3rem 0.6rem;
@@ -304,7 +312,7 @@
     .cart-section h2 {
       font-size: clamp(1.3rem, 3vw, 1.5rem);
       font-weight: 700;
-      color: #26a69a;
+      color: #8e44ad;
       margin-bottom: 0.8rem;
       text-align: center;
       display: flex;
@@ -319,10 +327,10 @@
       align-items: center;
       margin: 0.6rem 0;
       padding: 0.6rem;
-      border: 1px solid rgba(0, 0, 0, 0.1);
+      border: 1px solid #d8b7d2;
       border-radius: 8px;
       background: #f9f9f9;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 1px 3px rgba(216, 183, 210, 0.05);
     }
     .cart-item img {
       width: clamp(40px, 10vw, 50px);
@@ -349,7 +357,7 @@
       gap: 0.4rem;
     }
     .qty-controls button {
-      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      background: linear-gradient(45deg, #8e44ad, #d8b7d2);
       color: #fff;
       border: none;
       padding: 0.5rem 0.8rem;
@@ -361,7 +369,7 @@
       pointer-events: auto;
     }
     .qty-controls button:hover {
-      background: linear-gradient(45deg, #1e8578, #26a69a);
+      background: linear-gradient(45deg, #6c3483, #d8b7d2);
     }
     .qty-controls span {
       margin: 0 0.4rem;
@@ -371,7 +379,7 @@
     }
     .cart-item span:last-child {
       font-weight: 700;
-      color: #26a69a;
+      color: #ffa726;
       min-width: clamp(45px, 12vw, 55px);
       text-align: right;
       font-size: clamp(0.85rem, 2vw, 0.95rem);
@@ -387,7 +395,7 @@
     .coupon-box input {
       flex: 1;
       padding: 0.7rem;
-      border: 1px solid #26a69a;
+      border: 1px solid #8e44ad;
       border-radius: 6px;
       font-size: clamp(0.8rem, 2vw, 0.9rem);
       color: #1a1a1a;
@@ -396,7 +404,7 @@
       font-family: Arial, sans-serif;
     }
     .coupon-box button {
-      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      background: linear-gradient(45deg, #8e44ad, #d8b7d2);
       color: #fff;
       border: none;
       padding: 0.7rem 1rem;
@@ -409,11 +417,11 @@
       pointer-events: auto;
     }
     .coupon-box button:hover {
-      background: linear-gradient(45deg, #1e8578, #26a69a);
+      background: linear-gradient(45deg, #6c3483, #d8b7d2);
     }
     .coupon-btn {
       width: 100%;
-      background: linear-gradient(45deg, #ffd700, #ffca28);
+      background: linear-gradient(45deg, #ffa726, #ffca28);
       color: #1a1a1a;
       border: none;
       padding: 0.7rem;
@@ -423,7 +431,7 @@
       font-weight: 600;
       margin-top: 0.4rem;
       transition: background 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(255, 167, 38, 0.1);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -436,7 +444,7 @@
     }
     .total-box {
       margin-top: 0.8rem;
-      border-top: 1px solid rgba(0, 0, 0, 0.1);
+      border-top: 1px solid #d8b7d2;
       padding-top: 0.7rem;
       font-family: Arial, sans-serif;
     }
@@ -449,7 +457,7 @@
     }
     .line span:last-child {
       font-weight: 600;
-      color: #26a69a;
+      color: #ffa726;
       font-family: Arial, sans-serif;
     }
     .line.bold {
@@ -460,7 +468,7 @@
     .order-form input, .order-form textarea {
       width: 100%;
       padding: 0.7rem;
-      border: 1px solid #26a69a;
+      border: 1px solid #8e44ad;
       border-radius: 6px;
       font-size: clamp(0.8rem, 2vw, 0.9rem);
       color: #1a1a1a;
@@ -475,7 +483,7 @@
     }
     .order-form button {
       width: 100%;
-      background: linear-gradient(45deg, #ffd700, #ffca28);
+      background: linear-gradient(45deg, #ffa726, #ffca28);
       color: #1a1a1a;
       border: none;
       padding: 0.8rem;
@@ -484,7 +492,7 @@
       font-size: clamp(0.9rem, 2vw, 1rem);
       font-weight: 700;
       transition: background 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(255, 167, 38, 0.1);
       touch-action: manipulation;
       pointer-events: auto;
     }
@@ -493,7 +501,7 @@
     }
     .clear-cart-btn {
       width: 100%;
-      background: linear-gradient(45deg, #ef5350, #e53935);
+      background: linear-gradient(45deg, #8e44ad, #d8b7d2);
       color: #fff;
       border: none;
       padding: 0.7rem;
@@ -503,18 +511,18 @@
       font-weight: 600;
       margin-top: 0.6rem;
       transition: background 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 5px rgba(142, 68, 173, 0.1);
       touch-action: manipulation;
       pointer-events: auto;
     }
     .clear-cart-btn:hover {
-      background: linear-gradient(45deg, #d32f2f, #ef5350);
+      background: linear-gradient(45deg, #6c3483, #d8b7d2);
     }
     #toast {
       visibility: hidden;
       min-width: 180px;
       max-width: 90%;
-      background: linear-gradient(45deg, #4caf50, #66bb6a);
+      background: linear-gradient(45deg, #8e44ad, #d8b7d2);
       color: #fff;
       text-align: center;
       border-radius: 8px;
@@ -524,7 +532,7 @@
       top: 60px;
       right: 10px;
       font-size: clamp(0.75rem, 2vw, 0.85rem);
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 2px 5px rgba(142, 68, 173, 0.2);
       font-family: Arial, sans-serif;
     }
     #toast.show {
@@ -541,7 +549,12 @@
     }
     @media (min-width: 769px) {
       .container { padding: 0 1rem; }
-      .category-row { flex-wrap: wrap; gap: 1rem; }
+      .category-row {
+        flex-wrap: wrap;
+        gap: 1rem;
+        overflow-x: hidden;
+        justify-content: flex-start;
+      }
       .card { max-width: 200px; min-height: 320px; }
       .card img { height: 180px; }
       .cart-section { max-width: 400px; right: 1rem; }
@@ -556,7 +569,7 @@
       h2::after { width: 70px; }
       .search-bar input { font-size: 0.85rem; padding: 0.6rem; }
       .search-bar button { font-size: 0.9rem; padding: 0.6rem; }
-      .card { max-width: calc(100% - 0.2rem); min-height: 280px; }
+      .card { width: clamp(140px, 40vw, 160px); min-height: 280px; }
       .card img { height: 120px; }
       .card-body h3 { font-size: 0.8rem; }
       .card-body p { font-size: 0.7rem; }
@@ -641,22 +654,33 @@
     let appliedCoupon = null;
     const defaultImage = 'https://via.placeholder.com/150';
 
+    // Mock menu data for testing if API is unavailable
+    const mockMenuData = [
+      { id: 1, name: "Margherita Pizza", category: "Pizza", price: 250, is_top_pick: true, description: "Classic pizza with tomato and cheese", image: defaultImage },
+      { id: 2, name: "Pepperoni Pizza", category: "Pizza", price: 300, is_top_pick: false, description: "Pizza with pepperoni slices", image: defaultImage },
+      { id: 3, name: "Caesar Salad", category: "Salad", price: 150, is_top_pick: true, description: "Fresh romaine with Caesar dressing", image: defaultImage },
+      // Add more mock items as needed for testing
+    ];
+
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
+      if (!toast) {
+        console.error("Toast element not found");
+        return;
+      }
       toast.textContent = msg;
-      toast.style.background = success ? "linear-gradient(45deg, #4caf50, #66bb6a)" : "linear-gradient(45deg, #f44336, #ef5350)";
+      toast.style.background = success ? "linear-gradient(45deg, #8e44ad, #d8b7d2)" : "linear-gradient(45deg, #f44336, #ef5350)";
       toast.className = "show";
       setTimeout(() => toast.className = toast.className.replace("show", ""), 2000);
     }
 
     function toggleCart() {
-      const cartSection = document.querySelector('.cart-section'); 
-      const container = document.querySelector('.container');
-
-      if (!cartSection) return;
-
+      if (!cartSection) {
+        console.error("Cart section not found");
+        return;
+      }
       cartSection.classList.toggle("active");
-
+      const container = document.querySelector('.container');
       if (cartSection.classList.contains("active")) {
         localStorage.setItem("openCart", "true");
         document.body.style.overflow = 'hidden';
@@ -669,21 +693,32 @@
     }
 
     function saveCart() {
-      localStorage.setItem("cart", JSON.stringify(cart));
+      try {
+        localStorage.setItem("cart", JSON.stringify(cart));
+      } catch (err) {
+        console.error("Error saving cart to localStorage:", err);
+      }
     }
 
     function loadCart() {
-      const savedCart = localStorage.getItem("cart");
-      cart = savedCart ? JSON.parse(savedCart) : [];
-      if (!Array.isArray(cart)) cart = [];
-      renderCart();
+      try {
+        const savedCart = localStorage.getItem("cart");
+        cart = savedCart ? JSON.parse(savedCart) : [];
+        if (!Array.isArray(cart)) cart = [];
+        renderCart();
+      } catch (err) {
+        console.error("Error loading cart from localStorage:", err);
+        cart = [];
+        renderCart();
+      }
     }
 
     function clearCart() {
       if (!confirm("Are you sure you want to clear your cart?")) return;
       cart = [];
       appliedCoupon = null;
-      document.getElementById("couponCode").value = "";
+      const couponInput = document.getElementById("couponCode");
+      if (couponInput) couponInput.value = "";
       localStorage.removeItem("cart");
       localStorage.removeItem("appliedCoupon");
       showToast("Cart cleared!", true);
@@ -693,23 +728,31 @@
     async function loadMenu() {
       try {
         const res = await fetch("/api/menu");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
-        if (data.success) {
+        if (data.success && Array.isArray(data.data)) {
           menuData = data.data;
           renderMenu(menuData);
         } else {
-          showToast("Failed to load menu", false);
+          console.warn("Menu API returned invalid data, using mock data");
+          menuData = mockMenuData;
+          renderMenu(menuData);
         }
       } catch (err) {
-        showToast("Error loading menu", false);
         console.error("Menu Load Error:", err);
+        showToast("Error loading menu, displaying sample data", false);
+        menuData = mockMenuData;
+        renderMenu(menuData);
       }
     }
 
     function renderMenu(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.85rem, 2vw, 0.95rem);'>No menu items available</p>";
+        return;
+      }
       const grouped = {};
       topPicksEl.innerHTML = "";
-
       data.forEach(item => {
         if (item.is_top_pick) {
           topPicksEl.innerHTML += buildCard(item, true);
@@ -717,16 +760,25 @@
         if (!grouped[item.category]) grouped[item.category] = [];
         grouped[item.category].push(item);
       });
-
       categoriesEl.innerHTML = "";
       if (Object.keys(grouped).length === 0) {
         categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.85rem, 2vw, 0.95rem);'>No menu items available</p>";
       } else {
         Object.keys(grouped).forEach(cat => {
+          const items = grouped[cat];
+          const firstRow = items.slice(0, 9);
+          const secondRow = items.slice(9, 18);
           categoriesEl.innerHTML += `
             <h2>${cat}</h2>
-            <div class="category-row">
-              ${grouped[cat].map(item => buildCard(item, false)).join("")}
+            <div class="category-row-container">
+              <div class="category-row">
+                ${firstRow.map(item => buildCard(item, false)).join("")}
+              </div>
+              ${secondRow.length > 0 ? `
+                <div class="category-row">
+                  ${secondRow.map(item => buildCard(item, false)).join("")}
+                </div>
+              ` : ""}
             </div>
           `;
         });
@@ -734,6 +786,7 @@
     }
 
     function buildCard(item, isTopPick) {
+      if (!item || !item.id || !item.name || !item.price) return "";
       const imageSrc = item.image && item.image !== '' ? item.image : defaultImage;
       return `
         <div class="card ${isTopPick ? 'top-pick' : ''}">
@@ -752,16 +805,24 @@
     }
 
     function filterMenu() {
+      if (!searchInput) {
+        console.error("Search input not found");
+        return;
+      }
       const query = searchInput.value.toLowerCase().trim();
       const filtered = query
-        ? menuData.filter(item =>
+        ? menuData.filter(item => item && (
             item.name.toLowerCase().includes(query) ||
-            item.category.toLowerCase() === query)
+            item.category.toLowerCase().includes(query)))
         : menuData;
       renderMenu(filtered);
     }
 
     function addToCart(id, name, price) {
+      if (!id || !name || !price) {
+        showToast("Invalid item data", false);
+        return;
+      }
       const existing = cart.find(i => i.id === id);
       if (existing) {
         existing.qty++;
@@ -787,22 +848,20 @@
 
     async function calculateDiscount(subtotal) {
       if (!appliedCoupon || !subtotal) return 0;
-
       try {
         const menuRes = await fetch("/api/menu");
+        if (!menuRes.ok) throw new Error(`HTTP error! status: ${menuRes.status}`);
         const menuData = await menuRes.json();
-        if (!menuData.success) {
-          console.error("Failed to fetch menu for coupon calculation");
-          return 0;
+        if (!menuData.success || !Array.isArray(menuData.data)) {
+          console.warn("Menu API returned invalid data for coupon calculation, using mock data");
+          menuData.data = mockMenuData;
         }
-
         const catIds = appliedCoupon.category
-          ? menuData.data.filter(item => item.category === appliedCoupon.category).map(item => item.id)
+          ? menuData.data.filter(item => item && item.category === appliedCoupon.category).map(item => item.id)
           : [];
-        const eligibleItems = cart.filter(i => catIds.includes(i.id));
+        const eligibleItems = cart.filter(i => i && catIds.includes(i.id));
         const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
-        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
-
+        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0);
         if (appliedCoupon.type === "min_cart_amount") {
           if (subtotal >= (appliedCoupon.min_cart_amount || 0)) {
             return (subtotal * (appliedCoupon.discount || 0)) / 100;
@@ -823,10 +882,10 @@
             const pairs = Math.floor(categoryQty / 2);
             const sortedItems = eligibleItems
               .flatMap(item => Array(item.qty).fill(item))
-              .sort((a, b) => a.price - b.price);
+              .sort((a, b) => (a.price || 0) - (b.price || 0));
             let bogoDiscount = 0;
             for (let i = 0; i < pairs; i++) {
-              bogoDiscount += sortedItems[i].price;
+              bogoDiscount += sortedItems[i].price || 0;
             }
             return bogoDiscount;
           }
@@ -840,17 +899,20 @@
     }
 
     async function renderCart() {
+      if (!cartItemsEl || !cartToggle || !document.getElementById("subtotal")) {
+        console.error("Cart elements not found");
+        return;
+      }
       cartItemsEl.innerHTML = "";
       let subtotal = 0;
-
       if (!Array.isArray(cart) || cart.length === 0) {
         cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.85rem, 2vw, 0.95rem);'>Your cart is empty</p>";
       } else {
         for (const item of cart) {
-          if (!item.price || !item.qty) continue;
+          if (!item || !item.price || !item.qty) continue;
           subtotal += item.price * item.qty;
-          const menuItem = menuData.find(menu => menu.id === item.id);
-          const imageSrc = menuItem && menuItem.image && menuItem.image !== '' ? menuItem.image : defaultImage;
+          const menuItem = menuData.find(menu => menu && menu.id === item.id) || {};
+          const imageSrc = menuItem.image && menuItem.image !== '' ? menuItem.image : defaultImage;
           cartItemsEl.innerHTML += `
             <div class="cart-item">
               <img src="${imageSrc}" alt="${item.name}" onerror="this.src='${defaultImage}'">
@@ -865,118 +927,112 @@
           `;
         }
       }
-
       const discount = await calculateDiscount(subtotal);
       let total = subtotal - discount;
       if (total < 0) total = 0;
-
-      cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item.qty || 0), 0));
+      cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item && item.qty || 0), 0));
       cartToggle.classList.toggle("has-items", cart.length > 0);
-
       document.getElementById("subtotal").innerText = "₹" + subtotal.toFixed(2);
       document.getElementById("discount").innerText = "₹" + discount.toFixed(2);
       document.getElementById("total").innerText = "₹" + total.toFixed(2);
     }
 
     async function applyCoupon(code = null) {
-      const couponCode = code || document.getElementById("couponCode").value.trim();
+      const couponInput = document.getElementById("couponCode");
+      if (!couponInput) {
+        showToast("Coupon input not found", false);
+        return;
+      }
+      const couponCode = code || couponInput.value.trim();
       if (!couponCode) {
         showToast("Please enter a coupon code", false);
         return;
       }
       if (!Array.isArray(cart) || cart.length === 0) {
         showToast("Your cart is empty! Add items to apply a coupon.", false);
-        document.getElementById("couponCode").value = "";
+        couponInput.value = "";
         localStorage.removeItem("appliedCoupon");
         return;
       }
-
       try {
         const couponRes = await fetch("/api/coupons");
+        if (!couponRes.ok) throw new Error(`HTTP error! status: ${couponRes.status}`);
         const couponData = await couponRes.json();
-        if (!couponData.success) {
+        if (!couponData.success || !Array.isArray(couponData.data)) {
           showToast("Failed to fetch coupons", false);
-          document.getElementById("couponCode").value = "";
+          couponInput.value = "";
           localStorage.removeItem("appliedCoupon");
           return;
         }
-
-        const coupon = couponData.data.find(c => c.code === couponCode);
+        const coupon = couponData.data.find(c => c && c.code === couponCode);
         if (!coupon) {
           showToast(`Invalid coupon code: ${couponCode}`, false);
-          document.getElementById("couponCode").value = "";
+          couponInput.value = "";
           localStorage.removeItem("appliedCoupon");
           return;
         }
-
-        const subtotal = cart.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
-
+        const subtotal = cart.reduce((sum, i) => sum + ((i && i.price || 0) * (i && i.qty || 0)), 0);
         if (coupon.type === "min_cart_amount") {
           if (subtotal < (coupon.min_cart_amount || 0)) {
             showToast(`Coupon ${couponCode} requires a minimum cart amount of ₹${coupon.min_cart_amount} (current: ₹${subtotal.toFixed(2)})`, false);
-            document.getElementById("couponCode").value = "";
+            couponInput.value = "";
             localStorage.removeItem("appliedCoupon");
             return;
           }
           appliedCoupon = coupon;
-          document.getElementById("couponCode").value = couponCode;
+          couponInput.value = couponCode;
           localStorage.setItem("appliedCoupon", couponCode);
           showToast(`Coupon ${couponCode} applied successfully! ${coupon.discount}% off for cart ≥ ₹${coupon.min_cart_amount}`, true);
           renderCart();
         } else if (coupon.type === "buy_x" || coupon.type === "date_range" || coupon.type === "bogo") {
           const menuRes = await fetch("/api/menu");
+          if (!menuRes.ok) throw new Error(`HTTP error! status: ${menuRes.status}`);
           const menuData = await menuRes.json();
-          if (!menuData.success) {
+          if (!menuData.success || !Array.isArray(menuData.data)) {
             showToast("Failed to fetch menu for coupon validation", false);
-            document.getElementById("couponCode").value = "";
+            couponInput.value = "";
             localStorage.removeItem("appliedCoupon");
             return;
           }
-
           if (!coupon.category) {
             showToast(`Coupon ${couponCode} is invalid: no category specified`, false);
-            document.getElementById("couponCode").value = "";
+            couponInput.value = "";
             localStorage.removeItem("appliedCoupon");
             return;
           }
-
           const catIds = menuData.data
-            .filter(item => item.category === coupon.category)
+            .filter(item => item && item.category === coupon.category)
             .map(item => item.id);
-          const eligibleItems = cart.filter(i => catIds.includes(i.id));
-          const categorySubtotal = eligibleItems.reduce((sum, i) => sum + (i.price * i.qty || 0), 0);
-          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
-
+          const eligibleItems = cart.filter(i => i && catIds.includes(i.id));
+          const categorySubtotal = eligibleItems.reduce((sum, i) => sum + ((i && i.price || 0) * (i && i.qty || 0)), 0);
+          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i && i.qty || 0), 0);
           if (categorySubtotal === 0) {
             showToast(`Coupon ${couponCode} is only valid for ${coupon.category} items`, false);
-            document.getElementById("couponCode").value = "";
+            couponInput.value = "";
             localStorage.removeItem("appliedCoupon");
             return;
           }
-
           if (coupon.type === "buy_x" && categoryQty < (coupon.buy_x || 0)) {
             showToast(`Coupon ${couponCode} requires ${coupon.buy_x} ${coupon.category} items (you have ${categoryQty})`, false);
-            document.getElementById("couponCode").value = "";
+            couponInput.value = "";
             localStorage.removeItem("appliedCoupon");
             return;
           }
-
           if (coupon.type === "bogo" && categoryQty < 2) {
             showToast(`Coupon ${couponCode} requires at least 2 ${coupon.category} items (you have ${categoryQty})`, false);
-            document.getElementById("couponCode").value = "";
+            couponInput.value = "";
             localStorage.removeItem("appliedCoupon");
             return;
           }
-
           appliedCoupon = coupon;
-          document.getElementById("couponCode").value = couponCode;
+          couponInput.value = couponCode;
           localStorage.setItem("appliedCoupon", couponCode);
           showToast(`Coupon ${couponCode} applied successfully for ${coupon.category}!`, true);
           renderCart();
         }
       } catch (err) {
         showToast("Error applying coupon", false);
-        document.getElementById("couponCode").value = "";
+        couponInput.value = "";
         localStorage.removeItem("appliedCoupon");
         console.error("Coupon Apply Error:", err);
       }
@@ -984,7 +1040,8 @@
 
     function removeCoupon() {
       appliedCoupon = null;
-      document.getElementById("couponCode").value = "";
+      const couponInput = document.getElementById("couponCode");
+      if (couponInput) couponInput.value = "";
       localStorage.removeItem("appliedCoupon");
       showToast("Coupon removed", true);
       renderCart();
@@ -995,51 +1052,55 @@
         showToast("Your cart is empty!", false);
         return;
       }
-      const customer_name = document.getElementById("custName").value.trim();
-      const table_number = document.getElementById("tableNum").value.trim();
+      const custNameInput = document.getElementById("custName");
+      const tableNumInput = document.getElementById("tableNum");
+      if (!custNameInput || !tableNumInput) {
+        showToast("Form elements not found", false);
+        return;
+      }
+      const customer_name = custNameInput.value.trim();
+      const table_number = tableNumInput.value.trim();
       if (!customer_name || !table_number) {
         showToast("Please enter your name and table number", false);
         return;
       }
-
-      const subtotal = cart.reduce((s, i) => s + ((i.price || 0) * (i.qty || 0)), 0);
+      const subtotal = cart.reduce((s, i) => s + ((i && i.price || 0) * (i && i.qty || 0)), 0);
       const discount = await calculateDiscount(subtotal);
       let total = subtotal - discount;
       if (total < 0) total = 0;
-
       const body = {
         customer_name,
         table_number: parseInt(table_number),
         items: cart,
-        coupon_code: appliedCoupon?.code || null,
+        coupon_code: appliedCoupon ? appliedCoupon.code : null,
         subtotal,
         discount,
         total,
-        instructions: document.getElementById("instructions").value.trim()
+        instructions: document.getElementById("instructions") ? document.getElementById("instructions").value.trim() : ""
       };
-
       try {
         const res = await fetch("/api/orders", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body)
         });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         const data = await res.json();
         if (data.success) {
-          showToast(`Thank you, ${customer_name}! Your order #${data.orderId} has been placed successfully!`, true);
+          showToast(`Thank you, ${customer_name}! Your order #${data.orderId || 'N/A'} has been placed successfully!`, true);
           cart = [];
           appliedCoupon = null;
-          document.getElementById("custName").value = "";
-          document.getElementById("tableNum").value = "";
-          document.getElementById("instructions").value = "";
-          document.getElementById("couponCode").value = "";
+          if (custNameInput) custNameInput.value = "";
+          if (tableNumInput) tableNumInput.value = "";
+          if (document.getElementById("instructions")) document.getElementById("instructions").value = "";
+          if (document.getElementById("couponCode")) document.getElementById("couponCode").value = "";
           localStorage.removeItem("cart");
           localStorage.removeItem("appliedCoupon");
           localStorage.removeItem("openCart");
           renderCart();
           toggleCart();
         } else {
-          showToast("Failed: " + data.message, false);
+          showToast("Failed: " + (data.message || "Unknown error"), false);
         }
       } catch (err) {
         showToast("Error placing order", false);
@@ -1053,10 +1114,10 @@
       loadCart();
       const openCart = localStorage.getItem("openCart");
       const couponCode = localStorage.getItem("appliedCoupon");
-      if (openCart === "true") {
+      if (openCart === "true" && cartSection) {
         cartSection.classList.add("active");
         localStorage.removeItem("openCart");
-        if (couponCode) {
+        if (couponCode && document.getElementById("couponCode")) {
           document.getElementById("couponCode").value = couponCode;
           applyCoupon(couponCode);
         }
