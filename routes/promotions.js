@@ -44,13 +44,18 @@ async function uploadToCloudinary(fileBuffer, filename) {
   });
 }
 
+// Helper to format date to YYYY-MM-DD
+function formatToDateOnly(date) {
+  return new Date(date).toISOString().split('T')[0];
+}
+
 /* ================================
    GET all promotions
 ================================ */
 router.get("/", authenticate, async (req, res) => {
   try {
     const [rows] = await pool.query(`
-      SELECT id, title, description, image, start_date, end_date, created_at
+      SELECT id, title, description, image, DATE(start_date) as start_date, DATE(end_date) as end_date, created_at
       FROM promotions
       ORDER BY created_at DESC
     `);
@@ -68,7 +73,7 @@ router.get("/:id", authenticate, async (req, res) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      `SELECT id, title, description, image, start_date, end_date, created_at
+      `SELECT id, title, description, image, DATE(start_date) as start_date, DATE(end_date) as end_date, created_at
        FROM promotions WHERE id = ?`,
       [id]
     );
@@ -94,7 +99,10 @@ router.post("/", authenticate, upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "All fields are required" });
     }
 
-    if (new Date(end_date) <= new Date(start_date)) {
+    const formattedStartDate = formatToDateOnly(start_date);
+    const formattedEndDate = formatToDateOnly(end_date);
+
+    if (new Date(formattedEndDate) < new Date(formattedStartDate)) {
       return res.status(400).json({ success: false, message: "End date must be after start date" });
     }
 
@@ -104,7 +112,7 @@ router.post("/", authenticate, upload.single("image"), async (req, res) => {
     const [result] = await pool.query(
       `INSERT INTO promotions (title, description, image, start_date, end_date)
        VALUES (?, ?, ?, ?, ?)`,
-      [title, description, imageUrl, start_date, end_date]
+      [title, description, imageUrl, formattedStartDate, formattedEndDate]
     );
 
     const newPromotion = {
@@ -112,8 +120,8 @@ router.post("/", authenticate, upload.single("image"), async (req, res) => {
       title,
       description,
       image: imageUrl,
-      start_date,
-      end_date,
+      start_date: formattedStartDate,
+      end_date: formattedEndDate,
       created_at: new Date(),
     };
 
@@ -149,15 +157,17 @@ router.put("/:id", authenticate, upload.single("image"), async (req, res) => {
       values.push(description);
     }
     if (start_date) {
+      const formattedStartDate = formatToDateOnly(start_date);
       fields.push("start_date = ?");
-      values.push(start_date);
+      values.push(formattedStartDate);
     }
     if (end_date) {
-      if (start_date && new Date(end_date) <= new Date(start_date)) {
+      const formattedEndDate = formatToDateOnly(end_date);
+      if (start_date && new Date(formattedEndDate) < new Date(formatToDateOnly(start_date))) {
         return res.status(400).json({ success: false, message: "End date must be after start date" });
       }
       fields.push("end_date = ?");
-      values.push(end_date);
+      values.push(formattedEndDate);
     }
     if (req.file) {
       const imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
@@ -180,6 +190,15 @@ router.put("/:id", authenticate, upload.single("image"), async (req, res) => {
       return res.status(404).json({ success: false, message: "Promotion not found" });
     }
 
+    // Emit WebSocket event for update
+    const io = req.app.get("io");
+    const [updatedPromotion] = await pool.query(
+      `SELECT id, title, description, image, DATE(start_date) as start_date, DATE(end_date) as end_date, created_at
+       FROM promotions WHERE id = ?`,
+      [id]
+    );
+    io.emit("update-promotion", updatedPromotion[0]);
+
     res.json({ success: true, message: "Promotion updated successfully" });
   } catch (err) {
     console.error("Promotion Update Error:", err);
@@ -198,6 +217,10 @@ router.delete("/:id", authenticate, async (req, res) => {
     if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "Promotion not found" });
     }
+
+    // Emit WebSocket event
+    const io = req.app.get("io");
+    io.emit("delete-promotion", { id });
 
     res.json({ success: true, message: "Promotion deleted" });
   } catch (err) {

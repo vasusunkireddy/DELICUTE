@@ -422,14 +422,14 @@
           <div class="error-message" id="image-error">Please select an image.</div>
         </div>
         <div class="form-group">
-          <label for="start-date">Start Date & Time</label>
-          <input type="datetime-local" id="start-date" name="start_date" required>
-          <div class="error-message" id="start-date-error">Please select a valid start date and time.</div>
+          <label for="start-date">Start Date</label>
+          <input type="date" id="start-date" name="start_date" required>
+          <div class="error-message" id="start-date-error">Please select a valid start date.</div>
         </div>
         <div class="form-group">
-          <label for="end-date">End Date & Time</label>
-          <input type="datetime-local" id="end-date" name="end_date" required>
-          <div class="error-message" id="end-date-error">Please select a valid end date and time.</div>
+          <label for="end-date">End Date</label>
+          <input type="date" id="end-date" name="end_date" required>
+          <div class="error-message" id="end-date-error">Please select a valid end date.</div>
         </div>
         <button type="submit" class="submit-btn">Add Promotion</button>
       </form>
@@ -472,14 +472,14 @@
           <img id="current-image" class="current-image" src="" alt="Current Promotion Image" style="display: none;">
         </div>
         <div class="form-group">
-          <label for="edit-start-date">Start Date & Time</label>
-          <input type="datetime-local" id="edit-start-date" name="start_date" required>
-          <div class="error-message" id="edit-start-date-error">Please select a valid start date and time.</div>
+          <label for="edit-start-date">Start Date</label>
+          <input type="date" id="edit-start-date" name="start_date" required>
+          <div class="error-message" id="edit-start-date-error">Please select a valid start date.</div>
         </div>
         <div class="form-group">
-          <label for="edit-end-date">End Date & Time</label>
-          <input type="datetime-local" id="edit-end-date" name="end_date" required>
-          <div class="error-message" id="edit-end-date-error">Please select a valid end date and time.</div>
+          <label for="edit-end-date">End Date</label>
+          <input type="date" id="edit-end-date" name="end_date" required>
+          <div class="error-message" id="edit-end-date-error">Please select a valid end date.</div>
         </div>
         <button type="submit" class="submit-btn">Update Promotion</button>
       </form>
@@ -558,6 +558,21 @@
       return parts.length === 2 ? parts.pop().split(";").shift() : null;
     }
 
+    // Date Formatting Utility
+    function formatDate(date) {
+      return new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      });
+    }
+
+    // Convert date to YYYY-MM-DD format for input
+    function toDateInputValue(date) {
+      const d = new Date(date);
+      return d.toISOString().split('T')[0];
+    }
+
     // Elements
     const promotionForm = document.getElementById("promotion-form");
     const promotionsList = document.getElementById("promotions-list");
@@ -584,7 +599,6 @@
     function renderPromotions(promotions) {
       promotionsList.innerHTML = promotions.length
         ? promotions.map(p => {
-            // Escape quotes and special characters for JavaScript string literals
             const safeTitle = p.title.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             const safeDescription = p.description.replace(/'/g, "\\'").replace(/"/g, '&quot;');
             return `
@@ -592,8 +606,8 @@
                 <td>${escapeHtml(p.title)}</td>
                 <td>${escapeHtml(p.description)}</td>
                 <td><img src="${p.image}" alt="${escapeHtml(p.title)}" class="promotion-image" loading="lazy" onerror="this.src='https://via.placeholder.com/100x60'"></td>
-                <td>${new Date(p.start_date).toLocaleString()}</td>
-                <td>${new Date(p.end_date).toLocaleString()}</td>
+                <td>${formatDate(p.start_date)}</td>
+                <td>${formatDate(p.end_date)}</td>
                 <td>
                   <button class="action-btn" onclick="openEditModal(${p.id}, '${safeTitle}', '${safeDescription}', '${p.image}', '${p.start_date}', '${p.end_date}')">Edit</button>
                   <button class="action-btn" onclick="deletePromotion(${p.id})">Delete</button>
@@ -637,7 +651,8 @@
         document.getElementById("start-date-error").style.display = "block";
         isValid = false;
       }
-      if (!formData.get("end_date") || endDate <= startDate) {
+      if (!formData.get("end_date") || endDate < startDate) {
+        document.getElementById("end-date-error").textContent = "End date must be after start date.";
         document.getElementById("end-date-error").style.display = "block";
         isValid = false;
       }
@@ -679,8 +694,8 @@
         // Populate form fields
         editTitle.value = title;
         editDescription.value = description;
-        editStartDate.value = new Date(startDate).toISOString().slice(0, 16);
-        editEndDate.value = new Date(endDate).toISOString().slice(0, 16);
+        editStartDate.value = toDateInputValue(startDate);
+        editEndDate.value = toDateInputValue(endDate);
         editForm.dataset.id = id;
 
         // Display current image
@@ -727,7 +742,8 @@
         document.getElementById("edit-start-date-error").style.display = "block";
         isValid = false;
       }
-      if (!formData.get("end_date") || endDate <= startDate) {
+      if (!formData.get("end_date") || endDate < startDate) {
+        document.getElementById("edit-end-date-error").textContent = "End date must be after start date.";
         document.getElementById("edit-end-date-error").style.display = "block";
         isValid = false;
       }
