@@ -769,7 +769,8 @@
     }
 
     async function loadPromotions() {
-      if (localStorage.getItem("promotionsShown")) {
+      // Skip if already shown in this session
+      if (sessionStorage.getItem("promotionsShown")) {
         splashScreen.style.display = "none";
         loadMenu();
         return;
@@ -781,7 +782,7 @@
         const splashContent = document.getElementById("splashContent");
         const now = new Date();
 
-        if (data.success && data.data.length > 0) {
+        if (data.success && data.data && data.data.length > 0) {
           const activePromotions = data.data.filter(p => {
             const start = new Date(p.start_date);
             const end = new Date(p.end_date);
@@ -792,35 +793,39 @@
             const promotion = activePromotions[0]; // Show first active promotion
             splashContent.innerHTML = `
               <button class="splash-close" onclick="hideSplashScreen()"><i class="fas fa-times"></i></button>
-              <img src="${promotion.image || 'https://via.placeholder.com/600x300'}" alt="${promotion.title.replace(/'/g, "\\'")}" loading="eager" onerror="this.src='https://via.placeholder.com/600x300'">
+              <img src="${promotion.image || 'https://via.placeholder.com/600x300'}" alt="${promotion.title.replace(/'/g, "\\'").replace(/"/g, '&quot;')}" loading="eager" onerror="this.src='https://via.placeholder.com/600x300'">
               <div class="splash-info">
-                <b>${promotion.title}</b>
-                <p>${promotion.description}</p>
+                <b>${promotion.title.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</b>
+                <p>${promotion.description.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>
               </div>
             `;
-            splashScreen.classList.add("visible");
+            splashScreen.style.display = "flex"; // Ensure display is set to flex
+            setTimeout(() => splashScreen.classList.add("visible"), 100); // Delay for rendering
             setTimeout(hideSplashScreen, 5000); // Auto-close after 5 seconds
-            localStorage.setItem("promotionsShown", "true");
+            sessionStorage.setItem("promotionsShown", "true");
           } else {
             splashScreen.style.display = "none";
+            loadMenu();
           }
         } else {
           splashScreen.style.display = "none";
+          loadMenu();
         }
       } catch (err) {
         showToast("Error loading promotions", false);
         console.error("Promotion Load Error:", err);
         splashScreen.style.display = "none";
-      } finally {
         loadMenu();
       }
     }
 
     function hideSplashScreen() {
+      splashScreen.classList.remove("visible");
       splashScreen.style.animation = "fadeOutPop 0.6s ease-in-out forwards";
       setTimeout(() => {
         splashScreen.style.display = "none";
         splashScreen.style.animation = "";
+        loadMenu();
       }, 600); // Match animation duration
     }
 
@@ -920,7 +925,7 @@
               <span class="price">₹${item.price}</span>
               ${item.original_price ? `<span class="old-price">₹${item.original_price}</span>` : ""}
             </p>
-            <button class="add-btn" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${item.price})"><i class="fas fa-cart-plus"></i> Add</button>
+            <button class="add-btn" onclick="addToCart(${item.id}, '${item.name.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${item.price})"><i class="fas fa-cart-plus"></i> Add</button>
           </div>
         </div>
       `;
@@ -1225,7 +1230,7 @@
     searchInput.addEventListener("input", filterMenu);
 
     window.addEventListener("load", () => {
-      localStorage.removeItem("promotionsShown"); // Remove in production
+      sessionStorage.removeItem("promotionsShown"); // Changed to sessionStorage for testing
       loadCart();
       const openCart = localStorage.getItem("openCart");
       const couponCode = localStorage.getItem("appliedCoupon");
