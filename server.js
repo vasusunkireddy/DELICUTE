@@ -23,8 +23,8 @@ const io = new Server(server, {
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // e.g., 'your-email@gmail.com'
-    pass: process.env.EMAIL_PASS, // Gmail App Password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
   },
 });
 
@@ -48,6 +48,7 @@ const categoriesRoutes = require("./routes/categories");
 const ordersRoutes = require("./routes/orders");
 const couponsRoutes = require("./routes/coupons");
 const customerMenuRoutes = require("./routes/customermenu");
+const promotionsRoutes = require("./routes/promotions"); // Added promotions route
 
 // ================== API ROUTES ==================
 app.use("/api/auth", authRoutes);
@@ -56,6 +57,7 @@ app.use("/api/categories", categoriesRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/coupons", couponsRoutes);
 app.use("/api", customerMenuRoutes);
+app.use("/api/promotions", promotionsRoutes); // Added promotions API route
 
 // ================== WEBSOCKET EVENTS ==================
 io.on("connection", (socket) => {
@@ -74,6 +76,7 @@ app.get("/admin", (_, res) => res.redirect("/admin.html"));
 app.get("/admindashboard", (_, res) => res.redirect("/admindashboard.html"));
 app.get("/orders", (_, res) => res.redirect("/adminorders.html"));
 app.get("/coupons", (_, res) => res.redirect("/admincoupons.html"));
+app.get("/promotions", (_, res) => res.redirect("/adminpromotions.html")); // Added promotions redirect
 
 // ================== STATIC FILES ==================
 app.use(express.static(path.join(__dirname, "public")));

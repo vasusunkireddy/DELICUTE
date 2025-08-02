@@ -510,6 +510,68 @@
     .clear-cart-btn:hover {
       background: linear-gradient(45deg, #d32f2f, #ef5350);
     }
+    .splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+      visibility: visible;
+    }
+    .splash-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+    .splash-content {
+      position: relative;
+      width: 90%;
+      max-width: 600px;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+      animation: fadeInScale 0.5s ease-out;
+    }
+    .splash-content img {
+      width: 100%;
+      height: 300px;
+      object-fit: cover;
+      display: block;
+      background: #f0f0f0;
+    }
+    .splash-info {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
+      padding: 1rem;
+      color: #fff;
+      text-align: center;
+    }
+    .splash-info b {
+      font-size: clamp(1rem, 2.5vw, 1.2rem);
+      font-weight: 700;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+    .splash-info p {
+      font-size: clamp(0.8rem, 2vw, 0.9rem);
+      font-weight: 600;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
     #toast {
       visibility: hidden;
       min-width: 180px;
@@ -539,6 +601,10 @@
       from { opacity: 1; top: 60px; }
       to { opacity: 0; top: -100%; }
     }
+    @keyframes fadeInScale {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
     @media (min-width: 769px) {
       .container { padding: 0 1rem; }
       .category-row { flex-wrap: wrap; gap: 1rem; }
@@ -546,6 +612,9 @@
       .card img { height: 180px; }
       .cart-section { max-width: 400px; right: 1rem; }
       .search-bar { max-width: 700px; }
+      .splash-content img { height: 400px; }
+      .splash-info b { font-size: 1.4rem; }
+      .splash-info p { font-size: 1rem; }
     }
     @media (max-width: 360px) {
       header img { height: 45px; }
@@ -578,11 +647,24 @@
       .clear-cart-btn { font-size: 0.75rem; padding: 0.6rem; }
       .line { font-size: 0.8rem; }
       .line.bold { font-size: 0.9rem; }
+      .splash-content img { height: 200px; }
+      .splash-info b { font-size: 0.9rem; }
+      .splash-info p { font-size: 0.7rem; }
       #toast { font-size: 0.7rem; padding: 0.7rem; }
     }
   </style>
 </head>
 <body>
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-content" id="splashContent">
+      <img src="https://via.placeholder.com/600x300" alt="Promotion">
+      <div class="splash-info">
+        <b>No Promotions Available</b>
+        <p>Please check back later for exciting offers!</p>
+      </div>
+    </div>
+  </div>
+
   <header>
     <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo" onerror="this.src='https://via.placeholder.com/50'">
     <div>
@@ -637,6 +719,7 @@
     const cartSection = document.getElementById("cartSection");
     const cartToggle = document.getElementById("cartToggle");
     const searchInput = document.getElementById("searchInput");
+    const splashScreen = document.getElementById("splashScreen");
     let cart = [];
     let appliedCoupon = null;
     const defaultImage = 'https://via.placeholder.com/150';
@@ -647,6 +730,54 @@
       toast.style.background = success ? "linear-gradient(45deg, #4caf50, #66bb6a)" : "linear-gradient(45deg, #f44336, #ef5350)";
       toast.className = "show";
       setTimeout(() => toast.className = toast.className.replace("show", ""), 2000);
+    }
+
+    async function loadPromotions() {
+      if (localStorage.getItem("promotionsShown")) {
+        hideSplashScreen();
+        return;
+      }
+
+      try {
+        const res = await fetch("/api/promotions");
+        const data = await res.json();
+        const splashContent = document.getElementById("splashContent");
+        const now = new Date();
+
+        if (data.success && data.data.length > 0) {
+          const activePromotions = data.data.filter(p => {
+            const start = new Date(p.start_date);
+            const end = new Date(p.end_date);
+            return start <= now && now <= end;
+          });
+
+          if (activePromotions.length > 0) {
+            const promotion = activePromotions[0]; // Show first active promotion
+            splashContent.innerHTML = `
+              <img src="${promotion.image || 'https://via.placeholder.com/600x300'}" alt="${promotion.title.replace(/'/g, "\\'")}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x300'">
+              <div class="splash-info">
+                <b>${promotion.title}</b>
+                <p>${promotion.description}</p>
+              </div>
+            `;
+            setTimeout(hideSplashScreen, 3000);
+            localStorage.setItem("promotionsShown", "true");
+          } else {
+            hideSplashScreen();
+          }
+        } else {
+          hideSplashScreen();
+        }
+      } catch (err) {
+        showToast("Error loading promotions", false);
+        console.error("Promotion Load Error:", err);
+        hideSplashScreen();
+      }
+    }
+
+    function hideSplashScreen() {
+      splashScreen.classList.add("hidden");
+      setTimeout(() => splashScreen.style.display = "none", 500); // Match transition duration
     }
 
     function toggleCart() {
@@ -1050,6 +1181,7 @@
     searchInput.addEventListener("input", filterMenu);
 
     window.addEventListener("load", () => {
+      localStorage.removeItem("promotionsShown"); // Remove in production
       loadCart();
       const openCart = localStorage.getItem("openCart");
       const couponCode = localStorage.getItem("appliedCoupon");
@@ -1061,6 +1193,7 @@
           applyCoupon(couponCode);
         }
       }
+      loadPromotions();
       loadMenu();
     });
   </script>
