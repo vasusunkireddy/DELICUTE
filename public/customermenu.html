@@ -22,7 +22,7 @@
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-font-smoothing: antialiased;
-      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      -webkit-overflow-scrolling: touch;
       touch-action: pan-y;
     }
     header {
@@ -62,7 +62,7 @@
       margin: 0.5rem auto;
       padding: 0 0.5rem;
       touch-action: pan-y;
-      -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+      -webkit-overflow-scrolling: touch;
     }
     h2 {
       font-size: clamp(1.2rem, 2.8vw, 1.4rem);
@@ -138,7 +138,7 @@
       scroll-snap-type: x mandatory;
       -webkit-overflow-scrolling: touch;
       scroll-behavior: smooth;
-      touch-action: pan-x pan-y; /* Allow both horizontal and vertical scrolling */
+      touch-action: pan-x pan-y;
       min-height: 280px;
     }
     .category-row::-webkit-scrollbar {
@@ -190,8 +190,8 @@
       display: block;
       background: #f0f0f0;
       max-width: 100%;
-      pointer-events: none; /* Prevent images from capturing touch events */
-      user-drag: none; /* Prevent image dragging */
+      pointer-events: none;
+      user-drag: none;
       -webkit-user-drag: none;
       user-select: none;
       -webkit-user-select: none;
@@ -346,7 +346,7 @@
       border-radius: 4px;
       margin-right: 0.5rem;
       background: #f0f0f0;
-      pointer-events: none; /* Prevent cart item images from capturing touch events */
+      pointer-events: none;
       user-drag: none;
       -webkit-user-drag: none;
       user-select: none;
@@ -752,23 +752,37 @@
         categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
         return;
       }
-      const grouped = {};
-      const topPicks = data.filter(item => item && item.is_top_pick);
+
+      // Sort items by order_index (or id if order_index is missing)
+      const sortedData = [...data].sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
+
+      // Extract top picks
+      const topPicks = sortedData.filter(item => item && item.is_top_pick);
       topPicksEl.innerHTML = topPicks.length > 0
         ? topPicks.map(item => buildCard(item, true)).join("")
         : "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
-      
-      data.forEach(item => {
+
+      // Group items by category and preserve backend order
+      const grouped = {};
+      sortedData.forEach(item => {
         if (!item || !item.id || !item.category) return;
         if (!grouped[item.category]) grouped[item.category] = [];
         grouped[item.category].push(item);
       });
+
+      // Sort categories by the order_index of their first item
+      const sortedCategories = Object.keys(grouped).sort((a, b) => {
+        const firstItemA = grouped[a][0];
+        const firstItemB = grouped[b][0];
+        return (firstItemA.order_index || firstItemA.id) - (firstItemB.order_index || firstItemB.id);
+      });
+
       categoriesEl.innerHTML = "";
-      if (Object.keys(grouped).length === 0) {
+      if (sortedCategories.length === 0) {
         categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
       } else {
-        Object.keys(grouped).forEach(cat => {
-          const items = grouped[cat];
+        sortedCategories.forEach(cat => {
+          const items = grouped[cat].sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
           const firstRow = items.slice(0, 9);
           const secondRow = items.slice(9, 18);
           categoriesEl.innerHTML += `
