@@ -516,13 +516,13 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.8);
+      background: rgba(0, 0, 0, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 2000;
       opacity: 1;
-      transition: opacity 0.5s ease-out;
+      transition: opacity 0.6s ease-out;
       visibility: visible;
     }
     .splash-screen.hidden {
@@ -533,11 +533,12 @@
       position: relative;
       width: 90%;
       max-width: 600px;
-      background: #fff;
-      border-radius: 8px;
+      background: linear-gradient(135deg, #ffffff, #f0f4f8);
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-      animation: fadeInScale 0.5s ease-out;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      animation: fadeInPop 0.7s ease-out;
+      border: 2px solid #26a69a;
     }
     .splash-content img {
       width: 100%;
@@ -545,32 +546,60 @@
       object-fit: cover;
       display: block;
       background: #f0f0f0;
+      transition: transform 0.3s ease;
+    }
+    .splash-content:hover img {
+      transform: scale(1.02);
     }
     .splash-info {
       position: absolute;
       bottom: 0;
       left: 0;
       right: 0;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
-      padding: 1rem;
+      background: linear-gradient(to top, rgba(38, 166, 154, 0.9), transparent);
+      padding: 1.5rem;
       color: #fff;
       text-align: center;
     }
     .splash-info b {
-      font-size: clamp(1rem, 2.5vw, 1.2rem);
-      font-weight: 700;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      font-size: clamp(1.2rem, 2.8vw, 1.4rem);
+      font-weight: 800;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
       display: block;
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.5px;
     }
     .splash-info p {
-      font-size: clamp(0.8rem, 2vw, 0.9rem);
+      font-size: clamp(0.9rem, 2.2vw, 1rem);
       font-weight: 600;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
       display: -webkit-box;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
       -webkit-box-orient: vertical;
       overflow: hidden;
+      line-height: 1.4;
+    }
+    .splash-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #26a69a;
+      border: none;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s ease, transform 0.2s ease;
+      touch-action: manipulation;
+    }
+    .splash-close:hover {
+      background: #fff;
+      transform: scale(1.1);
     }
     #toast {
       visibility: hidden;
@@ -601,8 +630,8 @@
       from { opacity: 1; top: 60px; }
       to { opacity: 0; top: -100%; }
     }
-    @keyframes fadeInScale {
-      from { opacity: 0; transform: scale(0.9); }
+    @keyframes fadeInPop {
+      from { opacity: 0; transform: scale(0.85); }
       to { opacity: 1; transform: scale(1); }
     }
     @media (min-width: 769px) {
@@ -613,8 +642,8 @@
       .cart-section { max-width: 400px; right: 1rem; }
       .search-bar { max-width: 700px; }
       .splash-content img { height: 400px; }
-      .splash-info b { font-size: 1.4rem; }
-      .splash-info p { font-size: 1rem; }
+      .splash-info b { font-size: 1.6rem; }
+      .splash-info p { font-size: 1.1rem; }
     }
     @media (max-width: 360px) {
       header img { height: 45px; }
@@ -648,15 +677,17 @@
       .line { font-size: 0.8rem; }
       .line.bold { font-size: 0.9rem; }
       .splash-content img { height: 200px; }
-      .splash-info b { font-size: 0.9rem; }
-      .splash-info p { font-size: 0.7rem; }
+      .splash-info b { font-size: 1rem; }
+      .splash-info p { font-size: 0.8rem; }
+      .splash-close { width: 25px; height: 25px; font-size: 0.9rem; }
       #toast { font-size: 0.7rem; padding: 0.7rem; }
     }
   </style>
 </head>
 <body>
-  <div class="splash-screen" id="splashScreen">
+  <div class="splash-screen hidden" id="splashScreen">
     <div class="splash-content" id="splashContent">
+      <button class="splash-close" onclick="hideSplashScreen()"><i class="fas fa-times"></i></button>
       <img src="https://via.placeholder.com/600x300" alt="Promotion">
       <div class="splash-info">
         <b>No Promotions Available</b>
@@ -734,7 +765,7 @@
 
     async function loadPromotions() {
       if (localStorage.getItem("promotionsShown")) {
-        hideSplashScreen();
+        splashScreen.style.display = "none";
         return;
       }
 
@@ -754,30 +785,32 @@
           if (activePromotions.length > 0) {
             const promotion = activePromotions[0]; // Show first active promotion
             splashContent.innerHTML = `
+              <button class="splash-close" onclick="hideSplashScreen()"><i class="fas fa-times"></i></button>
               <img src="${promotion.image || 'https://via.placeholder.com/600x300'}" alt="${promotion.title.replace(/'/g, "\\'")}" loading="lazy" onerror="this.src='https://via.placeholder.com/600x300'">
               <div class="splash-info">
                 <b>${promotion.title}</b>
                 <p>${promotion.description}</p>
               </div>
             `;
-            setTimeout(hideSplashScreen, 3000);
+            splashScreen.classList.remove("hidden");
+            setTimeout(hideSplashScreen, 5000); // Auto-close after 5 seconds
             localStorage.setItem("promotionsShown", "true");
           } else {
-            hideSplashScreen();
+            splashScreen.style.display = "none";
           }
         } else {
-          hideSplashScreen();
+          splashScreen.style.display = "none";
         }
       } catch (err) {
         showToast("Error loading promotions", false);
         console.error("Promotion Load Error:", err);
-        hideSplashScreen();
+        splashScreen.style.display = "none";
       }
     }
 
     function hideSplashScreen() {
       splashScreen.classList.add("hidden");
-      setTimeout(() => splashScreen.style.display = "none", 500); // Match transition duration
+      setTimeout(() => splashScreen.style.display = "none", 600); // Match transition duration
     }
 
     function toggleCart() {
