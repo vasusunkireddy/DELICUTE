@@ -1,3 +1,4 @@
+// ================== CORE IMPORTS ==================
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
@@ -7,6 +8,7 @@ const { Server } = require("socket.io");
 const http = require("http");
 require("dotenv").config();
 
+// ================== APP & SERVER ==================
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -28,7 +30,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ================== CORE MIDDLEWARE ==================
+// ================== MIDDLEWARE ==================
 app.use(
   cors({
     origin: [
@@ -48,22 +50,23 @@ const categoriesRoutes = require("./routes/categories");
 const ordersRoutes = require("./routes/orders");
 const couponsRoutes = require("./routes/coupons");
 const customerMenuRoutes = require("./routes/customermenu");
-const promotionsRoutes = require("./routes/promotions"); // Added promotions route
+const promotionsRoutes = require("./routes/promotions");
 
-// ================== API ROUTES ==================
+// API Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/menu", menuRoutes);
 app.use("/api/categories", categoriesRoutes);
 app.use("/api/orders", ordersRoutes);
 app.use("/api/coupons", couponsRoutes);
 app.use("/api", customerMenuRoutes);
-app.use("/api/promotions", promotionsRoutes); // Added promotions API route
+app.use("/api/promotions", promotionsRoutes);
 
 // ================== WEBSOCKET EVENTS ==================
 io.on("connection", (socket) => {
-  console.log("Admin connected:", socket.id);
+  console.log("🔌 Socket connected:", socket.id);
+
   socket.on("disconnect", () => {
-    console.log("Admin disconnected:", socket.id);
+    console.log("❌ Socket disconnected:", socket.id);
   });
 });
 
@@ -71,17 +74,16 @@ io.on("connection", (socket) => {
 app.set("io", io);
 app.set("transporter", transporter);
 
-// ================== FRONTEND PAGES ==================
+// ================== STATIC & FRONTEND PAGES ==================
+app.use(express.static(path.join(__dirname, "public")));
+
 app.get("/admin", (_, res) => res.redirect("/admin.html"));
 app.get("/admindashboard", (_, res) => res.redirect("/admindashboard.html"));
 app.get("/orders", (_, res) => res.redirect("/adminorders.html"));
 app.get("/coupons", (_, res) => res.redirect("/admincoupons.html"));
-app.get("/promotions", (_, res) => res.redirect("/adminpromotions.html")); // Added promotions redirect
+app.get("/promotions", (_, res) => res.redirect("/adminpromotions.html"));
 
-// ================== STATIC FILES ==================
-app.use(express.static(path.join(__dirname, "public")));
-
-// ================== ROOT ==================
+// Root
 app.get("/", (_, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -89,7 +91,9 @@ app.get("/", (_, res) => {
 // ================== 404 HANDLER ==================
 app.use((req, res) => {
   if (req.path.startsWith("/api")) {
-    return res.status(404).json({ success: false, message: "API route not found" });
+    return res
+      .status(404)
+      .json({ success: false, message: "API route not found" });
   }
   res.status(404).sendFile(path.join(__dirname, "public", "index.html"));
 });
