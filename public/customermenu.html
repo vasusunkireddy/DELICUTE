@@ -536,126 +536,6 @@
     .clear-cart-btn:hover {
       background: linear-gradient(45deg, #d32f2f, #ef5350);
     }
-    .splash-screen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 2000;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.6s ease-in-out, visibility 0.6s ease-in-out;
-    }
-    .splash-screen.visible {
-      opacity: 1;
-      visibility: visible;
-    }
-    .splash-content {
-      position: relative;
-      width: 90%;
-      max-width: 800px;
-      background: #ffffff;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-      animation: fadeInPop 0.7s ease-out forwards;
-      border: 3px solid #26a69a;
-    }
-    .splash-content img {
-      width: 100%;
-      height: 400px;
-      object-fit: cover;
-      display: block;
-      background: #f0f0f0;
-      transition: transform 0.3s ease;
-    }
-    .splash-content:hover img {
-      transform: scale(1.03);
-    }
-    .splash-info {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(to top, rgba(38, 166, 154, 0.95), rgba(38, 166, 154, 0.2));
-      padding: 2rem 1.5rem;
-      color: #fff;
-      text-align: center;
-    }
-    .splash-info b {
-      font-size: clamp(1.6rem, 3.2vw, 2rem);
-      font-weight: 800;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-      display: block;
-      margin-bottom: 0.8rem;
-      letter-spacing: 0.5px;
-    }
-    .splash-info p {
-      font-size: clamp(1.1rem, 2.5vw, 1.3rem);
-      font-weight: 600;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-      display: -webkit-box;
-      -webkit-line-clamp: 3;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      line-height: 1.5;
-    }
-    .splash-info .countdown {
-      font-size: clamp(1rem, 2.2vw, 1.1rem);
-      font-weight: 600;
-      color: #ffd700;
-      margin-top: 0.5rem;
-      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    }
-    .splash-info .promo-btn {
-      background: linear-gradient(45deg, #ffd700, #ffca28);
-      color: #1a1a1a;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: clamp(0.9rem, 2vw, 1rem);
-      font-weight: 700;
-      margin-top: 1rem;
-      transition: background 0.2s ease, transform 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      touch-action: manipulation;
-    }
-    .splash-info .promo-btn:hover {
-      background: linear-gradient(45deg, #ffca28, #ffb300);
-      transform: scale(1.05);
-    }
-    .splash-close {
-      position: absolute;
-      top: 15px;
-      right: 15px;
-      background: #ffffff;
-      color: #26a69a;
-      border: none;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 1.2rem;
-      transition: background 0.2s ease, transform 0.2s ease;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-      touch-action: manipulation;
-    }
-    .splash-close:hover {
-      background: #f0f0f0;
-      transform: scale(1.1);
-    }
     #toast {
       visibility: hidden;
       min-width: 180px;
@@ -685,14 +565,6 @@
       from { opacity: 1; top: 60px; }
       to { opacity: 0; top: -100%; }
     }
-    @keyframes fadeInPop {
-      from { opacity: 0; transform: scale(0.9); }
-      to { opacity: 1; transform: scale(1); }
-    }
-    @keyframes fadeOutPop {
-      from { opacity: 1; transform: scale(1); }
-      to { opacity: 0; transform: scale(0.9); }
-    }
     @media (min-width: 769px) {
       .container { padding: 0 1rem; }
       .category-row { flex-wrap: wrap; gap: 1rem; }
@@ -700,43 +572,11 @@
       .card img { height: 180px; }
       .cart-section { max-width: 400px; right: 1rem; }
       .search-bar { max-width: 700px; }
-      .splash-content { max-width: 900px; }
-      .splash-content img { height: 450px; }
-      .splash-info b { font-size: 2.2rem; }
-      .splash-info p { font-size: 1.4rem; }
-      .splash-info .countdown { font-size: 1.2rem; }
-      .splash-info .promo-btn { font-size: 1.1rem; padding: 1rem 2rem; }
     }
     @media (max-width: 768px) {
-      .splash-screen {
-        align-items: flex-start;
-        padding-top: 20px;
-      }
-      .splash-content {
-        width: 95%;
-        max-width: 400px;
-      }
-      .splash-content img {
-        height: 250px;
-      }
-      .splash-info b {
-        font-size: clamp(1.3rem, 2.8vw, 1.5rem);
-      }
-      .splash-info p {
-        font-size: clamp(0.95rem, 2.2vw, 1.1rem);
-      }
-      .splash-info .countdown {
-        font-size: clamp(0.85rem, 2vw, 0.95rem);
-      }
-      .splash-info .promo-btn {
-        font-size: clamp(0.85rem, 2vw, 0.95rem);
-        padding: 0.7rem 1.2rem;
-      }
-      .splash-close {
-        width: 35px;
-        height: 35px;
-        font-size: 1rem;
-      }
+      .card { max-width: calc(50% - 0.2rem); }
+      .card img { height: 120px; }
+      .cart-section { height: 80%; }
     }
     @media (max-width: 360px) {
       header img { height: 45px; }
@@ -748,7 +588,6 @@
       .search-bar input { font-size: 0.85rem; padding: 0.6rem; }
       .search-bar button { font-size: 0.9rem; padding: 0.6rem; }
       .card { max-width: calc(100% - 0.2rem); min-height: 280px; }
-      .card img { height: 120px; }
       .card-body h3 { font-size: 0.8rem; }
       .card-body p { font-size: 0.7rem; }
       .price-container { gap: 0.3rem; }
@@ -771,31 +610,11 @@
       .clear-cart-btn { font-size: 0.75rem; padding: 0.6rem; }
       .line { font-size: 0.8rem; }
       .line.bold { font-size: 0.9rem; }
-      .splash-content { width: 95%; max-width: 340px; }
-      .splash-content img { height: 200px; }
-      .splash-info b { font-size: 1.3rem; }
-      .splash-info p { font-size: 1rem; }
-      .splash-info .countdown { font-size: 0.9rem; }
-      .splash-info .promo-btn { font-size: 0.85rem; padding: 0.6rem 1rem; }
-      .splash-close { width: 30px; height: 30px; font-size: 0.9rem; }
       #toast { font-size: 0.7rem; padding: 0.7rem; top: 50px; }
     }
   </style>
 </head>
 <body>
-  <div class="splash-screen" id="splashScreen">
-    <div class="splash-content" id="splashContent">
-      <button class="splash-close" onclick="hideSplashScreen()"><i class="fas fa-times"></i></button>
-      <img src="https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Promotion">
-      <div class="splash-info">
-        <b>No Promotions Available</b>
-        <p>Please check back later for exciting offers!</p>
-        <div class="countdown" id="countdown"></div>
-        <button class="promo-btn" onclick="hideSplashScreen()"><i class="fas fa-eye"></i> Explore Menu</button>
-      </div>
-    </div>
-  </div>
-
   <header>
     <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="DELICUTE Logo" onerror="this.src='https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=50&q=80'">
     <div>
@@ -850,7 +669,6 @@
     const cartSection = document.getElementById("cartSection");
     const cartToggle = document.getElementById("cartToggle");
     const searchInput = document.getElementById("searchInput");
-    const splashScreen = document.getElementById("splashScreen");
     let cart = [];
     let appliedCoupon = null;
     const defaultImage = 'https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80';
@@ -858,7 +676,7 @@
     // Configure API base URL for deployment
     const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'http://localhost:3000'
-      : 'https://delicute-3bf1.onrender.com'; // Replace with your production API URL
+      : 'https://yourdomain.com'; // Replace with your production API URL
 
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
@@ -872,142 +690,6 @@
     function escapeHtml(str) {
       if (!str) return '';
       return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
-
-    function startCountdown(endDate) {
-      const countdownEl = document.getElementById("countdown");
-      if (!countdownEl || !endDate) return;
-
-      const updateCountdown = () => {
-        const now = new Date();
-        const end = new Date(endDate);
-        const diff = end - now;
-
-        if (diff <= 0) {
-          countdownEl.textContent = "Promotion has ended!";
-          return;
-        }
-
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-
-        countdownEl.textContent = `Offer ends in ${days}d ${hours}h ${minutes}m ${seconds}s`;
-        setTimeout(updateCountdown, 1000);
-      };
-
-      updateCountdown();
-    }
-
-    async function loadPromotions() {
-      if (sessionStorage.getItem("promotionsShown")) {
-        splashScreen.style.display = "none";
-        await loadMenu();
-        return;
-      }
-
-      try {
-        // Get authentication token from localStorage or your auth mechanism
-        const token = localStorage.getItem("authToken"); // Replace with your token storage method
-        const headers = {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          ...(token && { 'Authorization': `Bearer ${token}` }) // Include token if available
-        };
-
-        // Add timeout to prevent hanging on slow networks
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
-        const res = await fetch(`${API_BASE_URL}/api/promotions`, {
-          headers,
-          signal: controller.signal,
-          cache: "no-store",
-          credentials: 'include' // Include cookies for session-based auth
-        });
-
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            showToast("Please log in to view promotions.", false);
-            throw new Error("Unauthorized");
-          } else if (res.status === 403) {
-            showToast("Access to promotions denied.", false);
-            throw new Error("Forbidden");
-          } else {
-            throw new Error(`HTTP error! status: ${res.status}`);
-          }
-        }
-
-        const data = await res.json();
-        const splashContent = document.getElementById("splashContent");
-        if (!splashContent) throw new Error("splashContent element not found");
-
-        const now = new Date();
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-          const activePromotions = data.data.filter(p => {
-            if (!p.start_date || !p.end_date) return false;
-            const start = new Date(p.start_date);
-            const end = new Date(p.end_date);
-            return start <= now && now <= end;
-          });
-
-          if (activePromotions.length > 0) {
-            const promotion = activePromotions[0];
-            const title = escapeHtml(promotion.title || 'No Promotions Available');
-            const description = escapeHtml(promotion.description || 'Please check back later for exciting offers!');
-            const imageSrc = promotion.image && promotion.image.trim() ? escapeHtml(promotion.image) : 'https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80';
-            splashContent.innerHTML = `
-              <button class="splash-close" onclick="hideSplashScreen()"><i class="fas fa-times"></i></button>
-              <img src="${imageSrc}" alt="${title}" loading="eager" onerror="this.src='https://images.unsplash.com/photo-1513106580091-1d82408b8cd6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'">
-              <div class="splash-info">
-                <b>${title}</b>
-                <p>${description}</p>
-                <div class="countdown" id="countdown"></div>
-                <button class="promo-btn" onclick="hideSplashScreen()"><i class="fas fa-eye"></i> Explore Menu</button>
-              </div>
-            `;
-            splashScreen.style.display = "flex";
-            requestAnimationFrame(() => {
-              splashScreen.classList.add("visible");
-            });
-            if (promotion.end_date) {
-              startCountdown(promotion.end_date);
-            }
-            setTimeout(hideSplashScreen, 8000);
-            sessionStorage.setItem("promotionsShown", "true");
-          } else {
-            splashScreen.style.display = "none";
-            await loadMenu();
-          }
-        } else {
-          splashScreen.style.display = "none";
-          await loadMenu();
-        }
-      } catch (err) {
-        console.error("Promotion Load Error:", {
-          message: err.message,
-          url: `${API_BASE_URL}/api/promotions`,
-          userAgent: navigator.userAgent,
-          timestamp: new Date().toISOString()
-        });
-        showToast("Unable to load promotions. Please check your connection and try again.", false);
-        splashScreen.style.display = "none";
-        await loadMenu();
-      }
-    }
-
-    function hideSplashScreen() {
-      if (!splashScreen) return;
-      splashScreen.classList.remove("visible");
-      splashScreen.style.animation = "fadeOutPop 0.6s ease-in-out forwards";
-      setTimeout(() => {
-        splashScreen.style.display = "none";
-        splashScreen.style.animation = "";
-        loadMenu();
-      }, 600);
     }
 
     function toggleCart() {
@@ -1060,18 +742,48 @@
 
     async function loadMenu() {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/menu`, { cache: "no-store" });
-        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+        const res = await fetch(`${API_BASE_URL}/api/menu`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          signal: controller.signal,
+          cache: "no-store",
+          credentials: 'include'
+        });
+        clearTimeout(timeoutId);
+
+        if (!res.ok) {
+          if (res.status === 401) {
+            showToast("Please log in to view the menu.", false);
+            throw new Error("Unauthorized");
+          } else if (res.status === 403) {
+            showToast("Access to menu denied.", false);
+            throw new Error("Forbidden");
+          }
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
           menuData = data.data;
           renderMenu(menuData);
         } else {
           showToast("Failed to load menu", false);
+          categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.85rem, 2vw, 0.95rem);'>No menu items available</p>";
         }
       } catch (err) {
-        console.error("Menu Load Error:", err);
-        showToast("Error loading menu", false);
+        console.error("Menu Load Error:", {
+          message: err.message,
+          url: `${API_BASE_URL}/api/menu`,
+          userAgent: navigator.userAgent,
+          timestamp: new Date().toISOString()
+        });
+        showToast("Unable to load menu. Please check your connection and try again.", false);
+        categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.85rem, 2vw, 0.95rem);'>Unable to load menu</p>";
       }
     }
 
@@ -1430,7 +1142,6 @@
     searchInput.addEventListener("input", filterMenu);
 
     window.addEventListener("load", () => {
-      // sessionStorage.removeItem("promotionsShown"); // Uncomment for testing
       loadCart();
       const openCart = localStorage.getItem("openCart");
       const couponCode = localStorage.getItem("appliedCoupon");
@@ -1442,7 +1153,7 @@
           applyCoupon(couponCode);
         }
       }
-      loadPromotions();
+      loadMenu();
     });
   </script>
 </body>
