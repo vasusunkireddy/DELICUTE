@@ -96,6 +96,7 @@
       padding: 0.3rem;
       box-shadow: 0 2px 5px rgba(216, 183, 210, 0.2);
       transition: box-shadow 0.2s ease;
+      position: relative;
     }
     .search-bar:hover {
       box-shadow: 0 3px 7px rgba(216, 183, 210, 0.3);
@@ -111,17 +112,54 @@
       background: transparent;
     }
     .search-bar button {
-      background: transparent;
+      background: linear-gradient(45deg, #8e44ad, #d8b7d2);
       border: none;
       padding: 0.6rem;
       cursor: pointer;
-      color: #8e44ad;
-      font-size: clamp(0.95rem, 1.8vw, 1rem);
-      transition: color 0.2s ease;
+      color: #fff;
+      font-size: clamp(1rem, 2vw, 1.1rem);
+      border-radius: 6px;
+      transition: background 0.2s ease, transform 0.2s ease;
       touch-action: manipulation;
+      margin-right: 0.3rem;
     }
     .search-bar button:hover {
-      color: #6c3483;
+      background: linear-gradient(45deg, #6c3483, #d8b7d2);
+      transform: scale(1.05);
+    }
+    .filter-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: #fff;
+      border: 1px solid #d8b7d2;
+      border-radius: 8px;
+      box-shadow: 0 3px 8px rgba(216, 183, 210, 0.2);
+      z-index: 1000;
+      min-width: 200px;
+      max-height: 300px;
+      overflow-y: auto;
+      display: none;
+      -webkit-overflow-scrolling: touch;
+      font-family: Arial, sans-serif;
+    }
+    .filter-dropdown.active {
+      display: block;
+    }
+    .filter-dropdown div {
+      padding: 0.6rem 1rem;
+      font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+      color: #1a1a1a;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    .filter-dropdown div:hover {
+      background: #f0e7fa;
+    }
+    .filter-dropdown div.selected {
+      background: #d8b7d2;
+      color: #fff;
+      font-weight: 600;
     }
     .category-row-container {
       display: flex;
@@ -231,10 +269,14 @@
     }
     .old-price {
       text-decoration: line-through;
-      color: #888;
-      font-size: clamp(0.65rem, 1.4vw, 0.75rem);
-      margin-left: 0.2rem;
+      color: #6c3483;
+      font-size: clamp(0.7rem, 1.5vw, 0.8rem);
+      margin-left: 0.3rem;
       font-family: Arial, sans-serif;
+      opacity: 0.8;
+      font-weight: 500;
+      text-decoration-thickness: 2px;
+      text-decoration-color: #ff0000;
     }
     .add-btn {
       background: linear-gradient(45deg, #ffa726, #ffca28);
@@ -570,6 +612,7 @@
       .card img { height: 160px; }
       .cart-section { max-width: 400px; right: 0.8rem; }
       .search-bar { max-width: 700px; }
+      .filter-dropdown { min-width: 250px; }
     }
     @media (max-width: 360px) {
       header img { height: 40px; }
@@ -585,7 +628,7 @@
       .card-body h3 { font-size: 0.75rem; }
       .card-body p { font-size: 0.65rem; }
       .price { font-size: 0.75rem; }
-      .old-price { font-size: 0.6rem; }
+      .old-price { font-size: 0.65rem; }
       .add-btn { font-size: 0.7rem; padding: 0.4rem; }
       .cart-section { height: 80%; padding: 0.6rem; }
       .cart-toggle { bottom: 0.7rem; right: 0.7rem; padding: 0.6rem; font-size: 0.9rem; }
@@ -602,6 +645,8 @@
       .clear-cart-btn { font-size: 0.7rem; padding: 0.5rem; }
       .line { font-size: 0.75rem; }
       .line.bold { font-size: 0.85rem; }
+      .filter-dropdown { min-width: 180px; }
+      .filter-dropdown div { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
       #toast { font-size: 0.65rem; padding: 0.6rem; }
     }
   </style>
@@ -616,12 +661,15 @@
   </header>
 
   <div class="container">
-    <h2>OUR DELICATE SPECIALS</h2>
+    <h2>OUR DELICUTE SPECIALS</h2>
     <div id="topPicks" class="category-row"></div>
     <h2>OUR MENU</h2>
     <div class="search-bar">
-      <input type="text" id="searchInput" placeholder="Search by name or category...">
-      <button onclick="filterMenu()"><i class="fas fa-filter"></i></button>
+      <input type="text" id="searchInput" placeholder="Search by name...">
+      <button id="filterBtn"><i class="fas fa-filter"></i></button>
+      <div class="filter-dropdown" id="filterDropdown">
+        <div data-category="All" class="selected">All Categories</div>
+      </div>
     </div>
     <div id="menuCategories"></div>
   </div>
@@ -661,8 +709,11 @@
     const cartSection = document.getElementById("cartSection");
     const cartToggle = document.getElementById("cartToggle");
     const searchInput = document.getElementById("searchInput");
+    const filterBtn = document.getElementById("filterBtn");
+    const filterDropdown = document.getElementById("filterDropdown");
     let cart = [];
     let appliedCoupon = null;
+    let selectedCategory = "All";
     const defaultImage = 'https://via.placeholder.com/150';
 
     function showToast(msg, success = true) {
@@ -737,13 +788,33 @@
           throw new Error("Invalid menu data received");
         }
         menuData = data.data;
-        renderMenu(menuData);
+        renderCategories();
+        filterMenu();
       } catch (err) {
         console.error("Menu Load Error:", err);
         showToast(`Error loading menu: ${err.message}`, false);
         topPicksEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
         categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
       }
+    }
+
+    function renderCategories() {
+      if (!Array.isArray(menuData) || menuData.length === 0) {
+        filterDropdown.innerHTML = '<div data-category="All" class="selected">All Categories</div>';
+        return;
+      }
+      const categories = [...new Set(menuData.filter(item => item && item.category).map(item => item.category))].sort();
+      filterDropdown.innerHTML = '<div data-category="All" class="selected">All Categories</div>' +
+        categories.map(cat => `<div data-category="${cat}">${cat}</div>`).join('');
+      filterDropdown.querySelectorAll('div').forEach(div => {
+        div.addEventListener('click', () => {
+          selectedCategory = div.dataset.category;
+          filterDropdown.querySelectorAll('div').forEach(d => d.classList.remove('selected'));
+          div.classList.add('selected');
+          filterDropdown.classList.remove('active');
+          filterMenu();
+        });
+      });
     }
 
     function renderMenu(data) {
@@ -756,7 +827,7 @@
       const sortedData = [...data].sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
 
       const topPicks = sortedData.filter(item => item && item.is_top_pick);
-      topPicksEl.innerHTML = topPicks.length > 0
+      topPicksEl.innerHTML = topPicks.length > 0 && selectedCategory === "All"
         ? topPicks.map(item => buildCard(item, true)).join("")
         : "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
 
@@ -774,10 +845,11 @@
       });
 
       categoriesEl.innerHTML = "";
-      if (sortedCategories.length === 0) {
+      if (sortedCategories.length === 0 || (selectedCategory !== "All" && !sortedCategories.includes(selectedCategory))) {
         categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
       } else {
-        sortedCategories.forEach(cat => {
+        const categoriesToShow = selectedCategory === "All" ? sortedCategories : [selectedCategory];
+        categoriesToShow.forEach(cat => {
           const items = grouped[cat].sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
           const firstRow = items.slice(0, 9);
           const secondRow = items.slice(9, 18);
@@ -823,11 +895,13 @@
         return;
       }
       const query = searchInput.value.toLowerCase().trim();
-      const filtered = query
-        ? menuData.filter(item => item && (
-            item.name.toLowerCase().includes(query) ||
-            item.category.toLowerCase().includes(query)))
-        : menuData;
+      let filtered = menuData;
+      if (selectedCategory !== "All") {
+        filtered = menuData.filter(item => item && item.category === selectedCategory);
+      }
+      if (query) {
+        filtered = filtered.filter(item => item && item.name.toLowerCase().includes(query));
+      }
       renderMenu(filtered);
     }
 
@@ -920,7 +994,6 @@
       const discountEl = document.getElementById("discount");
       const totalEl = document.getElementById("total");
 
-      // Initialize cart items if empty
       if (!Array.isArray(cart) || cart.length === 0) {
         if (cartItemsEl.innerHTML !== "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>") {
           cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
@@ -940,7 +1013,6 @@
         if (id) existingItems.set(id, item);
       });
 
-      // Build or update cart items
       cart.forEach(item => {
         if (!item || !item.id || !item.price || !item.qty) return;
         subtotal += item.price * item.qty;
@@ -950,13 +1022,11 @@
         let cartItem = existingItems.get(itemId);
 
         if (cartItem) {
-          // Update existing item
           const qtySpan = cartItem.querySelector('.qty-controls span');
           const totalSpan = cartItem.querySelector('span:last-child');
           if (qtySpan) qtySpan.textContent = item.qty;
           if (totalSpan) totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
         } else {
-          // Add new item
           const newItem = document.createElement('div');
           newItem.className = 'cart-item';
           newItem.dataset.id = itemId;
@@ -975,7 +1045,6 @@
         }
       });
 
-      // Remove items no longer in cart
       existingItems.forEach((item, id) => {
         if (!cart.find(i => String(i.id) === id)) {
           cartItemsEl.removeChild(item);
@@ -983,7 +1052,6 @@
         }
       });
 
-      // Update totals
       const discount = await calculateDiscount(subtotal);
       let total = subtotal - discount;
       if (total < 0) total = 0;
@@ -1165,7 +1233,23 @@
       }
     }
 
+    function toggleFilterDropdown() {
+      if (filterDropdown) {
+        filterDropdown.classList.toggle('active');
+      }
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (filterDropdown && filterBtn && !filterDropdown.contains(e.target) && !filterBtn.contains(e.target)) {
+        filterDropdown.classList.remove('active');
+      }
+    });
+
     searchInput.addEventListener("input", filterMenu);
+    if (filterBtn) {
+      filterBtn.addEventListener("click", toggleFilterDropdown);
+    }
 
     window.addEventListener("load", () => {
       loadCart();
