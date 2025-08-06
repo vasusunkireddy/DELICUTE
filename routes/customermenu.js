@@ -9,10 +9,10 @@ router.get("/menu", async (req, res) => {
   try {
     const [rows] = await pool.query(`
       SELECT m.id, m.name, m.price, m.description, m.image, 
-             m.saved_amount, m.is_top_pick, c.name AS category
+             m.saved_price, m.is_top_pick, m.size, c.name AS category
       FROM menu_items m
       JOIN categories c ON m.category_id = c.id
-      ORDER BY c.name, m.name
+      ORDER BY c.name, m.name, m.size
     `);
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -126,12 +126,12 @@ router.post("/orders", async (req, res) => {
         } else if (coupon.type === "percentage") {
           discount = (eligibleSubtotal * coupon.discount) / 100;
         } else if (coupon.type === "fixed") {
-          discount = Math.min(coupon.discount, eligibleSubtotal); // Ensure discount doesn't exceed subtotal
+          discount = Math.min(coupon.discount, eligibleSubtotal);
         } else if (coupon.type === "bogo") {
           if (eligibleQty >= 2) {
             const pairs = Math.floor(eligibleQty / 2);
-            const avgPrice = eligibleSubtotal / eligibleQty; // Average price of eligible items
-            discount = pairs * avgPrice; // Discount one item per pair
+            const avgPrice = eligibleSubtotal / eligibleQty;
+            discount = pairs * avgPrice;
           }
         }
       }

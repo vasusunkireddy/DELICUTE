@@ -353,6 +353,12 @@
       visibility: visible;
       animation: slideDown 0.5s ease-out, slideUp 0.5s ease-in 2.5s forwards;
     }
+    .size-field {
+      display: none;
+    }
+    .size-field.visible {
+      display: block;
+    }
     @keyframes shine {
       0% { left: -100%; }
       50% { left: 100%; }
@@ -423,6 +429,12 @@
       <input type="number" step="0.01" name="original_price" placeholder="Original Price" required>
       <input type="number" step="0.01" name="saved_price" placeholder="Saved Price (Discounted)">
       <select name="category_id" id="categorySelect" required></select>
+      <select name="size" id="addSizeSelect" class="size-field">
+        <option value="" disabled selected>Select Size</option>
+        <option value="REGULAR">REGULAR</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="LARGE">LARGE</option>
+      </select>
       <input type="file" name="image" accept="image/*" required>
       <button type="submit">Add Item</button>
     </form>
@@ -445,6 +457,12 @@
         <input type="number" step="0.01" name="original_price" id="editOriginalPrice" placeholder="Original Price" required>
         <input type="number" step="0.01" name="saved_price" id="editSavedPrice" placeholder="Saved Price">
         <select name="category_id" id="editCategorySelect" required></select>
+        <select name="size" id="editSizeSelect" class="size-field">
+          <option value="" disabled selected>Select Size</option>
+          <option value="REGULAR">REGULAR</option>
+          <option value="MEDIUM">MEDIUM</option>
+          <option value="LARGE">LARGE</option>
+        </select>
         <input type="file" name="image" accept="image/*">
         <button type="submit">Update Item</button>
       </form>
@@ -456,6 +474,7 @@
 
   <script>
     let menuData = [];
+    let categories = [];
 
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
@@ -499,6 +518,7 @@
       });
 
       Object.keys(grouped).sort().forEach(category => {
+        const isPizzaCategory = category.toLowerCase().includes("pizza");
         categoriesEl.innerHTML += `
           <div class="category-section">
             <div class="category-header" onclick="toggleCategory('${category}')">${category} <span>▼</span></div>
@@ -510,6 +530,7 @@
                     <th>Description</th>
                     <th>Original Price</th>
                     <th>Saved Price</th>
+                    ${isPizzaCategory ? "<th>Size</th>" : ""}
                     <th>Image</th>
                     <th>Actions</th>
                   </tr>
@@ -521,6 +542,7 @@
                       <td>${item.description || ""}</td>
                       <td>₹${item.original_price}</td>
                       <td>${item.saved_price > 0 ? "₹" + item.saved_price : "-"}</td>
+                      ${isPizzaCategory ? `<td>${item.size || "-"}</td>` : ""}
                       <td><img src="${item.image}" alt="${item.name}"></td>
                       <td>
                         <button class="btn btn-edit" onclick="openEditModal(${item.id})">Edit</button>
@@ -545,6 +567,17 @@
       header.innerHTML = `${category} <span>${isExpanded ? "▶" : "▼"}</span>`;
     }
 
+    function toggleSizeField(selectElement, sizeElementId) {
+      const sizeField = document.getElementById(sizeElementId);
+      const selectedCategoryId = selectElement.value;
+      const selectedCategory = categories.find(cat => cat.id == selectedCategoryId);
+      const isPizza = selectedCategory && selectedCategory.name.toLowerCase().includes("pizza");
+      sizeField.classList.toggle("visible", isPizza);
+      if (!isPizza) {
+        sizeField.value = "";
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await fetch("/api/auth/check", { credentials: "include" });
@@ -554,6 +587,8 @@
         }
         await loadCategories();
         await loadMenu();
+        document.getElementById("categorySelect").addEventListener("change", (e) => toggleSizeField(e.target, "addSizeSelect"));
+        document.getElementById("editCategorySelect").addEventListener("change", (e) => toggleSizeField(e.target, "editSizeSelect"));
       } catch (err) {
         window.location.href = "/admin.html";
       }
@@ -580,12 +615,13 @@
         const res = await fetch("/api/categories");
         const data = await res.json();
         if (data.success) {
-          const addSelect = document.getElementById("categorySelect");
+          categories = data.data;
+          const categorySelect = document.getElementById("categorySelect");
           const editSelect = document.getElementById("editCategorySelect");
-          addSelect.innerHTML = "";
+          categorySelect.innerHTML = "";
           editSelect.innerHTML = "";
           data.data.forEach(cat => {
-            addSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
+            categorySelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
             editSelect.innerHTML += `<option value="${cat.id}">${cat.name}</option>`;
           });
         } else {
@@ -600,12 +636,18 @@
     document.getElementById("addMenuForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
+      const selectedCategoryId = formData.get("category_id");
+      const selectedCategory = categories.find(cat => cat.id == selectedCategoryId);
+      if (selectedCategory && !selectedCategory.name.toLowerCase().includes("pizza")) {
+        formData.delete("size");
+      }
       try {
         const res = await fetch("/api/menu", { method: "POST", body: formData });
         if (res.ok) {
           showToast("Menu item added!");
           await loadMenu();
           e.target.reset();
+          document.getElementById("addSizeSelect").classList.remove("visible");
         } else {
           showToast("Error adding item", false);
         }
@@ -626,6 +668,9 @@
           document.getElementById("editOriginalPrice").value = data.original_price;
           document.getElementById("editSavedPrice").value = data.saved_price || "";
           document.getElementById("editCategorySelect").value = data.category_id;
+          document.getElementById("editSizeSelect").value = data.size || "";
+          const selectedCategory = categories.find(cat => cat.id == data.category_id);
+          document.getElementById("editSizeSelect").classList.toggle("visible", selectedCategory && selectedCategory.name.toLowerCase().includes("pizza"));
           document.getElementById("editModal").style.display = "flex";
         } else {
           showToast("Failed to load item details", false);
@@ -638,12 +683,18 @@
 
     function closeModal() {
       document.getElementById("editModal").style.display = "none";
+      document.getElementById("editSizeSelect").classList.remove("visible");
     }
 
     document.getElementById("editMenuForm").addEventListener("submit", async (e) => {
       e.preventDefault();
       const formData = new FormData(e.target);
       const id = formData.get("id");
+      const selectedCategoryId = formData.get("category_id");
+      const selectedCategory = categories.find(cat => cat.id == selectedCategoryId);
+      if (selectedCategory && !selectedCategory.name.toLowerCase().includes("pizza")) {
+        formData.delete("size");
+      }
       try {
         const res = await fetch(`/api/menu/${id}`, { method: "PUT", body: formData });
         if (res.ok) {

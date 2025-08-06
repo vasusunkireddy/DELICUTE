@@ -1,4 +1,3 @@
-// routes/menu.js
 const express = require("express");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
@@ -47,6 +46,7 @@ router.get("/", async (req, res) => {
         m.category_id,
         c.name AS category,
         m.image,
+        m.size,
         m.is_top_pick
       FROM menu_items m
       JOIN categories c ON m.category_id = c.id
@@ -67,7 +67,7 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      `SELECT id, name, description, price, original_price, saved_price, category_id, image, is_top_pick 
+      `SELECT id, name, description, price, original_price, saved_price, category_id, image, size, is_top_pick 
        FROM menu_items WHERE id = ?`,
       [id]
     );
@@ -88,7 +88,7 @@ router.get("/:id", async (req, res) => {
 ================================ */
 router.post("/", upload.single("image"), async (req, res) => {
   try {
-    const { name, description, original_price, saved_price, category_id } = req.body;
+    const { name, description, original_price, saved_price, category_id, size } = req.body;
     if (!name || !original_price || !category_id) {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
@@ -101,11 +101,18 @@ router.post("/", upload.single("image"), async (req, res) => {
 
     const finalPrice = parseFloat(original_price) - parseFloat(saved_price || 0);
 
+    // Validate size (only for VEG PIZZAS and NON-VEG PIZZAS)
+    const [category] = await pool.query("SELECT name FROM categories WHERE id = ?", [category_id]);
+    const validSizes = ["REGULAR", "MEDIUM", "LARGE"];
+    const sizeValue = category.length > 0 && category[0].name.toLowerCase().includes("pizza") && validSizes.includes(size?.toUpperCase())
+      ? size.toUpperCase()
+      : null;
+
     await pool.query(
       `INSERT INTO menu_items 
-       (name, description, price, original_price, saved_price, category_id, image, is_top_pick) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, 0)`,
-      [name, description || null, finalPrice, original_price, saved_price || 0, category_id, imageUrl]
+       (name, description, price, original_price, saved_price, category_id, image, size, is_top_pick) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`,
+      [name, description || null, finalPrice, original_price, saved_price || 0, category_id, imageUrl, sizeValue]
     );
 
     res.json({ success: true, message: "Menu item added successfully" });
@@ -121,7 +128,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 router.put("/:id", upload.single("image"), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, original_price, saved_price, category_id } = req.body;
+    const { name, description, original_price, saved_price, category_id, size } = req.body;
 
     // Calculate price
     const finalPrice = original_price
@@ -132,6 +139,16 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     let imageUrl;
     if (req.file) {
       imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
+    }
+
+    // Validate size (only for VEG PIZZAS and NON-VEG PIZZAS)
+    let sizeValue = null;
+    if (category_id) {
+      const [category] = await pool.query("SELECT name FROM categories WHERE id = ?", [category_id]);
+      const validSizes = ["REGULAR", "MEDIUM", "LARGE"];
+      sizeValue = category.length > 0 && category[0].name.toLowerCase().includes("pizza") && validSizes.includes(size?.toUpperCase())
+        ? size.toUpperCase()
+        : null;
     }
 
     // Build update query dynamically
@@ -145,6 +162,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
     if (finalPrice !== null) { fields.push("price = ?"); values.push(finalPrice); }
     if (category_id) { fields.push("category_id = ?"); values.push(category_id); }
     if (imageUrl) { fields.push("image = ?"); values.push(imageUrl); }
+    fields.push("size = ?"); values.push(sizeValue);
 
     if (fields.length === 0) {
       return res.status(400).json({ success: false, message: "No fields to update" });
@@ -189,7 +207,7 @@ router.post("/top-picks/:id", async (req, res) => {
     res.json({ success: true, message: "Item added to Top Picks" });
   } catch (err) {
     console.error("Top Pick Add Error:", err);
-    res.status(500).json({ success: false, message: "Failed to add top pick" });
+    res.status(500). Promisedjson({ success: false, message: "Failed to add top pick" });
   }
 });
 
