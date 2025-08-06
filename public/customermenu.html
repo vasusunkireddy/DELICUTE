@@ -192,7 +192,7 @@
     .card {
       flex: 0 0 auto;
       width: clamp(140px, 40vw, 170px);
-      min-height: 260px;
+      min-height: 280px;
       background: #fff;
       border: 1px solid #d8b7d2;
       border-radius: 8px;
@@ -300,83 +300,22 @@
     .add-btn:hover {
       background: linear-gradient(45deg, #ffca28, #ffb300);
     }
-    .size-modal {
-      display: none;
-      position: fixed;
-      top: 0;
-      left: 0;
+    .size-select {
       width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 1001;
-      justify-content: center;
-      align-items: center;
-      -webkit-overflow-scrolling: touch;
-    }
-    .size-modal.active {
-      display: flex;
-    }
-    .size-modal-content {
-      background: #fff;
-      border-radius: 12px;
-      padding: 1.2rem;
-      max-width: 350px;
-      width: 90%;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(142, 68, 173, 0.3);
-      font-family: Arial, sans-serif;
-      position: relative;
-    }
-    .size-modal-content h3 {
-      font-size: clamp(1.1rem, 2.2vw, 1.3rem);
-      color: #8e44ad;
-      margin-bottom: 1rem;
-      font-weight: 700;
-    }
-    .size-modal-content select {
-      width: 100%;
-      padding: 0.7rem;
+      padding: 0.5rem;
       border: 1px solid #d8b7d2;
-      border-radius: 8px;
-      font-size: clamp(0.85rem, 1.9vw, 0.95rem);
-      margin-bottom: 1rem;
+      border-radius: 6px;
+      font-size: clamp(0.75rem, 1.6vw, 0.85rem);
       font-family: Arial, sans-serif;
       background: #f9f9f9;
       color: #1a1a1a;
       cursor: pointer;
+      margin-bottom: 0.3rem;
       transition: border-color 0.2s ease;
     }
-    .size-modal-content select:focus {
+    .size-select:focus {
       border-color: #ffa726;
       outline: none;
-    }
-    .size-modal-content .button-group {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: center;
-    }
-    .size-modal-content button {
-      background: linear-gradient(45deg, #ffa726, #ffca28);
-      color: #1a1a1a;
-      border: none;
-      padding: 0.7rem 1.2rem;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: clamp(0.8rem, 1.8vw, 0.9rem);
-      font-weight: 600;
-      transition: background 0.2s ease, transform 0.2s ease;
-      flex: 1;
-    }
-    .size-modal-content button:hover {
-      background: linear-gradient(45deg, #ffca28, #ffb300);
-      transform: scale(1.02);
-    }
-    .size-modal-content .cancel-btn {
-      background: linear-gradient(45deg, #8e44ad, #d8b7d2);
-      color: #fff;
-    }
-    .size-modal-content .cancel-btn:hover {
-      background: linear-gradient(45deg, #6c3483, #d8b7d2);
     }
     .cart-section {
       position: fixed;
@@ -686,12 +625,11 @@
         overflow-x: hidden;
         justify-content: flex-start;
       }
-      .card { max-width: 190px; min-height: 280px; }
+      .card { max-width: 190px; min-height: 300px; }
       .card img { height: 160px; }
       .cart-section { max-width: 400px; right: 0.8rem; }
       .search-bar { max-width: 700px; }
       .filter-dropdown { min-width: 250px; }
-      .size-modal-content { max-width: 400px; }
     }
     @media (max-width: 360px) {
       header img { height: 40px; }
@@ -702,13 +640,14 @@
       h2::after { width: 60px; }
       .search-bar input { font-size: 0.8rem; padding: 0.5rem; }
       .search-bar button { font-size: 0.85rem; padding: 0.5rem; }
-      .card { width: clamp(130px, 38vw, 150px); min-height: 240px; }
+      .card { width: clamp(130px, 38vw, 150px); min-height: 260px; }
       .card img { height: 110px; }
       .card-body h3 { font-size: 0.75rem; }
       .card-body p { font-size: 0.65rem; }
       .price { font-size: 0.75rem; }
       .old-price { font-size: 0.65rem; }
       .add-btn { font-size: 0.7rem; padding: 0.4rem; }
+      .size-select { font-size: 0.7rem; padding: 0.4rem; }
       .cart-section { height: 80%; padding: 0.6rem; }
       .cart-toggle { bottom: 0.7rem; right: 0.7rem; padding: 0.6rem; font-size: 0.9rem; }
       .cart-item img { width: 30px; height: 30px; }
@@ -726,10 +665,6 @@
       .line.bold { font-size: 0.85rem; }
       .filter-dropdown { min-width: 180px; }
       .filter-dropdown div { font-size: 0.8rem; padding: 0.5rem 0.8rem; }
-      .size-modal-content { max-width: 280px; }
-      .size-modal-content h3 { font-size: 0.95rem; }
-      .size-modal-content select { font-size: 0.8rem; padding: 0.6rem; }
-      .size-modal-content button { font-size: 0.7rem; padding: 0.6rem 1rem; }
       #toast { font-size: 0.65rem; padding: 0.6rem; }
     }
   </style>
@@ -782,724 +717,667 @@
 
   <button class="cart-toggle" id="cartToggle" onclick="toggleCart()"><i class="fas fa-shopping-cart"></i></button>
 
-  <div class="size-modal" id="sizeModal">
-    <div class="size-modal-content">
-      <h3>Select Size for <span id="sizeModalItemName"></span></h3>
-      <select id="sizeSelect">
-        <option value="" disabled selected>Select a size</option>
-      </select>
-      <div class="button-group">
-        <button onclick="confirmSize()">Add to Cart</button>
-        <button class="cancel-btn" onclick="closeSizeModal()">Cancel</button>
-      </div>
-    </div>
-  </div>
-
   <div id="toast"></div>
 
   <script>
     let menuData = [];
-const topPicksEl = document.getElementById("topPicks");
-const categoriesEl = document.getElementById("menuCategories");
-const cartItemsEl = document.getElementById("cartItems");
-const cartSection = document.getElementById("cartSection");
-const cartToggle = document.getElementById("cartToggle");
-const searchInput = document.getElementById("searchInput");
-const filterBtn = document.getElementById("filterBtn");
-const filterDropdown = document.getElementById("filterDropdown");
-const sizeModal = document.getElementById("sizeModal");
-const sizeSelect = document.getElementById("sizeSelect");
-const sizeModalItemName = document.getElementById("sizeModalItemName");
-let cart = [];
-let appliedCoupon = null;
-let selectedCategory = "All";
-let currentItem = null;
-const defaultImage = 'https://via.placeholder.com/150';
+    const topPicksEl = document.getElementById("topPicks");
+    const categoriesEl = document.getElementById("menuCategories");
+    const cartItemsEl = document.getElementById("cartItems");
+    const cartSection = document.getElementById("cartSection");
+    const cartToggle = document.getElementById("cartToggle");
+    const searchInput = document.getElementById("searchInput");
+    const filterBtn = document.getElementById("filterBtn");
+    const filterDropdown = document.getElementById("filterDropdown");
+    let cart = [];
+    let appliedCoupon = null;
+    let selectedCategory = "All";
+    const defaultImage = 'https://via.placeholder.com/150';
 
-function showToast(msg, success = true) {
-  const toast = document.getElementById("toast");
-  if (toast) {
-    toast.textContent = msg;
-    toast.style.background = success ? "linear-gradient(45deg, #8e44ad, #d8b7d2)" : "linear-gradient(45deg, #f44336, #ef5350)";
-    toast.className = "show";
-    setTimeout(() => toast.className = toast.className.replace("show", ""), 2000);
-  } else {
-    console.error("Toast element not found");
-  }
-}
-
-function toggleCart() {
-  if (cartSection) {
-    cartSection.classList.toggle("active");
-    const container = document.querySelector('.container');
-    if (cartSection.classList.contains("active")) {
-      localStorage.setItem("openCart", "true");
-      document.body.style.overflow = 'hidden';
-      if (container) container.style.touchAction = 'none';
-    } else {
-      localStorage.removeItem("openCart");
-      document.body.style.overflow = 'auto';
-      if (container) container.style.touchAction = 'pan-y';
-    }
-  } else {
-    console.error("Cart section not found");
-  }
-}
-
-function saveCart() {
-  try {
-    localStorage.setItem("cart", JSON.stringify(cart));
-  } catch (err) {
-    console.error("Error saving cart:", err);
-  }
-}
-
-function loadCart() {
-  try {
-    const savedCart = localStorage.getItem("cart");
-    cart = savedCart ? JSON.parse(savedCart) : [];
-    if (!Array.isArray(cart)) cart = [];
-    renderCart();
-  } catch (err) {
-    console.error("Error loading cart:", err);
-    cart = [];
-    renderCart();
-  }
-}
-
-function clearCart() {
-  if (!confirm("Are you sure you want to clear your cart?")) return;
-  cart = [];
-  appliedCoupon = null;
-  const couponInput = document.getElementById("couponCode");
-  if (couponInput) couponInput.value = "";
-  localStorage.removeItem("cart");
-  localStorage.removeItem("appliedCoupon");
-  showToast("Cart cleared!", true);
-  renderCart();
-}
-
-async function loadMenu() {
-  try {
-    const res = await fetch("/api/menu");
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    const data = await res.json();
-    if (!data.success || !Array.isArray(data.data)) throw new Error("Invalid menu data");
-    menuData = data.data;
-    console.log("Loaded menuData:", menuData);
-    renderCategories();
-    filterMenu();
-  } catch (err) {
-    console.error("Menu Load Error:", err);
-    showToast(`Error loading menu: ${err.message}`, false);
-    topPicksEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
-    categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
-  }
-}
-
-function renderCategories() {
-  if (!Array.isArray(menuData) || menuData.length === 0) {
-    filterDropdown.innerHTML = '<div data-category="All" class="selected">All Categories</div>';
-    return;
-  }
-  const categories = [...new Set(menuData.filter(item => item?.category).map(item => item.category))].sort();
-  filterDropdown.innerHTML = '<div data-category="All" class="selected">All Categories</div>' +
-    categories.map(cat => `<div data-category="${cat}">${cat}</div>`).join('');
-  filterDropdown.querySelectorAll('div').forEach(div => {
-    div.addEventListener('click', () => {
-      selectedCategory = div.dataset.category;
-      filterDropdown.querySelectorAll('div').forEach(d => d.classList.remove('selected'));
-      div.classList.add('selected');
-      filterDropdown.classList.remove('active');
-      filterMenu();
-    });
-  });
-}
-
-function groupPizzaItems(items) {
-  const grouped = {};
-  items.forEach(item => {
-    if (!item?.id || !item?.name || !item?.category) return;
-    const isPizza = item.category.toLowerCase().includes("pizza");
-    const baseName = isPizza ? item.name.replace(/\s*(Large|Medium|Regular)$/i, '').trim() : item.name;
-    if (!grouped[baseName]) {
-      grouped[baseName] = {
-        id: item.id,
-        name: baseName,
-        description: item.description || "No description available",
-        category: item.category,
-        is_top_pick: item.is_top_pick,
-        image: item.image || defaultImage,
-        sizes: [],
-        order_index: item.order_index || item.id
-      };
-    }
-    if (isPizza && item.size) {
-      grouped[baseName].sizes.push({
-        size: item.size.toUpperCase(),
-        price: parseFloat(item.price) || 0,
-        original_price: parseFloat(item.original_price) || null,
-        saved_price: parseFloat(item.saved_price) || null,
-        id: item.id
-      });
-    } else if (!isPizza) {
-      grouped[baseName].price = parseFloat(item.price) || 0;
-      grouped[baseName].original_price = parseFloat(item.original_price) || null;
-      grouped[baseName].saved_price = parseFloat(item.saved_price) || null;
-    }
-  });
-  return Object.values(grouped).map(item => {
-    if (item.sizes.length > 0) {
-      const minPriceItem = item.sizes.reduce((min, curr) => curr.price < min.price ? curr : min);
-      item.price = minPriceItem.price;
-      item.original_price = minPriceItem.original_price;
-      item.saved_price = minPriceItem.saved_price;
-      item.id = minPriceItem.id;
-    }
-    return item;
-  });
-}
-
-function renderMenu(data) {
-  if (!Array.isArray(data) || data.length === 0) {
-    topPicksEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
-    categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
-    return;
-  }
-
-  const groupedData = groupPizzaItems(data);
-  const sortedData = groupedData.sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
-
-  const topPicks = sortedData.filter(item => item?.is_top_pick);
-  topPicksEl.innerHTML = topPicks.length > 0 && selectedCategory === "All"
-    ? topPicks.map(item => buildCard(item, true)).join("")
-    : "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
-
-  const groupedByCategory = {};
-  sortedData.forEach(item => {
-    if (!item?.category) return;
-    if (!groupedByCategory[item.category]) groupedByCategory[item.category] = [];
-    groupedByCategory[item.category].push(item);
-  });
-
-  const sortedCategories = Object.keys(groupedByCategory).sort((a, b) => {
-    const firstItemA = groupedByCategory[a][0];
-    const firstItemB = groupedByCategory[b][0];
-    return (firstItemA.order_index || firstItemA.id) - (firstItemB.order_index || firstItemB.id);
-  });
-
-  categoriesEl.innerHTML = "";
-  if (sortedCategories.length === 0 || (selectedCategory !== "All" && !sortedCategories.includes(selectedCategory))) {
-    categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
-  } else {
-    const categoriesToShow = selectedCategory === "All" ? sortedCategories : [selectedCategory];
-    categoriesToShow.forEach(cat => {
-      const items = groupedByCategory[cat].sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
-      const firstRow = items.slice(0, 9);
-      const secondRow = items.slice(9, 18);
-      categoriesEl.innerHTML += `
-        <h2>${cat}</h2>
-        <div class="category-row-container">
-          <div class="category-row">
-            ${firstRow.map(item => buildCard(item, false)).join("")}
-          </div>
-          ${secondRow.length > 0 ? `<div class="category-row">${secondRow.map(item => buildCard(item, false)).join("")}</div>` : ""}
-        </div>
-      `;
-    });
-  }
-}
-
-function buildCard(item, isTopPick) {
-  if (!item?.name || !item.price || !item.id) return "";
-  const imageSrc = item.image || defaultImage;
-  const isPizza = item.category.toLowerCase().includes("pizza");
-  return `
-    <div class="card ${isTopPick ? 'top-pick' : ''}">
-      <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
-      <div class="card-body">
-        <h3>${item.name}</h3>
-        <p>${item.description || "No description available"}</p>
-        <p>
-          <span class="price">₹${item.price.toFixed(2)}</span>
-          ${item.original_price ? `<span class="old-price">₹${item.original_price.toFixed(2)}</span>` : ""}
-        </p>
-        <button class="add-btn" onclick="openSizeModal(${item.id}, '${item.name.replace(/'/g, "\\'")}', ${isPizza}, '${item.category.replace(/'/g, "\\'")}')"><i class="fas fa-cart-plus"></i> Add</button>
-      </div>
-    </div>
-  `;
-}
-
-function openSizeModal(id, name, isPizza, category) {
-  console.log("Opening size modal for:", { id, name, isPizza, category });
-  if (!sizeModal || !sizeSelect || !sizeModalItemName) {
-    console.error("Size modal elements missing:", { sizeModal, sizeSelect, sizeModalItemName });
-    showToast("Size selection not available", false);
-    return;
-  }
-  currentItem = { id, name, category };
-  sizeModalItemName.textContent = name;
-  if (isPizza) {
-    const baseName = name.replace(/\s*(Large|Medium|Regular)$/i, '').trim();
-    const sizeItems = menuData.filter(m =>
-      m.name.replace(/\s*(Large|Medium|Regular)$/i, '').trim() === baseName &&
-      m.category === category &&
-      m.size
-    );
-    console.log("Size items found:", sizeItems);
-    if (sizeItems.length === 0) {
-      console.error("No sizes found for", baseName);
-      showToast(`No sizes available for ${baseName}`, false);
-      return;
-    }
-    sizeSelect.innerHTML = '<option value="" disabled selected>Select a size</option>' +
-      sizeItems
-        .sort((a, b) => {
-          const order = ['REGULAR', 'MEDIUM', 'LARGE'];
-          return order.indexOf(a.size.toUpperCase()) - order.indexOf(b.size.toUpperCase());
-        })
-        .map(item => `<option value="${item.size.toUpperCase()}" data-id="${item.id}" data-price="${parseFloat(item.price).toFixed(2)}">${item.size} - ₹${parseFloat(item.price).toFixed(2)}</option>`)
-        .join('');
-    sizeSelect.style.display = 'block';
-    sizeModal.classList.add('active');
-    console.log("Modal opened, currentItem:", currentItem);
-  } else {
-    const item = menuData.find(m => m.id === id);
-    if (item) {
-      addToCart(id, name, parseFloat(item.price), null);
-      showToast(`${name} added to cart!`, true);
-    } else {
-      console.error("Non-pizza item not found:", id);
-      showToast("Item not found", false);
-    }
-  }
-}
-
-function closeSizeModal() {
-  if (sizeModal) {
-    sizeModal.classList.remove('active');
-    sizeSelect.innerHTML = '<option value="" disabled selected>Select a size</option>';
-    sizeSelect.value = '';
-    currentItem = null;
-    console.log("Modal closed");
-  }
-}
-
-function confirmSize() {
-  console.log("Confirming size, currentItem:", currentItem);
-  if (!currentItem || !sizeSelect) {
-    console.error("No item or size select:", { currentItem, sizeSelect });
-    showToast("No item selected", false);
-    closeSizeModal();
-    return;
-  }
-  const size = sizeSelect.value;
-  if (!size) {
-    showToast("Please select a size", false);
-    return;
-  }
-  const selectedOption = sizeSelect.querySelector(`option[value="${size}"]`);
-  if (!selectedOption) {
-    console.error("Selected option not found for size:", size);
-    showToast(`Size ${size} not available`, false);
-    return;
-  }
-  const itemId = parseInt(selectedOption.dataset.id);
-  const price = parseFloat(selectedOption.dataset.price);
-  const baseName = currentItem.name;
-  if (!itemId || isNaN(price)) {
-    console.error("Invalid item ID or price:", { itemId, price });
-    showToast("Invalid size data", false);
-    return;
-  }
-  addToCart(itemId, `${baseName} (${size})`, price, size);
-  closeSizeModal();
-}
-
-function filterMenu() {
-  if (!searchInput) {
-    console.error("Search input not found");
-    return;
-  }
-  const query = searchInput.value.toLowerCase().trim();
-  let filtered = menuData;
-  if (selectedCategory !== "All") {
-    filtered = menuData.filter(item => item?.category === selectedCategory);
-  }
-  if (query) {
-    filtered = filtered.filter(item => item?.name.toLowerCase().includes(query));
-  }
-  renderMenu(filtered);
-}
-
-function addToCart(id, name, price, size = null) {
-  console.log("Adding to cart:", { id, name, price, size });
-  if (!id || !name || isNaN(price)) {
-    console.error("Invalid cart item:", { id, name, price });
-    showToast("Invalid item data", false);
-    return;
-  }
-  // Ensure cartId is a string and properly formatted
-  const cartId = size ? `${id}-${size}` : `${id}`;
-  console.log("Generated cartId:", cartId);
-  const existing = cart.find(i => i.cartId === cartId);
-  if (existing) {
-    existing.qty++;
-  } else {
-    cart.push({ id, cartId, name, price, qty: 1, size });
-  }
-  saveCart();
-  showToast(`${name} added to cart!`, true);
-  renderCart();
-}
-
-function changeQty(cartId, change) {
-  console.log("Changing quantity for cartId:", cartId, "Change:", change);
-  const item = cart.find(i => i.cartId === cartId);
-  if (!item) {
-    console.error("Item not found in cart for cartId:", cartId);
-    showToast("Item not found in cart", false);
-    return;
-  }
-  item.qty += change;
-  if (item.qty <= 0) {
-    cart = cart.filter(i => i.cartId !== cartId);
-    showToast(`${item.name} removed from cart`, true);
-  }
-  saveCart();
-  renderCart();
-}
-
-async function calculateDiscount(subtotal) {
-  if (!appliedCoupon || !subtotal) return 0;
-  try {
-    const menuRes = await fetch("/api/menu");
-    if (!menuRes.ok) throw new Error(`HTTP error! status: ${menuRes.status}`);
-    const menuData = await menuRes.json();
-    if (!menuData.success || !Array.isArray(menuData.data)) throw new Error("Invalid menu data");
-    const catIds = appliedCoupon.category ? menuData.data.filter(item => item?.category === appliedCoupon.category).map(item => item.id) : [];
-    const eligibleItems = cart.filter(i => i && catIds.includes(i.id));
-    const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
-    const categorySubtotal = eligibleItems.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0);
-    if (appliedCoupon.type === "min_cart_amount") {
-      if (subtotal >= (appliedCoupon.min_cart_amount || 0)) {
-        return (subtotal * (appliedCoupon.discount || 0)) / 100;
+    function showToast(msg, success = true) {
+      const toast = document.getElementById("toast");
+      if (toast) {
+        toast.textContent = msg;
+        toast.style.background = success ? "linear-gradient(45deg, #8e44ad, #d8b7d2)" : "linear-gradient(45deg, #f44336, #ef5350)";
+        toast.className = "show";
+        setTimeout(() => toast.className = toast.className.replace("show", ""), 2000);
+      } else {
+        console.error("Toast element not found");
       }
-      return 0;
-    } else if (appliedCoupon.type === "buy_x") {
-      if (categoryQty >= (appliedCoupon.buy_x || 0)) {
-        return (categorySubtotal * (appliedCoupon.discount || 0)) / 100;
-      }
-      return 0;
-    } else if (appliedCoupon.type === "date_range") {
-      if (categorySubtotal > 0) {
-        return (categorySubtotal * (appliedCoupon.discount || 0)) / 100;
-      }
-      return 0;
-    } else if (appliedCoupon.type === "bogo") {
-      if (categoryQty >= 2) {
-        const pairs = Math.floor(categoryQty / 2);
-        const sortedItems = eligibleItems.flatMap(item => Array(item.qty).fill(item)).sort((a, b) => (a.price || 0) - (b.price || 0));
-        let bogoDiscount = 0;
-        for (let i = 0; i < pairs; i++) {
-          bogoDiscount += sortedItems[i].price || 0;
+    }
+
+    function toggleCart() {
+      if (cartSection) {
+        cartSection.classList.toggle("active");
+        const container = document.querySelector('.container');
+        if (cartSection.classList.contains("active")) {
+          localStorage.setItem("openCart", "true");
+          document.body.style.overflow = 'hidden';
+          if (container) container.style.touchAction = 'none';
+        } else {
+          localStorage.removeItem("openCart");
+          document.body.style.overflow = 'auto';
+          if (container) container.style.touchAction = 'pan-y';
         }
-        return bogoDiscount;
+      } else {
+        console.error("Cart section not found");
       }
-      return 0;
     }
-    return 0;
-  } catch (err) {
-    console.error("Discount calculation error:", err);
-    showToast(`Error calculating discount: ${err.message}`, false);
-    return 0;
-  }
-}
 
-async function renderCart() {
-  if (!cartItemsEl || !cartToggle || !document.getElementById("subtotal")) {
-    console.error("Cart elements missing");
-    return;
-  }
-  const subtotalEl = document.getElementById("subtotal");
-  const discountEl = document.getElementById("discount");
-  const totalEl = document.getElementById("total");
-
-  if (!Array.isArray(cart) || cart.length === 0) {
-    cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
-    subtotalEl.innerText = "₹0";
-    discountEl.innerText = "₹0";
-    totalEl.innerText = "₹0";
-    cartToggle.setAttribute("data-count", "0");
-    cartToggle.classList.remove("has-items");
-    return;
-  }
-
-  let subtotal = 0;
-  const existingItems = new Map();
-  cartItemsEl.querySelectorAll('.cart-item').forEach(item => {
-    const cartId = item.dataset.cartId;
-    if (cartId) existingItems.set(cartId, item);
-  });
-
-  cart.forEach(item => {
-    if (!item?.id || !item.price || !item.qty) {
-      console.error("Invalid cart item:", item);
-      return;
-    }
-    subtotal += item.price * item.qty;
-    const menuItem = menuData.find(m => m?.id === item.id) || {};
-    const imageSrc = menuItem.image || defaultImage;
-    const cartId = item.cartId;
-    console.log("Rendering cart item:", { cartId, name: item.name, qty: item.qty });
-    let cartItem = existingItems.get(cartId);
-
-    if (cartItem) {
-      const qtySpan = cartItem.querySelector('.qty-controls span');
-      const totalSpan = cartItem.querySelector('span:last-child');
-      if (qtySpan) qtySpan.textContent = item.qty;
-      if (totalSpan) totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
-    } else {
-      const newItem = document.createElement('div');
-      newItem.className = 'cart-item';
-      newItem.dataset.cartId = cartId;
-      // Use encodeURIComponent to handle special characters in cartId
-      newItem.innerHTML = `
-        <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
-        <h4>${item.name}</h4>
-        <div class="qty-controls">
-          <button onclick="changeQty('${encodeURIComponent(cartId)}', -1)">-</button>
-          <span>${item.qty}</span>
-          <button onclick="changeQty('${encodeURIComponent(cartId)}', 1)">+</button>
-        </div>
-        <span>₹${(item.price * item.qty).toFixed(2)}</span>
-      `;
-      cartItemsEl.appendChild(newItem);
-      existingItems.set(cartId, newItem);
-    }
-  });
-
-  existingItems.forEach((item, cartId) => {
-    if (!cart.find(i => i.cartId === cartId)) {
-      cartItemsEl.removeChild(item);
-    }
-  });
-
-  const discount = await calculateDiscount(subtotal);
-  let total = subtotal - discount;
-  if (total < 0) total = 0;
-  cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item?.qty || 0), 0));
-  cartToggle.classList.toggle("has-items", cart.length > 0);
-  subtotalEl.innerText = "₹" + subtotal.toFixed(2);
-  discountEl.innerText = "₹" + discount.toFixed(2);
-  totalEl.innerText = "₹" + total.toFixed(2);
-}
-
-async function applyCoupon(code = null) {
-  const couponInput = document.getElementById("couponCode");
-  if (!couponInput) {
-    showToast("Coupon input not found", false);
-    return;
-  }
-  const couponCode = code || couponInput.value.trim();
-  if (!couponCode) {
-    showToast("Please enter a coupon code", false);
-    return;
-  }
-  if (!Array.isArray(cart) || cart.length === 0) {
-    showToast("Cart is empty!", false);
-    couponInput.value = "";
-    localStorage.removeItem("appliedCoupon");
-    return;
-  }
-  try {
-    const couponRes = await fetch("/api/coupons");
-    if (!couponRes.ok) throw new Error(`HTTP error! status: ${couponRes.status}`);
-    const couponData = await couponRes.json();
-    if (!couponData.success || !Array.isArray(couponData.data)) {
-      showToast("Failed to fetch coupons", false);
-      couponInput.value = "";
-      localStorage.removeItem("appliedCoupon");
-      return;
-    }
-    const coupon = couponData.data.find(c => c?.code === couponCode);
-    if (!coupon) {
-      showToast(`Invalid coupon code: ${couponCode}`, false);
-      couponInput.value = "";
-      localStorage.removeItem("appliedCoupon");
-      return;
-    }
-    const subtotal = cart.reduce((sum, i) => sum + ((i?.price || 0) * (i?.qty || 0)), 0);
-    if (coupon.type === "min_cart_amount") {
-      if (subtotal < (coupon.min_cart_amount || 0)) {
-        showToast(`Coupon requires minimum ₹${coupon.min_cart_amount} (current: ₹${subtotal.toFixed(2)})`, false);
-        couponInput.value = "";
-        localStorage.removeItem("appliedCoupon");
-        return;
+    function saveCart() {
+      try {
+        localStorage.setItem("cart", JSON.stringify(cart));
+      } catch (err) {
+        console.error("Error saving cart:", err);
       }
-      appliedCoupon = coupon;
-      couponInput.value = couponCode;
-      localStorage.setItem("appliedCoupon", couponCode);
-      showToast(`Coupon ${couponCode} applied! ${coupon.discount}% off`, true);
-      renderCart();
-    } else if (coupon.type === "buy_x" || coupon.type === "date_range" || coupon.type === "bogo") {
-      const menuRes = await fetch("/api/menu");
-      if (!menuRes.ok) throw new Error(`HTTP error! status: ${menuRes.status}`);
-      const menuData = await menuRes.json();
-      if (!menuData.success || !Array.isArray(menuData.data)) {
-        showToast("Failed to fetch menu", false);
-        couponInput.value = "";
-        localStorage.removeItem("appliedCoupon");
-        return;
-      }
-      if (!coupon.category) {
-        showToast(`Coupon ${couponCode} is invalid`, false);
-        couponInput.value = "";
-        localStorage.removeItem("appliedCoupon");
-        return;
-      }
-      const catIds = menuData.data.filter(item => item?.category === coupon.category).map(item => item.id);
-      const eligibleItems = cart.filter(i => i && catIds.includes(i.id));
-      const categorySubtotal = eligibleItems.reduce((sum, i) => sum + ((i?.price || 0) * (i?.qty || 0)), 0);
-      const categoryQty = eligibleItems.reduce((sum, i) => sum + (i?.qty || 0), 0);
-      if (categorySubtotal === 0) {
-        showToast(`Coupon valid only for ${coupon.category}`, false);
-        couponInput.value = "";
-        localStorage.removeItem("appliedCoupon");
-        return;
-      }
-      if (coupon.type === "buy_x" && categoryQty < (coupon.buy_x || 0)) {
-        showToast(`Coupon requires ${coupon.buy_x} ${coupon.category} items`, false);
-        couponInput.value = "";
-        localStorage.removeItem("appliedCoupon");
-        return;
-      }
-      if (coupon.type === "bogo" && categoryQty < 2) {
-        showToast(`Coupon requires at least 2 ${coupon.category} items`, false);
-        couponInput.value = "";
-        localStorage.removeItem("appliedCoupon");
-        return;
-      }
-      appliedCoupon = coupon;
-      couponInput.value = couponCode;
-      localStorage.setItem("appliedCoupon", couponCode);
-      showToast(`Coupon ${couponCode} applied for ${coupon.category}!`, true);
-      renderCart();
     }
-  } catch (err) {
-    showToast(`Error applying coupon: ${err.message}`, false);
-    couponInput.value = "";
-    localStorage.removeItem("appliedCoupon");
-    console.error("Coupon error:", err);
-  }
-}
 
-function removeCoupon() {
-  appliedCoupon = null;
-  const couponInput = document.getElementById("couponCode");
-  if (couponInput) couponInput.value = "";
-  localStorage.removeItem("appliedCoupon");
-  showToast("Coupon removed", true);
-  renderCart();
-}
+    function loadCart() {
+      try {
+        const savedCart = localStorage.getItem("cart");
+        cart = savedCart ? JSON.parse(savedCart) : [];
+        if (!Array.isArray(cart)) cart = [];
+        renderCart();
+      } catch (err) {
+        console.error("Error loading cart:", err);
+        cart = [];
+        renderCart();
+      }
+    }
 
-async function placeOrder() {
-  if (!Array.isArray(cart) || cart.length === 0) {
-    showToast("Cart is empty!", false);
-    return;
-  }
-  const custNameInput = document.getElementById("custName");
-  const tableNumInput = document.getElementById("tableNum");
-  if (!custNameInput || !tableNumInput) {
-    showToast("Form elements missing", false);
-    return;
-  }
-  const customer_name = custNameInput.value.trim();
-  const table_number = tableNumInput.value.trim();
-  if (!customer_name || !table_number) {
-    showToast("Enter name and table number", false);
-    return;
-  }
-  const subtotal = cart.reduce((s, i) => s + ((i?.price || 0) * (i?.qty || 0)), 0);
-  const discount = await calculateDiscount(subtotal);
-  let total = subtotal - discount;
-  if (total < 0) total = 0;
-  const body = {
-    customer_name,
-    table_number: parseInt(table_number),
-    items: cart.map(item => ({
-      id: item.id,
-      name: item.name,
-      price: item.price,
-      qty: item.qty,
-      size: item.size
-    })),
-    coupon_code: appliedCoupon ? appliedCoupon.code : null,
-    subtotal,
-    discount,
-    total,
-    instructions: document.getElementById("instructions")?.value.trim() || ""
-  };
-  try {
-    const res = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    const data = await res.json();
-    if (data.success) {
-      showToast(`Thank you, ${customer_name}! Order #${data.orderId || 'N/A'} placed!`, true);
+    function clearCart() {
+      if (!confirm("Are you sure you want to clear your cart?")) return;
       cart = [];
       appliedCoupon = null;
-      if (custNameInput) custNameInput.value = "";
-      if (tableNumInput) tableNumInput.value = "";
-      if (document.getElementById("instructions")) document.getElementById("instructions").value = "";
-      if (document.getElementById("couponCode")) document.getElementById("couponCode").value = "";
+      const couponInput = document.getElementById("couponCode");
+      if (couponInput) couponInput.value = "";
       localStorage.removeItem("cart");
       localStorage.removeItem("appliedCoupon");
-      localStorage.removeItem("openCart");
+      showToast("Cart cleared!", true);
       renderCart();
-      toggleCart();
-    } else {
-      showToast(`Failed: ${data.message || "Unknown error"}`, false);
     }
-  } catch (err) {
-    showToast(`Error placing order: ${err.message}`, false);
-    console.error("Order error:", err);
-  }
-}
 
-function toggleFilterDropdown() {
-  if (filterDropdown) filterDropdown.classList.toggle('active');
-}
-
-document.addEventListener('click', (e) => {
-  if (filterDropdown && filterBtn && !filterDropdown.contains(e.target) && !filterBtn.contains(e.target)) {
-    filterDropdown.classList.remove('active');
-  }
-  if (sizeModal && e.target.closest('.size-modal-content') === null && !e.target.closest('.add-btn')) {
-    closeSizeModal();
-  }
-});
-
-searchInput.addEventListener("input", filterMenu);
-if (filterBtn) filterBtn.addEventListener("click", toggleFilterDropdown);
-
-window.addEventListener("load", () => {
-  loadCart();
-  const openCart = localStorage.getItem("openCart");
-  const couponCode = localStorage.getItem("appliedCoupon");
-  if (openCart === "true" && cartSection) {
-    cartSection.classList.add("active");
-    localStorage.removeItem("openCart");
-    if (couponCode && document.getElementById("couponCode")) {
-      document.getElementById("couponCode").value = couponCode;
-      applyCoupon(couponCode);
+    async function loadMenu() {
+      try {
+        const res = await fetch("/api/menu");
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        if (!data.success || !Array.isArray(data.data)) throw new Error("Invalid menu data");
+        menuData = data.data;
+        console.log("Loaded menuData:", menuData);
+        renderCategories();
+        filterMenu();
+      } catch (err) {
+        console.error("Menu Load Error:", err);
+        showToast(`Error loading menu: ${err.message}`, false);
+        topPicksEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
+        categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
+      }
     }
-  }
-  loadMenu();
-});
+
+    function renderCategories() {
+      if (!Array.isArray(menuData) || menuData.length === 0) {
+        filterDropdown.innerHTML = '<div data-category="All" class="selected">All Categories</div>';
+        return;
+      }
+      const categories = [...new Set(menuData.filter(item => item?.category).map(item => item.category))].sort();
+      filterDropdown.innerHTML = '<div data-category="All" class="selected">All Categories</div>' +
+        categories.map(cat => `<div data-category="${cat}">${cat}</div>`).join('');
+      filterDropdown.querySelectorAll('div').forEach(div => {
+        div.addEventListener('click', () => {
+          selectedCategory = div.dataset.category;
+          filterDropdown.querySelectorAll('div').forEach(d => d.classList.remove('selected'));
+          div.classList.add('selected');
+          filterDropdown.classList.remove('active');
+          filterMenu();
+        });
+      });
+    }
+
+    function groupPizzaItems(items) {
+      const grouped = {};
+      items.forEach(item => {
+        if (!item?.id || !item?.name || !item?.category) return;
+        const isPizza = item.category.toLowerCase().includes("pizza");
+        const baseName = isPizza ? item.name.replace(/\s*(Large|Medium|Regular)$/i, '').trim() : item.name;
+        if (!grouped[baseName]) {
+          grouped[baseName] = {
+            id: item.id,
+            name: baseName,
+            description: item.description || "No description available",
+            category: item.category,
+            is_top_pick: item.is_top_pick,
+            image: item.image || defaultImage,
+            sizes: [],
+            order_index: item.order_index || item.id
+          };
+        }
+        if (isPizza && item.size) {
+          grouped[baseName].sizes.push({
+            size: item.size.toUpperCase(),
+            price: parseFloat(item.price) || 0,
+            original_price: parseFloat(item.original_price) || null,
+            saved_price: parseFloat(item.saved_price) || null,
+            id: item.id
+          });
+        } else if (!isPizza) {
+          grouped[baseName].price = parseFloat(item.price) || 0;
+          grouped[baseName].original_price = parseFloat(item.original_price) || null;
+          grouped[baseName].saved_price = parseFloat(item.saved_price) || null;
+        }
+      });
+      return Object.values(grouped).map(item => {
+        if (item.sizes.length > 0) {
+          const regularSize = item.sizes.find(s => s.size === "REGULAR") || item.sizes.reduce((min, curr) => curr.price < min.price ? curr : min);
+          item.price = regularSize.price;
+          item.original_price = regularSize.original_price;
+          item.saved_price = regularSize.saved_price;
+          item.id = regularSize.id;
+        }
+        return item;
+      });
+    }
+
+    function renderMenu(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        topPicksEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
+        categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
+        return;
+      }
+
+      const groupedData = groupPizzaItems(data);
+      const sortedData = groupedData.sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
+
+      const topPicks = sortedData.filter(item => item?.is_top_pick);
+      topPicksEl.innerHTML = topPicks.length > 0 && selectedCategory === "All"
+        ? topPicks.map(item => buildCard(item, true)).join("")
+        : "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No top picks available</p>";
+
+      const groupedByCategory = {};
+      sortedData.forEach(item => {
+        if (!item?.category) return;
+        if (!groupedByCategory[item.category]) groupedByCategory[item.category] = [];
+        groupedByCategory[item.category].push(item);
+      });
+
+      const sortedCategories = Object.keys(groupedByCategory).sort((a, b) => {
+        const firstItemA = groupedByCategory[a][0];
+        const firstItemB = groupedByCategory[b][0];
+        return (firstItemA.order_index || firstItemA.id) - (firstItemB.order_index || firstItemB.id);
+      });
+
+      categoriesEl.innerHTML = "";
+      if (sortedCategories.length === 0 || (selectedCategory !== "All" && !sortedCategories.includes(selectedCategory))) {
+        categoriesEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>No menu items available</p>";
+      } else {
+        const categoriesToShow = selectedCategory === "All" ? sortedCategories : [selectedCategory];
+        categoriesToShow.forEach(cat => {
+          const items = groupedByCategory[cat].sort((a, b) => (a.order_index || a.id) - (b.order_index || b.id));
+          const firstRow = items.slice(0, 9);
+          const secondRow = items.slice(9, 18);
+          categoriesEl.innerHTML += `
+            <h2>${cat}</h2>
+            <div class="category-row-container">
+              <div class="category-row">
+                ${firstRow.map(item => buildCard(item, false)).join("")}
+              </div>
+              ${secondRow.length > 0 ? `<div class="category-row">${secondRow.map(item => buildCard(item, false)).join("")}</div>` : ""}
+            </div>
+          `;
+        });
+      }
+    }
+
+    function buildCard(item, isTopPick) {
+      if (!item?.name || !item.price || !item.id) return "";
+      const imageSrc = item.image || defaultImage;
+      const isPizza = item.category.toLowerCase().includes("pizza");
+      let sizeOptions = '';
+      if (isPizza) {
+        const baseName = item.name.replace(/\s*(Large|Medium|Regular)$/i, '').trim();
+        const sizeItems = menuData.filter(m =>
+          m.name.replace(/\s*(Large|Medium|Regular)$/i, '').trim() === baseName &&
+          m.category === item.category &&
+          m.size
+        );
+        sizeOptions = sizeItems.length > 0
+          ? sizeItems
+              .sort((a, b) => {
+                const order = ['REGULAR', 'MEDIUM', 'LARGE'];
+                return order.indexOf(a.size.toUpperCase()) - order.indexOf(b.size.toUpperCase());
+              })
+              .map(s => `<option value="${s.id}" data-price="${parseFloat(s.price).toFixed(2)}">${s.size} - ₹${parseFloat(s.price).toFixed(2)}</option>`)
+              .join('')
+          : '<option value="" disabled>No sizes available</option>';
+      }
+      return `
+        <div class="card ${isTopPick ? 'top-pick' : ''}">
+          <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
+          <div class="card-body">
+            <h3>${item.name}</h3>
+            <p>${item.description || "No description available"}</p>
+            <p>
+              <span class="price">₹${item.price.toFixed(2)}</span>
+              ${item.original_price ? `<span class="old-price">₹${item.original_price.toFixed(2)}</span>` : ""}
+            </p>
+            ${isPizza ? `<select class="size-select" data-base-name="${item.name.replace(/'/g, "\\'")}" data-category="${item.category.replace(/'/g, "\\'")}">
+              <option value="" disabled selected>Select a size</option>
+              ${sizeOptions}
+            </select>` : ''}
+            <button class="add-btn" onclick="addToCartFromCard(this, ${isPizza}, '${item.name.replace(/'/g, "\\'")}', '${item.category.replace(/'/g, "\\'")}')"><i class="fas fa-cart-plus"></i> Add to Cart</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function addToCartFromCard(button, isPizza, name, category) {
+      console.log("Adding to cart from card:", { name, isPizza, category });
+      if (isPizza) {
+        const select = button.previousElementSibling;
+        if (!select || select.value === "") {
+          showToast("Please select a size", false);
+          return;
+        }
+        const selectedOption = select.options[select.selectedIndex];
+        const itemId = parseInt(select.value);
+        const price = parseFloat(selectedOption.dataset.price);
+        const size = selectedOption.text.split(' - ')[0];
+        if (!itemId || isNaN(price)) {
+          console.error("Invalid pizza item data:", { itemId, price });
+          showToast("Invalid item data", false);
+          return;
+        }
+        addToCart(itemId, `${name} (${size})`, price, size);
+      } else {
+        const item = menuData.find(m => m.name === name && m.category === category);
+        if (item) {
+          addToCart(item.id, name, parseFloat(item.price), null);
+        } else {
+          console.error("Non-pizza item not found:", { name, category });
+          showToast("Item not found", false);
+        }
+      }
+    }
+
+    function addToCart(id, name, price, size = null) {
+      console.log("Adding to cart:", { id, name, price, size });
+      if (!id || !name || isNaN(price)) {
+        console.error("Invalid cart item:", { id, name, price });
+        showToast("Invalid item data", false);
+        return;
+      }
+      const cartId = size ? `${id}-${size}` : `${id}`;
+      console.log("Generated cartId:", cartId);
+      const existing = cart.find(i => i.cartId === cartId);
+      if (existing) {
+        existing.qty++;
+      } else {
+        cart.push({ id, cartId, name, price, qty: 1, size });
+      }
+      saveCart();
+      showToast(`${name} added to cart!`, true);
+      renderCart();
+    }
+
+    function changeQty(cartId, change) {
+      console.log("Changing quantity for cartId:", cartId, "Change:", change);
+      const item = cart.find(i => i.cartId === cartId);
+      if (!item) {
+        console.error("Item not found in cart for cartId:", cartId);
+        showToast("Item not found in cart", false);
+        return;
+      }
+      item.qty += change;
+      if (item.qty <= 0) {
+        cart = cart.filter(i => i.cartId !== cartId);
+        showToast(`${item.name} removed from cart`, true);
+      }
+      saveCart();
+      renderCart();
+    }
+
+    async function calculateDiscount(subtotal) {
+      if (!appliedCoupon || !subtotal) return 0;
+      try {
+        const menuRes = await fetch("/api/menu");
+        if (!menuRes.ok) throw new Error(`HTTP error! status: ${menuRes.status}`);
+        const menuData = await menuRes.json();
+        if (!menuData.success || !Array.isArray(menuData.data)) throw new Error("Invalid menu data");
+        const catIds = appliedCoupon.category ? menuData.data.filter(item => item?.category === appliedCoupon.category).map(item => item.id) : [];
+        const eligibleItems = cart.filter(i => i && catIds.includes(i.id));
+        const categoryQty = eligibleItems.reduce((sum, i) => sum + (i.qty || 0), 0);
+        const categorySubtotal = eligibleItems.reduce((sum, i) => sum + ((i.price || 0) * (i.qty || 0)), 0);
+        if (appliedCoupon.type === "min_cart_amount") {
+          if (subtotal >= (appliedCoupon.min_cart_amount || 0)) {
+            return (subtotal * (appliedCoupon.discount || 0)) / 100;
+          }
+          return 0;
+        } else if (appliedCoupon.type === "buy_x") {
+          if (categoryQty >= (appliedCoupon.buy_x || 0)) {
+            return (categorySubtotal * (appliedCoupon.discount || 0)) / 100;
+          }
+          return 0;
+        } else if (appliedCoupon.type === "date_range") {
+          if (categorySubtotal > 0) {
+            return (categorySubtotal * (appliedCoupon.discount || 0)) / 100;
+          }
+          return 0;
+        } else if (appliedCoupon.type === "bogo") {
+          if (categoryQty >= 2) {
+            const pairs = Math.floor(categoryQty / 2);
+            const sortedItems = eligibleItems.flatMap(item => Array(item.qty).fill(item)).sort((a, b) => (a.price || 0) - (b.price || 0));
+            let bogoDiscount = 0;
+            for (let i = 0; i < pairs; i++) {
+              bogoDiscount += sortedItems[i].price || 0;
+            }
+            return bogoDiscount;
+          }
+          return 0;
+        }
+        return 0;
+      } catch (err) {
+        console.error("Discount calculation error:", err);
+        showToast(`Error calculating discount: ${err.message}`, false);
+        return 0;
+      }
+    }
+
+    async function renderCart() {
+      if (!cartItemsEl || !cartToggle || !document.getElementById("subtotal")) {
+        console.error("Cart elements missing");
+        return;
+      }
+      const subtotalEl = document.getElementById("subtotal");
+      const discountEl = document.getElementById("discount");
+      const totalEl = document.getElementById("total");
+
+      if (!Array.isArray(cart) || cart.length === 0) {
+        cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
+        subtotalEl.innerText = "₹0";
+        discountEl.innerText = "₹0";
+        totalEl.innerText = "₹0";
+        cartToggle.setAttribute("data-count", "0");
+        cartToggle.classList.remove("has-items");
+        return;
+      }
+
+      let subtotal = 0;
+      const existingItems = new Map();
+      cartItemsEl.querySelectorAll('.cart-item').forEach(item => {
+        const cartId = item.dataset.cartId;
+        if (cartId) existingItems.set(cartId, item);
+      });
+
+      cart.forEach(item => {
+        if (!item?.id || !item.price || !item.qty) {
+          console.error("Invalid cart item:", item);
+          return;
+        }
+        subtotal += item.price * item.qty;
+        const menuItem = menuData.find(m => m?.id === item.id) || {};
+        const imageSrc = menuItem.image || defaultImage;
+        const cartId = item.cartId;
+        console.log("Rendering cart item:", { cartId, name: item.name, qty: item.qty });
+        let cartItem = existingItems.get(cartId);
+
+        if (cartItem) {
+          const qtySpan = cartItem.querySelector('.qty-controls span');
+          const totalSpan = cartItem.querySelector('span:last-child');
+          if (qtySpan) qtySpan.textContent = item.qty;
+          if (totalSpan) totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
+        } else {
+          const newItem = document.createElement('div');
+          newItem.className = 'cart-item';
+          newItem.dataset.cartId = cartId;
+          newItem.innerHTML = `
+            <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
+            <h4>${item.name}</h4>
+            <div class="qty-controls">
+              <button onclick="changeQty('${encodeURIComponent(cartId)}', -1)">-</button>
+              <span>${item.qty}</span>
+              <button onclick="changeQty('${encodeURIComponent(cartId)}', 1)">+</button>
+            </div>
+            <span>₹${(item.price * item.qty).toFixed(2)}</span>
+          `;
+          cartItemsEl.appendChild(newItem);
+          existingItems.set(cartId, newItem);
+        }
+      });
+
+      existingItems.forEach((item, cartId) => {
+        if (!cart.find(i => i.cartId === cartId)) {
+          cartItemsEl.removeChild(item);
+        }
+      });
+
+      const discount = await calculateDiscount(subtotal);
+      let total = subtotal - discount;
+      if (total < 0) total = 0;
+      cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item?.qty || 0), 0));
+      cartToggle.classList.toggle("has-items", cart.length > 0);
+      subtotalEl.innerText = "₹" + subtotal.toFixed(2);
+      discountEl.innerText = "₹" + discount.toFixed(2);
+      totalEl.innerText = "₹" + total.toFixed(2);
+    }
+
+    async function applyCoupon(code = null) {
+      const couponInput = document.getElementById("couponCode");
+      if (!couponInput) {
+        showToast("Coupon input not found", false);
+        return;
+      }
+      const couponCode = code || couponInput.value.trim();
+      if (!couponCode) {
+        showToast("Please enter a coupon code", false);
+        return;
+      }
+      if (!Array.isArray(cart) || cart.length === 0) {
+        showToast("Cart is empty!", false);
+        couponInput.value = "";
+        localStorage.removeItem("appliedCoupon");
+        return;
+      }
+      try {
+        const couponRes = await fetch("/api/coupons");
+        if (!couponRes.ok) throw new Error(`HTTP error! status: ${couponRes.status}`);
+        const couponData = await couponRes.json();
+        if (!couponData.success || !Array.isArray(couponData.data)) {
+          showToast("Failed to fetch coupons", false);
+          couponInput.value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
+        }
+        const coupon = couponData.data.find(c => c?.code === couponCode);
+        if (!coupon) {
+          showToast(`Invalid coupon code: ${couponCode}`, false);
+          couponInput.value = "";
+          localStorage.removeItem("appliedCoupon");
+          return;
+        }
+        const subtotal = cart.reduce((sum, i) => sum + ((i?.price || 0) * (i?.qty || 0)), 0);
+        if (coupon.type === "min_cart_amount") {
+          if (subtotal < (coupon.min_cart_amount || 0)) {
+            showToast(`Coupon requires minimum ₹${coupon.min_cart_amount} (current: ₹${subtotal.toFixed(2)})`, false);
+            couponInput.value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
+          appliedCoupon = coupon;
+          couponInput.value = couponCode;
+          localStorage.setItem("appliedCoupon", couponCode);
+          showToast(`Coupon ${couponCode} applied! ${coupon.discount}% off`, true);
+          renderCart();
+        } else if (coupon.type === "buy_x" || coupon.type === "date_range" || coupon.type === "bogo") {
+          const menuRes = await fetch("/api/menu");
+          if (!menuRes.ok) throw new Error(`HTTP error! status: ${menuRes.status}`);
+          const menuData = await menuRes.json();
+          if (!menuData.success || !Array.isArray(menuData.data)) {
+            showToast("Failed to fetch menu", false);
+            couponInput.value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
+          if (!coupon.category) {
+            showToast(`Coupon ${couponCode} is invalid`, false);
+            couponInput.value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
+          const catIds = menuData.data.filter(item => item?.category === coupon.category).map(item => item.id);
+          const eligibleItems = cart.filter(i => i && catIds.includes(i.id));
+          const categorySubtotal = eligibleItems.reduce((sum, i) => sum + ((i?.price || 0) * (i?.qty || 0)), 0);
+          const categoryQty = eligibleItems.reduce((sum, i) => sum + (i?.qty || 0), 0);
+          if (categorySubtotal === 0) {
+            showToast(`Coupon valid only for ${coupon.category}`, false);
+            couponInput.value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
+          if (coupon.type === "buy_x" && categoryQty < (coupon.buy_x || 0)) {
+            showToast(`Coupon requires ${coupon.buy_x} ${coupon.category} items`, false);
+            couponInput.value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
+          if (coupon.type === "bogo" && categoryQty < 2) {
+            showToast(`Coupon requires at least 2 ${coupon.category} items`, false);
+            couponInput.value = "";
+            localStorage.removeItem("appliedCoupon");
+            return;
+          }
+          appliedCoupon = coupon;
+          couponInput.value = couponCode;
+          localStorage.setItem("appliedCoupon", couponCode);
+          showToast(`Coupon ${couponCode} applied for ${coupon.category}!`, true);
+          renderCart();
+        }
+      } catch (err) {
+        showToast(`Error applying coupon: ${err.message}`, false);
+        couponInput.value = "";
+        localStorage.removeItem("appliedCoupon");
+        console.error("Coupon error:", err);
+      }
+    }
+
+    function removeCoupon() {
+      appliedCoupon = null;
+      const couponInput = document.getElementById("couponCode");
+      if (couponInput) couponInput.value = "";
+      localStorage.removeItem("appliedCoupon");
+      showToast("Coupon removed", true);
+      renderCart();
+    }
+
+    async function placeOrder() {
+      if (!Array.isArray(cart) || cart.length === 0) {
+        showToast("Cart is empty!", false);
+        return;
+      }
+      const custNameInput = document.getElementById("custName");
+      const tableNumInput = document.getElementById("tableNum");
+      if (!custNameInput || !tableNumInput) {
+        showToast("Form elements missing", false);
+        return;
+      }
+      const customer_name = custNameInput.value.trim();
+      const table_number = tableNumInput.value.trim();
+      if (!customer_name || !table_number) {
+        showToast("Enter name and table number", false);
+        return;
+      }
+      const subtotal = cart.reduce((s, i) => s + ((i?.price || 0) * (i?.qty || 0)), 0);
+      const discount = await calculateDiscount(subtotal);
+      let total = subtotal - discount;
+      if (total < 0) total = 0;
+      const body = {
+        customer_name,
+        table_number: parseInt(table_number),
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          qty: item.qty,
+          size: item.size
+        })),
+        coupon_code: appliedCoupon ? appliedCoupon.code : null,
+        subtotal,
+        discount,
+        total,
+        instructions: document.getElementById("instructions")?.value.trim() || ""
+      };
+      try {
+        const res = await fetch("/api/orders", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+        const data = await res.json();
+        if (data.success) {
+          showToast(`Thank you, ${customer_name}! Order #${data.orderId || 'N/A'} placed!`, true);
+          cart = [];
+          appliedCoupon = null;
+          if (custNameInput) custNameInput.value = "";
+          if (tableNumInput) tableNumInput.value = "";
+          if (document.getElementById("instructions")) document.getElementById("instructions").value = "";
+          if (document.getElementById("couponCode")) document.getElementById("couponCode").value = "";
+          localStorage.removeItem("cart");
+          localStorage.removeItem("appliedCoupon");
+          localStorage.removeItem("openCart");
+          renderCart();
+          toggleCart();
+        } else {
+          showToast(`Failed: ${data.message || "Unknown error"}`, false);
+        }
+      } catch (err) {
+        showToast(`Error placing order: ${err.message}`, false);
+        console.error("Order error:", err);
+      }
+    }
+
+    function toggleFilterDropdown() {
+      if (filterDropdown) filterDropdown.classList.toggle('active');
+    }
+
+    function filterMenu() {
+      if (!searchInput) {
+        console.error("Search input not found");
+        return;
+      }
+      const query = searchInput.value.toLowerCase().trim();
+      let filtered = menuData;
+      if (selectedCategory !== "All") {
+        filtered = menuData.filter(item => item?.category === selectedCategory);
+      }
+      if (query) {
+        filtered = filtered.filter(item => item?.name.toLowerCase().includes(query));
+      }
+      renderMenu(filtered);
+    }
+
+    document.addEventListener('click', (e) => {
+      if (filterDropdown && filterBtn && !filterDropdown.contains(e.target) && !filterBtn.contains(e.target)) {
+        filterDropdown.classList.remove('active');
+      }
+    });
+
+    searchInput.addEventListener("input", filterMenu);
+    if (filterBtn) filterBtn.addEventListener("click", toggleFilterDropdown);
+
+    window.addEventListener("load", () => {
+      loadCart();
+      const openCart = localStorage.getItem("openCart");
+      const couponCode = localStorage.getItem("appliedCoupon");
+      if (openCart === "true" && cartSection) {
+        cartSection.classList.add("active");
+        localStorage.removeItem("openCart");
+        if (couponCode && document.getElementById("couponCode")) {
+          document.getElementById("couponCode").value = couponCode;
+          applyCoupon(couponCode);
+        }
+      }
+      loadMenu();
+    });
   </script>
 </body>
 </html>
