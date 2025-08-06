@@ -733,6 +733,7 @@
     let appliedCoupon = null;
     let selectedCategory = "All";
     const defaultImage = 'https://via.placeholder.com/150';
+    let renderTimeout = null;
 
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
@@ -1091,73 +1092,85 @@
       const discountEl = document.getElementById("discount");
       const totalEl = document.getElementById("total");
 
-      if (!Array.isArray(cart) || cart.length === 0) {
-        cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
-        subtotalEl.innerText = "₹0";
-        discountEl.innerText = "₹0";
-        totalEl.innerText = "₹0";
-        cartToggle.setAttribute("data-count", "0");
-        cartToggle.classList.remove("has-items");
-        return;
-      }
+      // Clear previous timeout
+      if (renderTimeout) clearTimeout(renderTimeout);
 
-      let subtotal = 0;
-      const existingItems = new Map();
-      cartItemsEl.querySelectorAll('.cart-item').forEach(item => {
-        const cartId = item.dataset.cartId;
-        if (cartId) existingItems.set(cartId, item);
-      });
-
-      cart.forEach(item => {
-        if (!item?.id || !item.price || !item.qty) {
-          console.error("Invalid cart item:", item);
+      // Debounce rendering
+      renderTimeout = setTimeout(async () => {
+        if (!Array.isArray(cart) || cart.length === 0) {
+          cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
+          subtotalEl.innerText = "₹0";
+          discountEl.innerText = "₹0";
+          totalEl.innerText = "₹0";
+          cartToggle.setAttribute("data-count", "0");
+          cartToggle.classList.remove("has-items");
           return;
         }
-        subtotal += item.price * item.qty;
-        const menuItem = menuData.find(m => m?.id === item.id) || {};
-        const imageSrc = menuItem.image || defaultImage;
-        const cartId = item.cartId;
-        console.log("Rendering cart item:", { cartId, name: item.name, qty: item.qty });
-        let cartItem = existingItems.get(cartId);
 
-        if (cartItem) {
-          const qtySpan = cartItem.querySelector('.qty-controls span');
-          const totalSpan = cartItem.querySelector('span:last-child');
-          if (qtySpan) qtySpan.textContent = item.qty;
-          if (totalSpan) totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
-        } else {
-          const newItem = document.createElement('div');
-          newItem.className = 'cart-item';
-          newItem.dataset.cartId = cartId;
-          newItem.innerHTML = `
-            <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
-            <h4>${item.name}</h4>
-            <div class="qty-controls">
-              <button onclick="changeQty('${encodeURIComponent(cartId)}', -1)">-</button>
-              <span>${item.qty}</span>
-              <button onclick="changeQty('${encodeURIComponent(cartId)}', 1)">+</button>
-            </div>
-            <span>₹${(item.price * item.qty).toFixed(2)}</span>
-          `;
-          cartItemsEl.appendChild(newItem);
-          existingItems.set(cartId, newItem);
+        let subtotal = 0;
+        const existingItems = new Map();
+        cartItemsEl.querySelectorAll('.cart-item').forEach(item => {
+          const cartId = item.dataset.cartId;
+          if (cartId) existingItems.set(cartId, item);
+        });
+
+        // Update or create cart items
+        for (const item of cart) {
+          if (!item?.id || !item.price || !item.qty) {
+            console.error("Invalid cart item:", item);
+            continue;
+          }
+          subtotal += item.price * item.qty;
+          const menuItem = menuData.find(m => m?.id === item.id) || {};
+          const imageSrc = menuItem.image || defaultImage;
+          const cartId = item.cartId;
+          console.log("Rendering cart item:", { cartId, name: item.name, qty: item.qty });
+          let cartItem = existingItems.get(cartId);
+
+          if (cartItem) {
+            // Update existing item
+            const qtySpan = cartItem.querySelector('.qty-controls span');
+            const totalSpan = cartItem.querySelector('span:last-child');
+            const img = cartItem.querySelector('img');
+            if (qtySpan) qtySpan.textContent = item.qty;
+            if (totalSpan) totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
+            if (img && img.src !== imageSrc) img.src = imageSrc; // Update image if changed
+          } else {
+            // Create new item
+            const newItem = document.createElement('div');
+            newItem.className = 'cart-item';
+            newItem.dataset.cartId = cartId;
+            newItem.innerHTML = `
+              <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
+              <h4>${item.name}</h4>
+              <div class="qty-controls">
+                <button onclick="changeQty('${encodeURIComponent(cartId)}', -1)">-</button>
+                <span>${item.qty}</span>
+                <button onclick="changeQty('${encodeURIComponent(cartId)}', 1)">+</button>
+              </div>
+              <span>₹${(item.price * item.qty).toFixed(2)}</span>
+            `;
+            cartItemsEl.appendChild(newItem);
+            existingItems.set(cartId, newItem);
+          }
         }
-      });
 
-      existingItems.forEach((item, cartId) => {
-        if (!cart.find(i => i.cartId === cartId)) {
-          cartItemsEl.removeChild(item);
-        }
-      });
+        // Remove items that are no longer in the cart
+        existingItems.forEach((item, cartId) => {
+          if (!cart.find(i => i.cartId === cartId)) {
+            item.remove();
+          }
+        });
 
-      const discount = await calculateDiscount(subtotal);
-      let total = subtotal - discount;
-      if (total < 0) total = 0;
-      cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item?.qty || 0), 0));
-      cartToggle.classList.toggle("has-items", cart.length > 0);
-      subtotalEl.innerText = "₹" + subtotal.toFixed(2);
-      discountEl.innerText = "₹" + discount.toFixed(2);
-      totalEl.innerText = "₹" + total.toFixed(2);
+        const discount = await calculateDiscount(subtotal);
+        let total = subtotal - discount;
+        if (total < 0) total = 0;
+        cartToggle.setAttribute("data-count", cart.reduce((sum, item) => sum + (item?.qty || 0), 0));
+        cartToggle.classList.toggle("has-items", cart.length > 0);
+        subtotalEl.innerText = "₹" + subtotal.toFixed(2);
+        discountEl.innerText = "₹" + discount.toFixed(2);
+        totalEl.innerText = "₹" + total.toFixed(2);
+      }, 100); // Debounce delay
     }
 
     async function applyCoupon(code = null) {
