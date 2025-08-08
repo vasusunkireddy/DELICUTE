@@ -636,11 +636,19 @@
       oscillator.connect(gainNode);
       gainNode.connect(audioCtx.destination);
       oscillator.type = 'sine';
-      oscillator.frequency.setValueAtTime(440, audioCtx.currentTime); // A4 note
-      gainNode.gain.setValueAtTime(1, audioCtx.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.5);
+      
+      // Create a sequence of tones for 5 seconds
+      const frequencies = [440, 523.25, 659.25, 783.99]; // A4, C5, E5, G5
+      let currentTime = audioCtx.currentTime;
+      
+      frequencies.forEach((freq, index) => {
+        oscillator.frequency.setValueAtTime(freq, currentTime + index * 1.25);
+        gainNode.gain.setValueAtTime(0.8, currentTime + index * 1.25);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + (index + 1) * 1.25 - 0.1);
+      });
+      
       oscillator.start();
-      oscillator.stop(audioCtx.currentTime + 0.5);
+      oscillator.stop(audioCtx.currentTime + 5);
     }
 
     function showToast(msg, success = true) {
