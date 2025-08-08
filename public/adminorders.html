@@ -386,6 +386,7 @@
       right: 8rem;
       display: flex;
       align-items: center;
+      gap: 0.5rem;
     }
 
     .notification-icon {
@@ -484,6 +485,29 @@
       text-align: center;
     }
 
+    .enable-sound-btn {
+      background: linear-gradient(45deg, var(--primary-teal), var(--secondary-teal));
+      border: none;
+      padding: 0.5rem 1rem;
+      color: white;
+      font-weight: 500;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 40px;
+    }
+
+    .enable-sound-btn:hover {
+      background: linear-gradient(45deg, #1e8578, var(--primary-teal));
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+
     @keyframes shine {
       0% { left: -100%; }
       50% { left: 100%; }
@@ -534,6 +558,7 @@
       table { min-width: 800px; }
       th { min-width: 100px; }
       td { min-width: 100px; }
+      .enable-sound-btn { font-size: 0.85rem; padding: 0.4rem 0.8rem; height: 36px; }
     }
 
     @media (max-width: 480px) {
@@ -557,6 +582,7 @@
       .notification-item { font-size: 0.75rem; padding: 0.5rem; }
       .clear-notifications { font-size: 0.75rem; height: 32px; }
       .table-wrapper { max-height: 350px; }
+      .enable-sound-btn { font-size: 0.8rem; padding: 0.3rem 0.6rem; height: 32px; }
     }
   </style>
 </head>
@@ -568,6 +594,9 @@
       <span>Every Bite Tells A Story</span>
     </div>
     <div class="notification-container">
+      <button class="enable-sound-btn" id="enable-sound-btn" title="Enable Notification Sound">
+        <i class="fas fa-volume-up"></i>
+      </button>
       <span class="notification-icon" title="Notifications">
         <i class="fas fa-bell"></i>
         <span class="notification-badge" id="notification-count">0</span>
@@ -622,15 +651,22 @@
       notificationDropdown: document.getElementById("notification-dropdown"),
       notificationIcon: document.querySelector(".notification-icon"),
       ordersTable: document.getElementById("ordersTable"),
-      toast: document.getElementById("toast")
+      toast: document.getElementById("toast"),
+      enableSoundBtn: document.getElementById("enable-sound-btn")
     };
 
     let notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
+    let isAudioContextInitialized = false;
 
     // Notification Sound
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     const audioCtx = new AudioContext();
+
     function playNotificationSound() {
+      if (audioCtx.state === 'suspended') {
+        showToast("Please enable sound first", false);
+        return;
+      }
       const oscillator = audioCtx.createOscillator();
       const gainNode = audioCtx.createGain();
       oscillator.connect(gainNode);
@@ -650,6 +686,16 @@
       oscillator.start();
       oscillator.stop(audioCtx.currentTime + 5);
     }
+
+    // Initialize AudioContext on user interaction
+    elements.enableSoundBtn.addEventListener("click", async () => {
+      if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+        isAudioContextInitialized = true;
+        showToast("Notification sound enabled!");
+        elements.enableSoundBtn.style.opacity = "0.7";
+      }
+    });
 
     function showToast(msg, success = true) {
       elements.toast.textContent = msg;
@@ -716,7 +762,11 @@
     });
 
     socket.on("new-order", (order) => {
-      playNotificationSound();
+      if (isAudioContextInitialized) {
+        playNotificationSound();
+      } else {
+        showToast("New order received! Enable sound to hear notifications.", true);
+      }
       showToast(`New Order #${order.id} by ${order.customer_name} for ₹${order.total.toFixed(2)}`);
       notifications.unshift(order);
       localStorage.setItem("notifications", JSON.stringify(notifications));
