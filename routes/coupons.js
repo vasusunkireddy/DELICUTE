@@ -31,7 +31,7 @@ async function uploadToCloudinary(fileBuffer, filename) {
 }
 
 // Valid coupon types
-const VALID_COUPON_TYPES = ['buy_x', 'date_range', 'min_cart_amount', 'bogo'];
+const VALID_COUPON_TYPES = ["buy_x", "date_range", "min_cart_amount", "bogo"];
 
 // ================= GET ALL COUPONS =================
 router.get("/", async (req, res) => {
@@ -39,7 +39,7 @@ router.get("/", async (req, res) => {
     const [rows] = await pool.query(
       `SELECT c.id, c.code, c.description, c.image, c.discount, c.quantity,
               c.type, c.buy_x, c.valid_from, c.valid_to, c.min_cart_amount,
-              cat.name AS category
+              c.free_item, cat.name AS category
        FROM coupons c
        LEFT JOIN categories cat ON c.category_id = cat.id
        ORDER BY c.id DESC`
@@ -84,8 +84,10 @@ router.post("/", upload.single("image"), async (req, res) => {
       valid_from,
       valid_to,
       min_cart_amount,
+      free_item,
     } = req.body;
 
+    // Validation: Required fields
     if (!code || !description || !type) {
       return res.status(400).json({ success: false, message: "Code, description, and type are required" });
     }
@@ -94,14 +96,25 @@ router.post("/", upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid coupon type" });
     }
 
-    if (type === "min_cart_amount" && !min_cart_amount) {
-      return res.status(400).json({ success: false, message: "Minimum cart amount is required for Min Cart Amount type" });
+    // Validation: Coupon type-specific requirements
+    if (type === "min_cart_amount") {
+      if (!min_cart_amount) {
+        return res.status(400).json({ success: false, message: "Minimum cart amount is required for Min Cart Amount type" });
+      }
+      // Allow discount to be 0 if free_item is provided
+      if (discount == null && !free_item) {
+        return res.status(400).json({ success: false, message: "Discount or free item is required for Min Cart Amount type" });
+      }
+    } else {
+      if (!quantity) {
+        return res.status(400).json({ success: false, message: "Quantity is required for this coupon type" });
+      }
+      if (type !== "bogo" && discount == null) {
+        return res.status(400).json({ success: false, message: "Discount is required for this coupon type" });
+      }
     }
 
-    if (type !== "min_cart_amount" && !quantity) {
-      return res.status(400).json({ success: false, message: "Quantity is required for this coupon type" });
-    }
-
+    // Validation: Category
     let category_id = null;
     if (type !== "min_cart_amount") {
       if (!category) {
@@ -113,17 +126,19 @@ router.post("/", upload.single("image"), async (req, res) => {
       category_id = catRows[0].id;
     }
 
+    // Handle image upload
     let imageUrl = null;
     if (req.file) {
       imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
     }
 
-    const discountValue = type === "bogo" ? 0 : (discount || null);
+    // Set discount to 0 for bogo or when free_item is used
+    const discountValue = type === "bogo" || (type === "min_cart_amount" && free_item) ? 0 : (discount || null);
 
     await pool.query(
       `INSERT INTO coupons 
-        (code, description, image, discount, quantity, category_id, type, buy_x, valid_from, valid_to, min_cart_amount) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        (code, description, image, discount, quantity, category_id, type, buy_x, valid_from, valid_to, min_cart_amount, free_item) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         code,
         description,
@@ -136,6 +151,7 @@ router.post("/", upload.single("image"), async (req, res) => {
         type === "date_range" ? valid_from || null : null,
         type === "date_range" ? valid_to || null : null,
         type === "min_cart_amount" ? min_cart_amount || null : null,
+        type === "min_cart_amount" ? free_item || null : null,
       ]
     );
 
@@ -160,8 +176,10 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       valid_from,
       valid_to,
       min_cart_amount,
+      free_item,
     } = req.body;
 
+    // Validation: Required fields
     if (!code || !description || !type) {
       return res.status(400).json({ success: false, message: "Code, description, and type are required" });
     }
@@ -170,14 +188,25 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid coupon type" });
     }
 
-    if (type === "min_cart_amount" && !min_cart_amount) {
-      return res.status(400).json({ success: false, message: "Minimum cart amount is required for Min Cart Amount type" });
+    // Validation: Coupon type-specific requirements
+    if (type === "min_cart_amount") {
+      if (!min_cart_amount) {
+        return res.status(400).json({ success: false, message: "Minimum cart amount is required for Min Cart Amount type" });
+      }
+      // Allow discount to be 0 if free_item is provided
+      if (discount == null && !free_item) {
+        return res.status(400).json({ success: false, message: "Discount or free item is required for Min Cart Amount type" });
+      }
+    } else {
+      if (!quantity) {
+        return res.status(400).json({ success: false, message: "Quantity is required for this coupon type" });
+      }
+      if (type !== "bogo" && discount == null) {
+        return res.status(400).json({ success: false, message: "Discount is required for this coupon type" });
+      }
     }
 
-    if (type !== "min_cart_amount" && !quantity) {
-      return res.status(400).json({ success: false, message: "Quantity is required for this coupon type" });
-    }
-
+    // Validation: Category
     let category_id = null;
     if (type !== "min_cart_amount") {
       if (!category) {
@@ -189,17 +218,20 @@ router.put("/:id", upload.single("image"), async (req, res) => {
       category_id = catRows[0].id;
     }
 
+    // Handle image upload
     let imageUrl = null;
     if (req.file) {
       imageUrl = await uploadToCloudinary(req.file.buffer, req.file.originalname);
     }
 
-    const discountValue = type === "bogo" ? 0 : (discount || null);
+    // Set discount to 0 for bogo or when free_item is used
+    const discountValue = type === "bogo" || (type === "min_cart_amount" && free_item) ? 0 : (discount || null);
 
     await pool.query(
       `UPDATE coupons SET 
         code=?, description=?, discount=?, quantity=?, category_id=?, type=?, 
-        buy_x=?, valid_from=?, valid_to=?, min_cart_amount=?, image=COALESCE(?, image)
+        buy_x=?, valid_from=?, valid_to=?, min_cart_amount=?, free_item=?, 
+        image=COALESCE(?, image)
        WHERE id=?`,
       [
         code,
@@ -212,6 +244,7 @@ router.put("/:id", upload.single("image"), async (req, res) => {
         type === "date_range" ? valid_from || null : null,
         type === "date_range" ? valid_to || null : null,
         type === "min_cart_amount" ? min_cart_amount || null : null,
+        type === "min_cart_amount" ? free_item || null : null,
         imageUrl,
         req.params.id,
       ]

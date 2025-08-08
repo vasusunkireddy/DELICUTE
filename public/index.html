@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Delicute | Every Bite Tells a Story</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
   <style>
     * {
       box-sizing: border-box;
@@ -108,6 +108,21 @@
       box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3);
     }
 
+    .hero .terms-link {
+      margin-top: 1.5rem;
+      display: inline-block;
+      font-size: 0.95rem;
+      color: #4b5e8e;
+      text-decoration: underline;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.8s forwards;
+    }
+
+    .hero .terms-link:hover {
+      color: #8e44ad;
+    }
+
     @keyframes shine {
       0% { left: -100%; }
       50% { left: 100%; }
@@ -160,10 +175,11 @@
 <body>
   <section class="hero">
     <div class="hero-content">
-      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo">
+      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo" />
       <h1>Welcome to Delicute</h1>
       <p>Every Bite Tells a Story</p>
       <a href="customermenu.html" class="btn">Explore Our Menu</a>
+      <a href="terms.html" class="terms-link">Terms & Conditions</a>
     </div>
   </section>
 </body>

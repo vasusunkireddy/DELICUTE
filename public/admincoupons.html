@@ -359,7 +359,7 @@
       <label>Image</label>
       <input type="file" id="image" accept="image/*">
       <label>Discount Amount (% for Buy_X/Min_Cart_Amount, ₹ for Date Range)</label>
-      <input type="number" id="discount" min="1">
+      <input type="number" id="discount" min="0">
       <label>Quantity</label>
       <input type="number" id="quantity" min="1">
       <label>Category</label>
@@ -384,6 +384,8 @@
       <div id="minCartFields">
         <label>Minimum Cart Amount (₹)</label>
         <input type="number" id="min_cart_amount" min="1">
+        <label>Free Item (Optional)</label>
+        <input type="text" id="free_item" placeholder="e.g., Free Pizza of Our Choice">
       </div>
       <button type="submit">Save Coupon</button>
     </form>
@@ -413,7 +415,7 @@
   <script>
     const API_URL = "/api/coupons";
 
-    function showToast(msg, success = true) {
+    function showгодиToast(msg, success = true) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
       toast.style.background = success ? "linear-gradient(45deg, #26a69a, #4dd0e1)" : "linear-gradient(45deg, #ef5350, #e53935)";
@@ -426,11 +428,15 @@
       const quantityInput = document.getElementById("quantity");
       const categorySelect = document.getElementById("category");
       const discountInput = document.getElementById("discount");
-      
+      const minCartAmountInput = document.getElementById("min_cart_amount");
+      const freeItemInput = document.getElementById("free_item");
+
       if (type === "min_cart_amount") {
         quantityInput.removeAttribute("required");
         categorySelect.removeAttribute("required");
-        discountInput.setAttribute("required", "required");
+        discountInput.removeAttribute("required"); // Allow discount to be 0 for free item
+        if (minCartAmountInput) minCartAmountInput.setAttribute("required", "required");
+        if (freeItemInput) freeItemInput.removeAttribute("required");
       } else if (type === "bogo") {
         quantityInput.setAttribute("required", "required");
         categorySelect.setAttribute("required", "required");
@@ -462,17 +468,18 @@
       const type = e.target.value;
       const discountInput = document.getElementById("discount");
       const discountLabel = document.querySelector("label[for='discount']");
-      
+      const minCartFields = document.getElementById("minCartFields");
+
       document.getElementById("buyXFields").style.display = type === "buy_x" ? "block" : "none";
       document.getElementById("dateFields").style.display = type === "date_range" ? "block" : "none";
       document.getElementById("minCartFields").style.display = type === "min_cart_amount" ? "block" : "none";
-      
+
       if (discountInput && discountLabel) {
         const isDiscountVisible = type !== "bogo";
         discountInput.style.display = isDiscountVisible ? "block" : "none";
         discountLabel.style.display = isDiscountVisible ? "block" : "none";
       }
-      
+
       toggleRequiredFields();
     });
 
@@ -510,10 +517,12 @@
         data.data.forEach(coupon => {
           const quantityDisplay = coupon.type === "buy_x" ? coupon.buy_x : coupon.quantity;
           const minCartDisplay = coupon.type === "min_cart_amount" ? `₹${coupon.min_cart_amount}` : "-";
-          const discountDisplay = coupon.type === "bogo" ? "BOGO" : 
-                                coupon.type === "date_range" ? `₹${coupon.discount}` : 
+          const discountDisplay = coupon.type === "bogo" ? "BOGO" :
+                                coupon.type === "date_range" ? `₹${coupon.discount}` :
+                                coupon.type === "min_cart_amount" && coupon.discount === 0 && coupon.free_item ? coupon.free_item :
+                                coupon.type === "min_cart_amount" ? `${coupon.discount}%` :
                                 `${coupon.discount}%`;
-          
+
           table.innerHTML += `
             <tr>
               <td><img src="${coupon.image}" alt="${coupon.code}" onerror="this.src='https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png'"></td>
@@ -549,7 +558,7 @@
 
       if (type !== "bogo") {
         const discount = document.getElementById("discount").value;
-        if (discount) formData.append("discount", discount);
+        formData.append("discount", discount || 0); // Default to 0 if empty
       }
 
       const quantity = document.getElementById("quantity").value;
@@ -565,12 +574,12 @@
         formData.append("valid_to", document.getElementById("valid_to").value || null);
       } else if (type === "min_cart_amount") {
         formData.append("min_cart_amount", document.getElementById("min_cart_amount").value || null);
+        const freeItem = document.getElementById("free_item").value;
+        if (freeItem) formData.append("free_item", freeItem);
       }
 
       const imageFile = document.getElementById("image").files[0];
-      if (imageFile) {
-        formData.append("image", imageFile);
-      }
+      if (imageFile) formData.append("image", imageFile);
 
       const id = document.getElementById("couponId").value;
       const method = id ? "PUT" : "POST";
@@ -617,7 +626,12 @@
           document.getElementById("quantity").value = c.quantity || "";
           document.getElementById("category").value = c.category || "";
           document.getElementById("type").value = c.type;
-          
+          document.getElementById("buy_x").value = c.buy_x || "";
+          document.getElementById("valid_from").value = c.valid_from?.split("T")[0] || "";
+          document.getElementById("valid_to").value = c.valid_to?.split("T")[0] || "";
+          document.getElementById("min_cart_amount").value = c.min_cart_amount || "";
+          document.getElementById("free_item").value = c.free_item || "";
+
           document.getElementById("buyXFields").style.display = c.type === "buy_x" ? "block" : "none";
           document.getElementById("dateFields").style.display = c.type === "date_range" ? "block" : "none";
           document.getElementById("minCartFields").style.display = c.type === "min_cart_amount" ? "block" : "none";
@@ -628,11 +642,7 @@
             discountInput.style.display = isDiscountVisible ? "block" : "none";
             discountLabel.style.display = isDiscountVisible ? "block" : "none";
           }
-          
-          document.getElementById("buy_x").value = c.buy_x || "";
-          document.getElementById("valid_from").value = c.valid_from?.split("T")[0] || "";
-          document.getElementById("valid_to").value = c.valid_to?.split("T")[0] || "";
-          document.getElementById("min_cart_amount").value = c.min_cart_amount || "";
+
           toggleRequiredFields();
         } else {
           showToast("Error loading coupon data", false);
