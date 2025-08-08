@@ -642,10 +642,13 @@
   </div>
 
   <div id="toast"></div>
-  <audio id="notification-sound" src="/assets/notification.mp3" preload="auto"></audio>
 
   <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script>
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    const audioCtx = new AudioContext();
+    let isSoundEnabled = false;
+
     const elements = {
       notificationCount: document.getElementById("notification-count"),
       notificationList: document.getElementById("notification-list"),
@@ -653,36 +656,58 @@
       notificationIcon: document.querySelector(".notification-icon"),
       ordersTable: document.getElementById("ordersTable"),
       toast: document.getElementById("toast"),
-      enableSoundBtn: document.getElementById("enable-sound-btn"),
-      notificationSound: document.getElementById("notification-sound")
+      enableSoundBtn: document.getElementById("enable-sound-btn")
     };
 
     let notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
-    let isSoundEnabled = false;
 
-    // Initialize audio on user interaction
-    elements.enableSoundBtn.addEventListener("click", () => {
-      elements.notificationSound.play().then(() => {
-        isSoundEnabled = true;
-        elements.enableSoundBtn.style.opacity = "0.7";
-        showToast("Notification sound enabled!");
-      }).catch(err => {
-        console.error("Audio initialization error:", err);
-        showToast("Failed to enable sound", false);
-      });
-    });
-
+    // Play notification sound using Web Audio API
     function playNotificationSound() {
       if (!isSoundEnabled) {
         showToast("Please enable sound to hear notifications", false);
         return;
       }
-      elements.notificationSound.currentTime = 0; // Reset to start
-      elements.notificationSound.play().catch(err => {
-        console.error("Audio play error:", err);
+      if (audioCtx.state === 'suspended') {
+        showToast("Audio context suspended. Enable sound again.", false);
+        return;
+      }
+      try {
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        oscillator.type = 'sine';
+        const frequencies = [440, 523.25, 659.25, 783.99]; // A4, C5, E5, G5
+        let currentTime = audioCtx.currentTime;
+        frequencies.forEach((freq, index) => {
+          oscillator.frequency.setValueAtTime(freq, currentTime + index * 1.25);
+          gainNode.gain.setValueAtTime(0.8, currentTime + index * 1.25);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + (index + 1) * 1.25 - 0.1);
+        });
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 5);
+      } catch (err) {
+        console.error("Audio playback error:", err);
         showToast("Error playing notification sound", false);
-      });
+      }
     }
+
+    // Enable sound on user interaction
+    elements.enableSoundBtn.addEventListener("click", async () => {
+      if (audioCtx.state === 'suspended') {
+        try {
+          await audioCtx.resume();
+          isSoundEnabled = true;
+          elements.enableSoundBtn.style.opacity = "0.7";
+          showToast("Notification sound enabled!");
+          // Play a brief test sound to confirm
+          playNotificationSound();
+        } catch (err) {
+          console.error("Audio initialization error:", err);
+          showToast("Failed to enable sound.", false);
+        }
+      }
+    });
 
     function showToast(msg, success = true) {
       elements.toast.textContent = msg;
@@ -967,3 +992,5 @@
       return parts.length === 2 ? parts.pop().split(";").shift() : null;
     }
   </script>
+</body>
+</html>
