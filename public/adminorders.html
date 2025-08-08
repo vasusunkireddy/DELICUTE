@@ -661,14 +661,32 @@
 
     let notifications = JSON.parse(localStorage.getItem("notifications") || "[]");
 
+    // Log initial AudioContext state
+    console.log(`Initial AudioContext state: ${audioCtx.state}`);
+
+    // Resume AudioContext on any touch event for mobile
+    const resumeAudioContext = async () => {
+      if (audioCtx.state === 'suspended') {
+        try {
+          await audioCtx.resume();
+          console.log(`AudioContext resumed on touch, state: ${audioCtx.state}`);
+        } catch (err) {
+          console.error("Touch resume error:", err);
+        }
+      }
+    };
+    document.addEventListener('touchstart', resumeAudioContext, { once: true });
+
     // Play notification sound using Web Audio API
     function playNotificationSound() {
+      console.log(`Attempting to play sound, isSoundEnabled: ${isSoundEnabled}, AudioContext state: ${audioCtx.state}`);
       if (!isSoundEnabled) {
         showToast("Please enable sound to hear notifications", false);
         return;
       }
       if (audioCtx.state === 'suspended') {
-        showToast("Audio context suspended. Enable sound again.", false);
+        showToast("Audio context suspended. Tap Enable Sound again.", false);
+        console.log("AudioContext suspended during playback attempt");
         return;
       }
       try {
@@ -686,6 +704,7 @@
         });
         oscillator.start();
         oscillator.stop(audioCtx.currentTime + 5);
+        console.log("Notification sound played successfully");
       } catch (err) {
         console.error("Audio playback error:", err);
         showToast("Error playing notification sound", false);
@@ -694,18 +713,22 @@
 
     // Enable sound on user interaction
     elements.enableSoundBtn.addEventListener("click", async () => {
-      if (audioCtx.state === 'suspended') {
+      console.log(`Enable Sound clicked, AudioContext state: ${audioCtx.state}`);
+      if (audioCtx.state === 'suspended' || !isSoundEnabled) {
         try {
           await audioCtx.resume();
           isSoundEnabled = true;
           elements.enableSoundBtn.style.opacity = "0.7";
           showToast("Notification sound enabled!");
-          // Play a brief test sound to confirm
+          console.log(`AudioContext resumed, state: ${audioCtx.state}`);
+          // Play a brief test sound
           playNotificationSound();
         } catch (err) {
           console.error("Audio initialization error:", err);
-          showToast("Failed to enable sound.", false);
+          showToast("Failed to enable sound. Try again.", false);
         }
+      } else {
+        showToast("Notification sound already enabled!");
       }
     });
 
@@ -774,6 +797,7 @@
     });
 
     socket.on("new-order", (order) => {
+      console.log("New order received:", order);
       playNotificationSound();
       showToast(`New Order #${order.id} by ${order.customer_name} for ₹${order.total.toFixed(2)}`);
       notifications.unshift(order);
