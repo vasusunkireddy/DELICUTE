@@ -2,264 +2,194 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Delicute | Every Bite Tells a Story</title>
-
-  <!-- SEO basics -->
-  <meta name="description" content="Delicute — Every Bite Tells a Story. Order pizzas, waffles, shakes, and more. Open daily 9:00 AM – 11:00 PM." />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet" />
-
   <style>
-    :root{
-      --bg1:#d8b7d2;
-      --bg2:#e0e7fa;
-      --primary:#8e44ad;
-      --accent1:#ffa726;
-      --accent2:#ffca28;
-      --ink:#1a1a1a;
-      --muted:#4b5e8e;
-      --card:#ffffffee;
-      --max:1200px;
-      --radius:20px;
-      --shadow:0 10px 30px rgba(0,0,0,.12);
-    }
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      font-family:'Playfair Display', serif;
-      color:var(--ink);
-      background:linear-gradient(135deg,var(--bg1) 0%,var(--bg2) 100%);
-      line-height:1.6;
-      -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
-    }
-    a{color:inherit}
-    img{max-width:100%;display:block}
-
-    /* Container */
-    .container{width:100%;max-width:var(--max);margin:0 auto;padding:0 24px}
-
-    /* Navbar */
-    .nav{
-      position:sticky; top:0; z-index:10;
-      backdrop-filter:saturate(160%) blur(8px);
-      background:linear-gradient(135deg,#ffffffaa,#ffffff90);
-      border-bottom:1px solid #ffffff80;
-    }
-    .nav-inner{
-      display:flex; align-items:center; justify-content:space-between;
-      padding:14px 0;
-    }
-    .brand{display:flex; align-items:center; gap:12px; text-decoration:none}
-    .brand img{width:44px; height:44px; filter:drop-shadow(0 2px 6px rgba(0,0,0,.15))}
-    .brand span{font-weight:800; font-size:1.35rem; color:var(--primary); letter-spacing:.5px}
-    .nav-links{display:flex; gap:18px; align-items:center; flex-wrap:wrap}
-    .nav-links a{
-      text-decoration:none; color:var(--muted); font-weight:700; font-size:.98rem;
-      padding:8px 12px; border-radius:999px; transition:transform .15s ease, background .2s ease;
-    }
-    .nav-links a:hover{background:#ffffffcc; transform:translateY(-1px)}
-    .cta{
-      background:linear-gradient(45deg,var(--accent1),var(--accent2));
-      color:#1a1a1a; border:none; border-radius:999px; font-weight:800;
-      padding:10px 18px; text-decoration:none; box-shadow:0 6px 18px rgba(142,68,173,.25);
-    }
-    .cta:hover{filter:brightness(1.03)}
-
-    /* Hero */
-    .hero{
-      position:relative; padding:56px 0 32px; overflow:hidden;
-    }
-    .shine::before{
-      content:""; position:absolute; inset:0 -100% 0 auto; width:100%;
-      background:linear-gradient(90deg,transparent,rgba(142,68,173,.28),transparent);
-      animation:shine 4s linear infinite; pointer-events:none;
-    }
-    .hero-grid{
-      display:grid; gap:36px; align-items:center;
-      grid-template-columns:1fr; 
-    }
-    .hero-left h1{
-      font-size:clamp(2rem,3.5vw+1rem,3.5rem);
-      font-weight:800; color:var(--primary);
-      text-shadow:0 2px 6px rgba(255,167,38,.35);
-      letter-spacing:1px; margin-bottom:10px; opacity:0; transform:translateY(20px); animation:fadeUp .8s .1s forwards;
-    }
-    .hero-left p{
-      color:var(--muted); font-weight:600; font-size:1.15rem; max-width:46ch;
-      margin-bottom:22px; opacity:0; transform:translateY(20px); animation:fadeUp .8s .25s forwards;
-    }
-    .hero-actions{display:flex; gap:14px; flex-wrap:wrap}
-    .btn{
-      background:linear-gradient(45deg,var(--accent1),var(--accent2));
-      color:#1a1a1a; padding:14px 26px; font-size:1.05rem; font-weight:800; border:none;
-      border-radius:999px; cursor:pointer; text-decoration:none; display:inline-block;
-      box-shadow:0 8px 22px rgba(142,68,173,.22); transition:transform .2s ease, box-shadow .2s ease;
-      opacity:0; transform:translateY(20px); animation:fadeUp .8s .35s forwards;
-    }
-    .btn:hover{transform:translateY(-2px); box-shadow:0 12px 28px rgba(142,68,173,.28)}
-    .link{
-      display:inline-flex; align-items:center; gap:8px; font-weight:800; color:var(--muted); text-decoration:none;
-      opacity:0; transform:translateY(20px); animation:fadeUp .8s .45s forwards;
-    }
-    .hero-right{
-      justify-self:center; opacity:0; transform:scale(.92); animation:pop .7s .2s forwards;
-      filter:drop-shadow(0 12px 24px rgba(0,0,0,.18));
-    }
-    .hero-logo{width:min(360px,42vw); border-radius:28px}
-
-    /* Highlights (desktop candy) */
-    .highlights{
-      margin:28px 0 8px;
-      display:grid; gap:18px; grid-template-columns:repeat(2,1fr);
-    }
-    .pill{
-      background:var(--card); border-radius:999px; padding:10px 14px; font-weight:700; color:var(--muted);
-      box-shadow:var(--shadow); text-align:center;
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
-    /* Feature grid */
-    .features{padding:40px 0 16px}
-    .grid{
-      display:grid; gap:22px;
-      grid-template-columns:repeat(1, minmax(0,1fr));
-    }
-    .card{
-      background:var(--card); border-radius:var(--radius); padding:20px;
-      box-shadow:var(--shadow); transition:transform .25s ease, box-shadow .25s ease;
-    }
-    .card:hover{transform:translateY(-4px); box-shadow:0 16px 36px rgba(0,0,0,.18)}
-    .card h3{color:var(--primary); font-size:1.35rem; margin-bottom:6px}
-    .card p{color:var(--muted); font-weight:600}
-
-    /* Footer */
-    footer{
-      margin-top:40px; padding:24px 0 40px; color:var(--muted);
-    }
-    .footer-grid{
-      display:grid; gap:18px; grid-template-columns:1fr; align-items:center;
-    }
-    .tiny{font-size:.95rem}
-    .terms{color:var(--muted); text-decoration:underline}
-    .hours{
-      display:inline-block; background:#ffffffcc; border-radius:999px; padding:8px 14px; font-weight:800; color:#1a1a1a;
-      box-shadow:0 8px 22px rgba(142,68,173,.15);
+    body {
+      font-family: 'Playfair Display', serif;
+      background: linear-gradient(135deg, #d8b7d2 0%, #e0e7fa 100%);
+      color: #1a1a1a;
+      overflow-x: hidden;
+      line-height: 1.6;
+      min-height: 100vh;
     }
 
-    /* Desktop breakpoints */
-    @media (min-width: 900px){
-      .hero-grid{grid-template-columns:1.1fr .9fr; gap:40px}
-      .grid{grid-template-columns:repeat(3, minmax(0,1fr))}
-      .footer-grid{grid-template-columns:1fr auto 1fr}
-      .highlights{grid-template-columns:repeat(4,1fr)}
-    }
-    @media (min-width:1200px){
-      .grid{grid-template-columns:repeat(4,minmax(0,1fr))}
-    }
-
-    /* Accessibility + motion */
-    :focus-visible{outline:3px solid var(--primary); outline-offset:2px; border-radius:10px}
-    @media (prefers-reduced-motion: reduce){
-      .shine::before, .btn, .hero-left h1, .hero-left p, .link, .hero-right {animation:none !important; transform:none !important; opacity:1 !important}
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    /* Keyframes */
-    @keyframes shine{0%{left:-100%}50%{left:100%}100%{left:100%}}
-    @keyframes fadeUp{to{opacity:1; transform:translateY(0)}}
-    @keyframes pop{to{opacity:1; transform:scale(1)}}
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(142, 68, 173, 0.3), transparent);
+      animation: shine 4s infinite;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .hero img {
+      width: 180px;
+      max-width: 50%;
+      margin-bottom: 1.5rem;
+      filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.2));
+      opacity: 0;
+      transform: scale(0.8);
+      animation: fadeInScale 1s ease-out forwards;
+    }
+
+    .hero h1 {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin-bottom: 0.75rem;
+      color: #8e44ad;
+      text-shadow: 0 2px 6px rgba(255, 167, 38, 0.4);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.2s forwards;
+      letter-spacing: 1px;
+    }
+
+    .hero p {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #4b5e8e;
+      margin-bottom: 2rem;
+      max-width: 600px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.4s forwards;
+    }
+
+    .hero .btn {
+      background: linear-gradient(45deg, #ffa726, #ffca28);
+      color: #1a1a1a;
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      font-weight: 700;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(142, 68, 173, 0.2);
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.6s forwards;
+    }
+
+    .hero .btn:hover {
+      background: linear-gradient(45deg, #ffca28, #ffb300);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(142, 68, 173, 0.3);
+    }
+
+    .hero .terms-link {
+      margin-top: 1rem;
+      display: block;
+      font-size: 0.95rem;
+      color: #4b5e8e;
+      text-decoration: underline;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.8s ease-out 0.8s forwards;
+    }
+
+    .hero .terms-link:hover {
+      color: #8e44ad;
+    }
+
+    @keyframes shine {
+      0% { left: -100%; }
+      50% { left: 100%; }
+      100% { left: 100%; }
+    }
+
+    @keyframes fadeInScale {
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeInUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 2.5rem;
+      }
+      .hero p {
+        font-size: 1.1rem;
+      }
+      .hero img {
+        width: 140px;
+      }
+      .hero .btn {
+        padding: 0.9rem 2rem;
+        font-size: 1rem;
+      }
+      .hero .terms-link {
+        font-size: 0.9rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 2rem;
+      }
+      .hero p {
+        font-size: 1rem;
+      }
+      .hero img {
+        width: 120px;
+      }
+      .hero .btn {
+        padding: 0.8rem 1.8rem;
+        font-size: 0.95rem;
+        width: 100%;
+        max-width: 280px;
+      }
+      .hero .terms-link {
+        font-size: 0.85rem;
+      }
+    }
   </style>
 </head>
 <body>
-  <!-- Nav -->
-  <header class="nav">
-    <div class="container nav-inner">
-      <a class="brand" href="index.html" aria-label="Delicute Home">
-        <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute logo"/>
-        <span>Delicute</span>
-      </a>
-      <nav class="nav-links" aria-label="Primary">
-        <a href="#about">About</a>
-        <a href="#popular">Popular</a>
-        <a href="terms.html" class="terms">Terms</a>
-        <a class="cta" href="customermenu.html">Order Online</a>
-      </nav>
-    </div>
-  </header>
-
-  <!-- Hero -->
-  <section class="hero shine">
-    <div class="container hero-grid">
-      <div class="hero-left">
-        <h1>Welcome to Delicute</h1>
-        <p>Every Bite Tells a Story — crafted with care, served with pride. Open daily <strong>9:00 AM – 11:00 PM</strong>.</p>
-        <div class="hero-actions">
-          <a href="customermenu.html" class="btn" aria-label="Explore our menu">Explore Our Menu</a>
-          <a href="terms.html" class="link" aria-label="Read Terms and Conditions">Terms & Conditions →</a>
-        </div>
-
-        <div class="highlights" aria-hidden="true">
-          <div class="pill">Freshly baked pizzas</div>
-          <div class="pill">Signature waffles</div>
-          <div class="pill">Thick shakes</div>
-          <div class="pill">Quick delivery</div>
-        </div>
-      </div>
-
-      <div class="hero-right">
-        <img class="hero-logo" src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute emblem"/>
-      </div>
+  <section class="hero">
+    <div class="hero-content">
+      <img src="https://i.postimg.cc/W3pgQx9q/DELICUTE-Imgur-1-modified.png" alt="Delicute Logo" />
+      <h1>Welcome to Delicute</h1>
+      <p>Every Bite Tells a Story</p>
+      <a href="customermenu.html" class="btn">Explore Our Menu</a>
+      <a href="terms.html" class="terms-link">Terms & Conditions</a>
     </div>
   </section>
-
-  <!-- Features / Popular -->
-  <section id="popular" class="features">
-    <div class="container">
-      <div class="grid">
-        <article class="card">
-          <h3>Veg Pizzas</h3>
-          <p>Classic Margherita to Paneer-loaded goodness. Pick your size, pick your vibe.</p>
-        </article>
-        <article class="card">
-          <h3>Non-Veg Pizzas</h3>
-          <p>From Pepper BBQ Chicken to loaded feasts — smoky, juicy, unforgettable.</p>
-        </article>
-        <article class="card">
-          <h3>Waffles</h3>
-          <p>Crisp outside, cloud inside. Chocolate, maple, or go wild with toppings.</p>
-        </article>
-        <article class="card">
-          <h3>Shakes & Juices</h3>
-          <p>Thick shakes and fresh sips to cool the hustle. Pair with any bite.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- About -->
-  <section id="about" class="features" aria-labelledby="about-title">
-    <div class="container">
-      <div class="card" role="region" aria-label="About Delicute">
-        <h3 id="about-title">Rooted in Taste, Built for Speed</h3>
-        <p>We keep it old-school where it matters (solid recipes, proper prep) and modern where it counts (fast ordering, clean UI). Whether you’re on phone or desktop, Delicute just works.</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer>
-    <div class="container footer-grid">
-      <div class="tiny">© <span id="yr"></span> Delicute • Every Bite Tells a Story</div>
-      <div class="hours">Timings: 9:00 AM – 11:00 PM</div>
-      <div class="tiny" style="text-align:right">
-        <a class="terms" href="terms.html">Terms & Conditions</a> •
-        <a class="terms" href="customermenu.html">Order Now</a>
-      </div>
-    </div>
-  </footer>
-
-  <script>
-    // Current year (no frameworks, no drama)
-    document.getElementById('yr').textContent = new Date().getFullYear();
-  </script>
 </body>
 </html>
