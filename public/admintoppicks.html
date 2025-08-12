@@ -14,21 +14,21 @@
     }
     body {
       font-family: 'Playfair Display', serif;
-      background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
+      background: linear-gradient(135deg, #D8BFD8 0%, #E6E6FA 100%);
       color: #1a1a1a;
       min-height: 100vh;
       line-height: 1.6;
       overflow-x: hidden;
     }
     header {
-      background: linear-gradient(90deg, #26a69a, #4dd0e1);
+      background: linear-gradient(90deg, #9370DB, #D8BFD8);
       color: #fff;
       padding: 1.5rem 2rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 16px rgba(142, 68, 173, 0.15);
       position: relative;
       overflow: hidden;
     }
@@ -39,7 +39,7 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+      background: linear-gradient(90deg, transparent, rgba(240, 230, 140, 0.3), transparent);
       animation: shine 3s infinite;
     }
     header img {
@@ -55,14 +55,14 @@
       font-size: 2.2rem;
       font-weight: 800;
       margin-top: 0.5rem;
-      text-shadow: 0 2px 6px rgba(255, 215, 0, 0.4);
+      text-shadow: 0 2px 6px rgba(240, 230, 140, 0.4);
       animation: fadeInUp 0.6s ease-out 0.2s forwards;
     }
     header span {
       font-size: 0.9rem;
       font-weight: 600;
       opacity: 0.9;
-      color: #fff3cd;
+      color: #F0E68C;
       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
       animation: fadeInUp 0.6s ease-out 0.4s forwards;
     }
@@ -70,7 +70,8 @@
       background: #1a1a1a;
       display: flex;
       justify-content: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 8px rgba(142, 68, 173, 0.15);
+      flex-wrap: wrap;
     }
     nav a {
       flex: 0 1 150px;
@@ -83,13 +84,13 @@
       transition: background 0.3s ease, transform 0.2s ease, color 0.3s ease;
     }
     nav a:hover {
-      background: #26a69a;
-      color: #fff3cd;
+      background: #8A2BE2;
+      color: #F0E68C;
       transform: translateY(-3px);
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 3px 8px rgba(142, 68, 173, 0.2);
     }
     .logout {
-      background: linear-gradient(45deg, #ffd700, #ffca28);
+      background: linear-gradient(45deg, #9370DB, #D8BFD8);
       border: none;
       padding: 0.6rem 1.5rem;
       color: #1a1a1a;
@@ -101,29 +102,49 @@
       top: 1rem;
       right: 1rem;
       transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 3px 8px rgba(142, 68, 173, 0.1);
     }
     .logout:hover {
-      background: linear-gradient(45deg, #ffca28, #ffb300);
+      background: linear-gradient(45deg, #8A2BE2, #D8BFD8);
       transform: translateY(-3px);
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 5px 12px rgba(142, 68, 173, 0.2);
     }
     .container {
       max-width: 1200px;
       margin: 2rem auto;
       padding: 1.5rem;
-      background: rgba(255, 255, 255, 0.95);
+      background: rgba(255, 255, 255, 0.98);
       border-radius: 16px;
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 6px 20px rgba(142, 68, 173, 0.1);
       animation: slideUp 0.6s ease-out;
     }
     .container h2 {
       font-size: 2rem;
       font-weight: 700;
-      color: #26a69a;
+      color: #9370DB;
       margin-bottom: 1rem;
       text-align: center;
       text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    .search-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+    .search-container input {
+      padding: 0.8rem;
+      width: 100%;
+      max-width: 400px;
+      border: 2px solid #9370DB;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: 'Playfair Display', serif;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .search-container input:focus {
+      border-color: #8A2BE2;
+      box-shadow: 0 0 8px rgba(142, 68, 173, 0.2);
     }
     .grid {
       display: grid;
@@ -136,12 +157,12 @@
       border-radius: 12px;
       padding: 1.2rem;
       text-align: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 4px 12px rgba(142, 68, 173, 0.05);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
     .card:hover {
       transform: translateY(-5px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 6px 16px rgba(142, 68, 173, 0.15);
     }
     .card img {
       width: 100%;
@@ -156,18 +177,18 @@
     .card h3 {
       font-size: 1.3rem;
       font-weight: 700;
-      color: #1a1a1a;
+      color: #9370DB;
       margin: 0.5rem 0;
     }
     .price {
-      color: #26a69a;
+      color: #9370DB;
       font-weight: 700;
       font-size: 1.1rem;
       margin: 0.5rem 0;
     }
     .card p {
       font-size: 0.95rem;
-      color: #4b5e8e;
+      color: #4B5E8E;
       margin-bottom: 0.5rem;
     }
     .btn {
@@ -178,30 +199,30 @@
       font-size: 0.95rem;
       font-weight: 600;
       transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 3px 8px rgba(142, 68, 173, 0.1);
     }
     .btn-top {
-      background: linear-gradient(45deg, #ffd700, #ffca28);
+      background: linear-gradient(45deg, #9370DB, #D8BFD8);
       color: #1a1a1a;
     }
     .btn-top:hover {
-      background: linear-gradient(45deg, #ffca28, #ffb300);
+      background: linear-gradient(45deg, #8A2BE2, #D8BFD8);
       transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 5px 12px rgba(142, 68, 173, 0.2);
     }
     .btn-remove {
-      background: linear-gradient(45deg, #ef5350, #e53935);
+      background: linear-gradient(45deg, #8A2BE2, #D8BFD8);
       color: #fff;
     }
     .btn-remove:hover {
-      background: linear-gradient(45deg, #d32f2f, #ef5350);
+      background: linear-gradient(45deg, #6A0DAD, #8A2BE2);
       transform: translateY(-2px);
-      box-shadow: 0 5px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 5px 12px rgba(142, 68, 173, 0.2);
     }
     #toast {
       visibility: hidden;
       min-width: 250px;
-      background: linear-gradient(45deg, #26a69a, #4dd0e1);
+      background: linear-gradient(45deg, #9370DB, #D8BFD8);
       color: #fff;
       text-align: center;
       border-radius: 12px;
@@ -212,7 +233,7 @@
       bottom: 30px;
       transform: translateX(-50%);
       font-size: 0.95rem;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(142, 68, 173, 0.2);
     }
     #toast.show {
       visibility: visible;
@@ -220,7 +241,7 @@
     }
     .no-items {
       font-size: 1.1rem;
-      color: #4b5e8e;
+      color: #4B5E8E;
       text-align: center;
       padding: 2rem;
     }
@@ -245,19 +266,38 @@
       from { opacity: 0; transform: translate(-50%, -100%); }
       to { opacity: 1; transform: translate(-50%, 0); }
     }
+    @media (max-width: 768px) {
+      header img { height: 50px; }
+      header h1 { font-size: 2rem; }
+      header span { font-size: 0.85rem; }
+      nav { flex-wrap: wrap; }
+      nav a { flex: 0 1 100px; font-size: 1rem; padding: 0.8rem; }
+      .logout { padding: 0.5rem 1.2rem; font-size: 0.9rem; }
+      .container { margin: 1.5rem; padding: 1.2rem; }
+      .container h2 { font-size: 1.8rem; }
+      .search-container input { max-width: 100%; }
+      .grid { grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1.2rem; }
+      .card img { height: 140px; }
+      .card h3 { font-size: 1.2rem; }
+      .price { font-size: 1rem; }
+      .btn { font-size: 0.9rem; padding: 0.5rem 1rem; }
+    }
     @media (max-width: 480px) {
       header img { height: 45px; }
       header h1 { font-size: 1.8rem; }
       header span { font-size: 0.8rem; }
-      nav a { font-size: 0.9rem; padding: 0.8rem; flex: 0 1 100px; }
-      .logout { padding: 0.5rem 1rem; font-size: 0.9rem; }
+      nav a { flex: 0 1 80px; font-size: 0.9rem; padding: 0.6rem; }
+      .logout { padding: 0.5rem 1rem; font-size: 0.85rem; top: 0.8rem; right: 0.8rem; }
       .container { margin: 1rem; padding: 1rem; }
       .container h2 { font-size: 1.6rem; }
-      .grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+      .search-container { padding: 0 0.5rem; }
+      .search-container input { font-size: 0.9rem; padding: 0.6rem; }
+      .grid { grid-template-columns: 1fr; gap: 1rem; }
       .card img { height: 120px; }
       .card h3 { font-size: 1.1rem; }
-      .price { font-size: 1rem; }
-      .btn { font-size: 0.9rem; padding: 0.5rem 1rem; }
+      .price { font-size: 0.95rem; }
+      .btn { font-size: 0.85rem; padding: 0.5rem 0.8rem; }
+      #toast { min-width: 200px; font-size: 0.9rem; bottom: 20px; }
     }
   </style>
 </head>
@@ -281,6 +321,9 @@
 
   <div class="container">
     <h2>Manage Top Picks ⭐</h2>
+    <div class="search-container">
+      <input type="text" id="searchInput" placeholder="Search by name or category..." oninput="searchMenu()">
+    </div>
     <div id="menuList" class="grid"></div>
   </div>
 
@@ -288,6 +331,8 @@
   <div id="toast"></div>
 
   <script>
+    let menuData = [];
+
     function showToast(msg, success = true) {
       const toast = document.getElementById("toast");
       toast.textContent = msg;
@@ -296,7 +341,6 @@
       setTimeout(() => toast.className = toast.className.replace("show", ""), 3000);
     }
 
-    // ✅ Auth check
     window.addEventListener("DOMContentLoaded", async () => {
       try {
         const res = await fetch("/api/auth/check", { credentials: "include" });
@@ -322,25 +366,47 @@
           return;
         }
 
-        data.data.forEach(item => {
-          const isTop = item.is_top_pick === 1;
-          container.innerHTML += `
-            <div class="card">
-              <img src="${item.image}" alt="${item.name}">
-              <h3>${item.name}</h3>
-              <p class="price">₹${item.original_price || item.price}</p>
-              <p>${item.category}</p>
-              <button class="btn ${isTop ? "btn-remove" : "btn-top"}"
-                onclick="toggleTopPick(${item.id}, ${isTop})">
-                ${isTop ? "Remove from Top Picks" : "Add to Top Picks"}
-              </button>
-            </div>
-          `;
-        });
+        menuData = data.data;
+        renderMenu(menuData);
       } catch (err) {
         showToast("Error loading menu items", false);
         console.error("Menu Load Error:", err);
       }
+    }
+
+    function renderMenu(items) {
+      const container = document.getElementById("menuList");
+      container.innerHTML = "";
+
+      if (items.length === 0) {
+        container.innerHTML = "<p class='no-items'>No matching items found</p>";
+        return;
+      }
+
+      items.forEach(item => {
+        const isTop = item.is_top_pick === 1;
+        container.innerHTML += `
+          <div class="card">
+            <img src="${item.image}" alt="${item.name}">
+            <h3>${item.name}</h3>
+            <p class="price">₹${item.original_price || item.price}</p>
+            <p>${item.category}</p>
+            <button class="btn ${isTop ? "btn-remove" : "btn-top"}"
+              onclick="toggleTopPick(${item.id}, ${isTop})">
+              ${isTop ? "Remove from Top Picks" : "Add to Top Picks"}
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function searchMenu() {
+      const searchTerm = document.getElementById("searchInput").value.toLowerCase();
+      const filteredItems = menuData.filter(item =>
+        item.name.toLowerCase().includes(searchTerm) ||
+        item.category.toLowerCase().includes(searchTerm)
+      );
+      renderMenu(filteredItems);
     }
 
     async function toggleTopPick(id, isTop) {
