@@ -370,9 +370,6 @@ h2::after {
   z-index: 1001;
   touch-action: manipulation;
 }
-.cart-toggle.has-items {
-  animation: pulse 1.5s infinite ease-in-out;
-}
 .cart-toggle:hover {
   background: linear-gradient(45deg, #8A2BE2, #6A5ACD);
   transform: scale(1.05);
@@ -390,20 +387,9 @@ h2::after {
   font-size: clamp(0.7rem, 1.6vw, 0.8rem);
   font-weight: 700;
   display: none;
-  transition: transform 0.3s ease;
 }
 .cart-toggle.has-items::after {
   display: block;
-  animation: bounce 0.5s ease-in-out;
-}
-@keyframes pulse {
-  0%, 100% { transform: scale(1); box-shadow: 0 2px 5px rgba(147, 112, 219, 0.2); }
-  50% { transform: scale(1.1); box-shadow: 0 4px 12px rgba(147, 112, 219, 0.4); }
-}
-@keyframes bounce {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
 }
 .cart-item {
   display: flex;
@@ -1047,7 +1033,8 @@ h2::after {
       if (existing) {
         existing.qty++;
       } else {
-        cart.push({ id, cartId, name, price, qty: 1, size });
+        const menuItem = menuData.find(m => m.id === id) || {};
+        cart.push({ id, cartId, name, price, qty: 1, size, image: menuItem.image || defaultImage });
       }
       saveCart();
       showToast(`${name} added to cart!`, true);
@@ -1126,10 +1113,8 @@ h2::after {
       const discountEl = document.getElementById("discount");
       const totalEl = document.getElementById("total");
 
-      // Clear previous timeout
       if (renderTimeout) clearTimeout(renderTimeout);
 
-      // Debounce rendering
       renderTimeout = setTimeout(async () => {
         if (!Array.isArray(cart) || cart.length === 0) {
           cartItemsEl.innerHTML = "<p style='text-align:center;color:#4b5e8e;font-size:clamp(0.8rem, 1.8vw, 0.9rem);'>Your cart is empty</p>";
@@ -1148,42 +1133,27 @@ h2::after {
           if (cartId) existingItems.set(cartId, item);
         });
 
-        // Process cart items
         for (const item of cart) {
-          if (!item?.id || !item.price || !item.qty) {
+          if (!item?.id || !item.price || !item.qty || !item.image) {
             console.error("Invalid cart item:", item);
             continue;
           }
           subtotal += item.price * item.qty;
-          const menuItem = menuData.find(m => m?.id === item.id) || {};
-          const imageSrc = menuItem.image || defaultImage;
           const cartId = item.cartId;
           console.log("Rendering cart item:", { cartId, name: item.name, qty: item.qty });
           let cartItem = existingItems.get(cartId);
 
           if (cartItem) {
-            // Update existing item without touching the image
             const qtySpan = cartItem.querySelector('.qty-controls span');
             const totalSpan = cartItem.querySelector('span:last-child');
-            if (qtySpan && qtySpan.textContent !== item.qty.toString()) {
-              qtySpan.textContent = item.qty;
-            }
-            if (totalSpan && totalSpan.textContent !== `₹${(item.price * item.qty).toFixed(2)}`) {
-              totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
-            }
-            // Only update image src if it has changed
-            const img = cartItem.querySelector('img');
-            if (img && img.src !== imageSrc && img.src !== defaultImage) {
-              img.src = imageSrc;
-              img.onerror = () => { img.src = defaultImage; };
-            }
+            if (qtySpan) qtySpan.textContent = item.qty;
+            if (totalSpan) totalSpan.textContent = `₹${(item.price * item.qty).toFixed(2)}`;
           } else {
-            // Create new item
             const newItem = document.createElement('div');
             newItem.className = 'cart-item';
             newItem.dataset.cartId = cartId;
             newItem.innerHTML = `
-              <img src="${imageSrc}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
+              <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="this.src='${defaultImage}'">
               <h4>${item.name}</h4>
               <div class="qty-controls">
                 <button onclick="changeQty('${encodeURIComponent(cartId)}', -1)">-</button>
@@ -1197,14 +1167,12 @@ h2::after {
           }
         }
 
-        // Remove items that are no longer in the cart
         existingItems.forEach((item, cartId) => {
           if (!cart.find(i => i.cartId === cartId)) {
             item.remove();
           }
         });
 
-        // Update totals
         const discount = await calculateDiscount(subtotal);
         let total = subtotal - discount;
         if (total < 0) total = 0;
@@ -1213,7 +1181,7 @@ h2::after {
         subtotalEl.innerText = "₹" + subtotal.toFixed(2);
         discountEl.innerText = "₹" + discount.toFixed(2);
         totalEl.innerText = "₹" + total.toFixed(2);
-      }, 100); // Debounce delay
+      }, 100);
     }
 
     async function applyCoupon(code = null) {
